@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-server-fn";
 import { changeMyPassword } from "@/lib/auth.functions";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
