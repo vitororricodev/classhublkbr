@@ -1,0 +1,228 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  --background: oklch(0.985 0.002 280);
+  --foreground: oklch(0.22 0.04 280);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.04 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.04 280);
+
+  /* Roxo principal #6D28D9 */
+  --primary: oklch(0.46 0.22 295);
+  --primary-foreground: oklch(0.99 0 0);
+
+  /* Roxo secundário #7C3AED para hover/active */
+  --primary-hover: oklch(0.52 0.23 295);
+
+  --secondary: oklch(0.96 0.01 280);
+  --secondary-foreground: oklch(0.3 0.06 295);
+
+  --muted: oklch(0.965 0.005 280);
+  --muted-foreground: oklch(0.55 0.03 280);
+
+  --accent: oklch(0.95 0.04 295);
+  --accent-foreground: oklch(0.3 0.1 295);
+
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.92 0.01 280);
+  --input: oklch(0.92 0.01 280);
+  --ring: oklch(0.52 0.23 295);
+
+  /* Sidebar — roxo escuro */
+  --sidebar: oklch(0.32 0.15 295);
+  --sidebar-foreground: oklch(0.97 0.02 295);
+  --sidebar-primary: oklch(0.99 0 0);
+  --sidebar-primary-foreground: oklch(0.32 0.15 295);
+  --sidebar-accent: oklch(0.4 0.18 295);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(0.4 0.15 295);
+  --sidebar-ring: oklch(0.7 0.18 295);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body { font-family: var(--font-sans); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* ================= Report (screen + print) ================= */
+.report-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16pt;
+  padding-bottom: 10pt;
+  border-bottom: 2pt solid #6D28D9;
+  margin-bottom: 14pt;
+}
+.report-brand { display: flex; align-items: center; gap: 10pt; }
+.report-brand-mark {
+  width: 32pt; height: 32pt; border-radius: 6pt;
+  background: linear-gradient(135deg, #6D28D9, #7C3AED);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14pt;
+}
+.report-brand-text .name { font-weight: 700; font-size: 12pt; color: #6D28D9; line-height: 1; }
+.report-brand-text .sub  { font-size: 8.5pt; color: #555; margin-top: 2pt; }
+.report-meta { font-size: 8.5pt; color: #444; text-align: right; line-height: 1.5; }
+.report-meta b { color: #111; }
+
+.report-title {
+  text-align: center;
+  font-size: 14pt;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4pt;
+  letter-spacing: 0.2pt;
+}
+.report-period {
+  text-align: center;
+  font-size: 9.5pt;
+  color: #555;
+  margin-bottom: 14pt;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+  table-layout: fixed;
+}
+.report-table thead th {
+  background: #6D28D9;
+  color: #fff;
+  font-weight: 600;
+  text-align: left;
+  padding: 7pt 8pt;
+  border: none;
+  font-size: 9pt;
+  letter-spacing: 0.2pt;
+}
+.report-table thead th:first-child { border-top-left-radius: 4pt; }
+.report-table thead th:last-child  { border-top-right-radius: 4pt; }
+.report-table tbody td {
+  padding: 6pt 8pt;
+  border-bottom: 0.5pt solid #e5e5e5;
+  vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  color: #222;
+}
+.report-table tbody tr:nth-child(even) td { background: #f6f3fb; }
+
+.status-pill {
+  display: inline-block;
+  padding: 1pt 6pt;
+  border-radius: 999pt;
+  font-size: 8pt;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.status-planejado  { background: #ede9fe; color: #5b21b6; }
+.status-realizado  { background: #dcfce7; color: #166534; }
+.status-cancelado  { background: #fee2e2; color: #991b1b; }
+
+.report-footer {
+  margin-top: 14pt;
+  padding-top: 6pt;
+  border-top: 0.5pt solid #d4d4d4;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8pt;
+  color: #666;
+}
+
+/* ================= Print overrides ================= */
+@media print {
+  .no-print, aside, nav, button { display: none !important; }
+
+  html, body {
+    background: #fff !important;
+    color: #111 !important;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 10pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  main, .print-area {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .print-area * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .report-table thead { display: table-header-group; }
+  .report-table tfoot { display: table-footer-group; }
+  .report-table tbody tr { page-break-inside: avoid; }
+
+  /* Hide on-screen footer; the @page rule provides the printed footer */
+  .report-footer { display: none !important; }
+
+  @page {
+    size: A4;
+    margin: 14mm 12mm 16mm 12mm;
+    @bottom-left  { content: "Planeja — Planejamento de Aulas"; font-family: "Inter", sans-serif; font-size: 8pt; color: #777; }
+    @bottom-center{ content: "Página " counter(page) " de " counter(pages);     font-family: "Inter", sans-serif; font-size: 8pt; color: #777; }
+    @bottom-right { content: ""; }
+  }
+}
+
