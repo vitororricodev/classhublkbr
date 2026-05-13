@@ -1,7 +1,13 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { me, logout, type AppUser } from "./auth.functions";
+import { createContext, useContext, type ReactNode } from "react";
+
+export type AppUser = {
+  id: string;
+  username: string;
+  nome: string;
+  role: "admin" | "operador" | "visualizador";
+  ativo: boolean;
+  must_change_password: boolean;
+};
 
 type Ctx = {
   user: AppUser | null;
@@ -12,38 +18,16 @@ type Ctx = {
 
 const AuthContext = createContext<Ctx | null>(null);
 
+// Auth desabilitado temporariamente — provider stub.
+// Quando reativar, implementar via Supabase Auth ou camada própria.
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const meFn = useServerFn(me);
-  const logoutFn = useServerFn(logout);
-  const qc = useQueryClient();
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  const { data, isLoading: queryIsLoading } = useQuery({
-    queryKey: ["auth", "me"],
-    queryFn: async () => (await meFn()).user,
-    staleTime: 60_000,
-  });
-
-  // Marca como hidratado após o cliente montar
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
-
-  // Durante a hidratação do servidor, não mostrar loading state
-  const isLoading = isHydrated ? queryIsLoading : false;
-
   return (
     <AuthContext.Provider
       value={{
-        user: data ?? null,
-        isLoading,
-        refresh: async () => {
-          await qc.invalidateQueries({ queryKey: ["auth", "me"] });
-        },
-        signOut: async () => {
-          await logoutFn();
-          await qc.invalidateQueries({ queryKey: ["auth", "me"] });
-        },
+        user: null,
+        isLoading: false,
+        refresh: async () => {},
+        signOut: async () => {},
       }}
     >
       {children}
