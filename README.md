@@ -398,6 +398,115 @@ O ClassHub foi desenvolvido para:
 
 ---
 
+# Deploy e Infraestrutura
+
+## Produção
+
+O sistema atualmente utiliza:
+
+```txt
+Frontend: Vercel
+Banco de Dados: Supabase
+Storage: Supabase Storage
+Código Fonte: GitHub
+```
+
+---
+
+## Variáveis de Ambiente
+
+O projeto utiliza integração externa com Supabase via variáveis de ambiente.
+
+### Variáveis utilizadas
+
+```env
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+```
+
+---
+
+## Segurança
+
+O arquivo `.env` NÃO deve ser enviado para o GitHub.
+
+O projeto já possui:
+
+```txt
+.env
+.env.local
+.env.*.local
+```
+
+configurados no `.gitignore`.
+
+---
+
+## Supabase
+
+### Estrutura já integrada
+
+* persistência de dados;
+* CRUD completo;
+* storage para anexos;
+* políticas temporárias abertas;
+* integração preparada para autenticação futura.
+
+### Bucket utilizado
+
+```txt
+anexos
+```
+
+---
+
+## Vercel
+
+### Deploy automático
+
+O projeto está preparado para:
+
+* deploy automático via GitHub;
+* build Vite;
+* SPA rewrite;
+* variáveis de ambiente;
+* integração externa Supabase.
+
+---
+
+# Funcionalidade Especial — Replicação de Aulas
+
+O sistema possui planejamento preparado para replicação automática de aulas.
+
+Objetivo:
+
+Permitir geração em massa de aulas fixas para docentes.
+
+Exemplo:
+
+* professor fixo;
+* horário recorrente;
+* turma fixa;
+* dias específicos da semana.
+
+A funcionalidade irá permitir:
+
+* selecionar docente;
+* selecionar turma;
+* selecionar componente;
+* selecionar horário;
+* selecionar período;
+* selecionar dias da semana;
+* gerar automaticamente os planejamentos.
+
+Com validação automática de conflitos.
+
+---
+
 # Status do Projeto
 
 ```txt
@@ -416,12 +525,14 @@ Atualmente o sistema já possui:
 
 ---
 
-# Autor
+## Desenvolvimento
 
-Projeto desenvolvido por:
-
-Vítor Orrico e
-Levi Ribeiro
+* Vítor Orrico
+* Levi Ribeiro
 
 GitHub:
-[https://github.com/vitororricodev](https://github.com/vitororricodev)
+
+* [https://github.com/vitororricodev](https://github.com/vitororricodev)
+* [https://github.com/LeviRiibeiro](https://github.com/LeviRiibeiro)
+
+
