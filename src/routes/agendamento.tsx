@@ -138,6 +138,8 @@ function AgendamentoPage() {
         onClose={() => setSelectedDate(null)}
         horarios={horarios}
       />
+
+      <ReplicarAulasDialog open={replicarOpen} onClose={() => setReplicarOpen(false)} />
     </div>
   );
 }
