@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PlanejamentoForm } from "@/components/PlanejamentoForm";
+import { ReplicarAulasDialog } from "@/components/ReplicarAulasDialog";
+import { Copy } from "lucide-react";
 import type { Docente, Componente, Turma, Horario, PlanejamentoFull, Status } from "@/lib/db";
 import { PLAN_SELECT } from "@/lib/db";
 
@@ -25,6 +27,7 @@ const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 function AgendamentoPage() {
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [replicarOpen, setReplicarOpen] = useState(false);
   const [filtros, setFiltros] = useState({ docente: "all", componente: "all", turma: "all", status: "all" });
 
   const { data: docentes = [] } = useQuery({ queryKey: ["docentes"], queryFn: async () => (await supabase.from("docentes").select("*").order("nome")).data as Docente[] });
@@ -81,6 +84,7 @@ function AgendamentoPage() {
           <div className="px-4 py-1.5 rounded-md bg-secondary font-medium min-w-44 text-center">{MES_LABEL[cursor.getMonth()]} {cursor.getFullYear()}</div>
           <Button variant="outline" size="icon" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}><ChevronRight className="h-4 w-4" /></Button>
           <Button variant="outline" onClick={() => setCursor(startOfMonth(new Date()))}>Hoje</Button>
+          <Button onClick={() => setReplicarOpen(true)}><Copy className="h-4 w-4 mr-1" />Replicar Aulas</Button>
         </div>
       </div>
 
@@ -134,6 +138,8 @@ function AgendamentoPage() {
         onClose={() => setSelectedDate(null)}
         horarios={horarios}
       />
+
+      <ReplicarAulasDialog open={replicarOpen} onClose={() => setReplicarOpen(false)} />
     </div>
   );
 }
