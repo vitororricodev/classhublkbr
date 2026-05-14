@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PlanejamentoForm } from "@/components/PlanejamentoForm";
+import { ReplicarAulasDialog } from "@/components/ReplicarAulasDialog";
+import { Copy } from "lucide-react";
 import type { Docente, Componente, Turma, Horario, PlanejamentoFull, Status } from "@/lib/db";
 import { PLAN_SELECT } from "@/lib/db";
 
