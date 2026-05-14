@@ -420,7 +420,7 @@ Atualmente o sistema já possui:
 
 Projeto desenvolvido por:
 
-Vítor Orrico
+Vítor Orrico e
 Levi Ribeiro
 
 GitHub:
