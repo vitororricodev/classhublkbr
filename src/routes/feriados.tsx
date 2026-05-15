@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -14,6 +14,10 @@ import { toast } from "sonner";
 import type { Feriado } from "@/lib/feriados";
 import { FERIADOS_NACIONAIS_FIXOS } from "@/lib/feriados";
 
+// O tipo `feriados` ainda não está no schema gerado; usamos cast pontual.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
+
 export const Route = createFileRoute("/feriados")({ component: FeriadosPage });
 
 function FeriadosPage() {
@@ -24,18 +28,15 @@ function FeriadosPage() {
   const { data: feriados = [] } = useQuery({
     queryKey: ["feriados", "all"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("feriados" as never)
-        .select("*")
-        .order("data");
+      const { data, error } = await sb.from("feriados").select("*").order("data");
       if (error) throw error;
-      return (data ?? []) as unknown as Feriado[];
+      return (data ?? []) as Feriado[];
     },
   });
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("feriados" as never).delete().eq("id", id);
+      const { error } = await sb.from("feriados").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -111,29 +112,24 @@ function FeriadoForm({ open, onClose, editing }: { open: boolean; onClose: () =>
   const [tipo, setTipo] = useState<"nacional" | "municipal">("municipal");
   const [ativo, setAtivo] = useState(true);
 
-  // reset on open
-  useState(() => 0);
-  if (open && editing && editing.id !== (window as unknown as { __ed?: string }).__ed) {
-    (window as unknown as { __ed?: string }).__ed = editing.id;
-    setNome(editing.nome); setData(editing.data); setTipo(editing.tipo); setAtivo(editing.ativo);
-  }
-  if (open && !editing && (window as unknown as { __ed?: string }).__ed !== "_new") {
-    (window as unknown as { __ed?: string }).__ed = "_new";
-    setNome(""); setData(""); setTipo("municipal"); setAtivo(true);
-  }
-  if (!open && (window as unknown as { __ed?: string }).__ed) {
-    (window as unknown as { __ed?: string }).__ed = undefined;
-  }
+  useEffect(() => {
+    if (!open) return;
+    if (editing) {
+      setNome(editing.nome); setData(editing.data); setTipo(editing.tipo); setAtivo(editing.ativo);
+    } else {
+      setNome(""); setData(""); setTipo("municipal"); setAtivo(true);
+    }
+  }, [open, editing]);
 
   const save = useMutation({
     mutationFn: async () => {
       if (!nome || !data) throw new Error("Preencha nome e data");
       const payload = { nome, data, tipo, ativo };
       if (editing) {
-        const { error } = await supabase.from("feriados" as never).update(payload).eq("id", editing.id);
+        const { error } = await sb.from("feriados").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("feriados" as never).insert(payload);
+        const { error } = await sb.from("feriados").insert(payload);
         if (error) throw error;
       }
     },
