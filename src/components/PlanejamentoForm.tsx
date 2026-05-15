@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Paperclip, X } from "lucide-react";
+import { Paperclip, X, AlertTriangle } from "lucide-react";
 import type { Docente, Componente, Turma, Status, Planejamento } from "@/lib/db";
+import { useFeriadosMunicipais, checkHoliday } from "@/lib/feriados";
 
 type Props = {
   open: boolean;
