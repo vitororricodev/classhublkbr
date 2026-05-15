@@ -95,6 +95,33 @@ export type Database = {
         }
         Relationships: []
       }
+      feriados: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          data: string
+          id: string
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          data: string
+          id?: string
+          nome: string
+          tipo?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          data?: string
+          id?: string
+          nome?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
       horarios_padrao: {
         Row: {
           ativo: boolean
