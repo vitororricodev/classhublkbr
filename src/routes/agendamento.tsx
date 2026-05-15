@@ -35,6 +35,7 @@ function AgendamentoPage() {
   const { data: componentes = [] } = useQuery({ queryKey: ["componentes"], queryFn: async () => (await supabase.from("componentes_curriculares").select("*").order("nome")).data as Componente[] });
   const { data: turmas = [] } = useQuery({ queryKey: ["turmas"], queryFn: async () => (await supabase.from("turmas").select("*").order("nome")).data as Turma[] });
   const { data: horarios = [] } = useQuery({ queryKey: ["horarios"], queryFn: async () => (await supabase.from("horarios_padrao").select("*").eq("ativo", true).order("ordem")).data as Horario[] });
+  const { data: feriadosMun = [] } = useFeriadosMunicipais();
 
   const monthStart = useMemo(() => startOfMonth(cursor), [cursor]);
   const monthEnd = useMemo(() => endOfMonth(cursor), [cursor]);
