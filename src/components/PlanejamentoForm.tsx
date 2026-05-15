@@ -126,7 +126,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
       } else {
         const { error } = await supabase.from("planejamentos").insert(payload);
         if (error) {
-          if (error.code === "23505") throw new Error("Já existe uma aula cadastrada para este docente ou turma neste horário.");
+          if (error.code === "23505") throw new Error("Conflito de horário: este docente ou esta turma já possui aula neste horário.");
           throw error;
         }
       }
