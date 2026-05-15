@@ -42,13 +42,14 @@ export function useFeriadosMunicipais() {
   return useQuery({
     queryKey: ["feriados", "municipais"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("feriados" as never)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from("feriados")
         .select("*")
         .eq("ativo", true)
         .order("data");
       if (error) throw error;
-      return (data ?? []) as unknown as Feriado[];
+      return (data ?? []) as Feriado[];
     },
   });
 }
