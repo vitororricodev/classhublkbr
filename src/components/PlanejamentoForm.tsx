@@ -113,7 +113,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
         p.id !== editing?.id && (p.docente_id === docenteId || p.turma_id === turmaId)
       );
       if (conflito) {
-        throw new Error("Já existe uma aula cadastrada para este docente ou turma neste horário.");
+        throw new Error("Conflito de horário: este docente ou esta turma já possui aula neste horário.");
       }
 
       const payload = {
