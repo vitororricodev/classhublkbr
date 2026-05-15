@@ -46,7 +46,7 @@ export function AppSidebar() {
   return (
     <aside className="no-print w-60 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col min-h-screen">
       <div className="px-6 py-6 border-b border-sidebar-border">
-        <div className="text-lg font-semibold tracking-tight">Planeja</div>
+        <div className="text-lg font-semibold tracking-tight">ClassHub L.K</div>
         <div className="text-xs opacity-70 mt-0.5">Planejamento de aulas</div>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
