@@ -14,6 +14,7 @@ import { Route as TurmasRouteImport } from './routes/turmas'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HorariosRouteImport } from './routes/horarios'
+import { Route as FeriadosRouteImport } from './routes/feriados'
 import { Route as DocentesRouteImport } from './routes/docentes'
 import { Route as ComponentesRouteImport } from './routes/componentes'
 import { Route as AlterarSenhaRouteImport } from './routes/alterar-senha'
@@ -43,6 +44,11 @@ const LoginRoute = LoginRouteImport.update({
 const HorariosRoute = HorariosRouteImport.update({
   id: '/horarios',
   path: '/horarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeriadosRoute = FeriadosRouteImport.update({
+  id: '/feriados',
+  path: '/feriados',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocentesRoute = DocentesRouteImport.update({
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/alterar-senha': typeof AlterarSenhaRoute
   '/componentes': typeof ComponentesRoute
   '/docentes': typeof DocentesRoute
+  '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/alterar-senha': typeof AlterarSenhaRoute
   '/componentes': typeof ComponentesRoute
   '/docentes': typeof DocentesRoute
+  '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/alterar-senha': typeof AlterarSenhaRoute
   '/componentes': typeof ComponentesRoute
   '/docentes': typeof DocentesRoute
+  '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/alterar-senha'
     | '/componentes'
     | '/docentes'
+    | '/feriados'
     | '/horarios'
     | '/login'
     | '/relatorios'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/alterar-senha'
     | '/componentes'
     | '/docentes'
+    | '/feriados'
     | '/horarios'
     | '/login'
     | '/relatorios'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/alterar-senha'
     | '/componentes'
     | '/docentes'
+    | '/feriados'
     | '/horarios'
     | '/login'
     | '/relatorios'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   AlterarSenhaRoute: typeof AlterarSenhaRoute
   ComponentesRoute: typeof ComponentesRoute
   DocentesRoute: typeof DocentesRoute
+  FeriadosRoute: typeof FeriadosRoute
   HorariosRoute: typeof HorariosRoute
   LoginRoute: typeof LoginRoute
   RelatoriosRoute: typeof RelatoriosRoute
@@ -195,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/horarios'
       fullPath: '/horarios'
       preLoaderRoute: typeof HorariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feriados': {
+      id: '/feriados'
+      path: '/feriados'
+      fullPath: '/feriados'
+      preLoaderRoute: typeof FeriadosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docentes': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlterarSenhaRoute: AlterarSenhaRoute,
   ComponentesRoute: ComponentesRoute,
   DocentesRoute: DocentesRoute,
+  FeriadosRoute: FeriadosRoute,
   HorariosRoute: HorariosRoute,
   LoginRoute: LoginRoute,
   RelatoriosRoute: RelatoriosRoute,

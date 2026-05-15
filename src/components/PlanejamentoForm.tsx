@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Paperclip, X } from "lucide-react";
+import { Paperclip, X, AlertTriangle } from "lucide-react";
 import type { Docente, Componente, Turma, Status, Planejamento } from "@/lib/db";
+import { useFeriadosMunicipais, checkHoliday } from "@/lib/feriados";
 
 type Props = {
   open: boolean;
@@ -63,6 +64,9 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
     },
   });
 
+  const { data: feriadosMun = [] } = useFeriadosMunicipais();
+  const feriado = checkHoliday(data, feriadosMun);
+
   async function uploadFile(file: File) {
     setUploading(true);
     try {
@@ -109,7 +113,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
         p.id !== editing?.id && (p.docente_id === docenteId || p.turma_id === turmaId)
       );
       if (conflito) {
-        throw new Error("Já existe uma aula cadastrada para este docente ou turma neste horário.");
+        throw new Error("Conflito de horário: este docente ou esta turma já possui aula neste horário.");
       }
 
       const payload = {
@@ -122,7 +126,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
       } else {
         const { error } = await supabase.from("planejamentos").insert(payload);
         if (error) {
-          if (error.code === "23505") throw new Error("Já existe uma aula cadastrada para este docente ou turma neste horário.");
+          if (error.code === "23505") throw new Error("Conflito de horário: este docente ou esta turma já possui aula neste horário.");
           throw error;
         }
       }
@@ -142,6 +146,15 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
         <DialogHeader>
           <DialogTitle>{editing ? "Editar aula" : "Lançar aula"}</DialogTitle>
         </DialogHeader>
+        {feriado && (
+          <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900 text-sm">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <div>
+              <strong>Atenção:</strong> esta data é feriado {feriado.tipo} — {feriado.nome}.
+              <div className="text-xs opacity-80">O lançamento não será bloqueado.</div>
+            </div>
+          </div>
+        )}
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label>Docente</Label>

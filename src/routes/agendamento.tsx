@@ -13,6 +13,7 @@ import { ReplicarAulasDialog } from "@/components/ReplicarAulasDialog";
 import { Copy } from "lucide-react";
 import type { Docente, Componente, Turma, Horario, PlanejamentoFull, Status } from "@/lib/db";
 import { PLAN_SELECT } from "@/lib/db";
+import { useFeriadosMunicipais, checkHoliday } from "@/lib/feriados";
 
 export const Route = createFileRoute("/agendamento")({ component: AgendamentoPage });
 
@@ -34,6 +35,7 @@ function AgendamentoPage() {
   const { data: componentes = [] } = useQuery({ queryKey: ["componentes"], queryFn: async () => (await supabase.from("componentes_curriculares").select("*").order("nome")).data as Componente[] });
   const { data: turmas = [] } = useQuery({ queryKey: ["turmas"], queryFn: async () => (await supabase.from("turmas").select("*").order("nome")).data as Turma[] });
   const { data: horarios = [] } = useQuery({ queryKey: ["horarios"], queryFn: async () => (await supabase.from("horarios_padrao").select("*").eq("ativo", true).order("ordem")).data as Horario[] });
+  const { data: feriadosMun = [] } = useFeriadosMunicipais();
 
   const monthStart = useMemo(() => startOfMonth(cursor), [cursor]);
   const monthEnd = useMemo(() => endOfMonth(cursor), [cursor]);
@@ -109,13 +111,22 @@ function AgendamentoPage() {
             const inMonth = d.getMonth() === cursor.getMonth();
             const isToday = iso === fmtISO(new Date());
             const events = eventosPorDia[iso] ?? [];
+            const feriado = checkHoliday(iso, feriadosMun);
             return (
               <button
                 key={i}
                 onClick={() => setSelectedDate(iso)}
-                className={`min-h-28 text-left p-2 border-b border-r last:border-r-0 transition-colors hover:bg-accent/30 ${inMonth ? "bg-card" : "bg-muted/40 text-muted-foreground"}`}
+                title={feriado ? `Feriado: ${feriado.nome}` : undefined}
+                className={`min-h-28 text-left p-2 border-b border-r last:border-r-0 transition-colors hover:bg-accent/30 ${
+                  inMonth ? "bg-card" : "bg-muted/40 text-muted-foreground"
+                } ${feriado ? "bg-amber-50/70 hover:bg-amber-100/70" : ""}`}
               >
-                <div className={`text-xs font-medium mb-1 inline-flex items-center justify-center h-6 w-6 rounded-full ${isToday ? "bg-primary text-primary-foreground" : ""}`}>{d.getDate()}</div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className={`text-xs font-medium inline-flex items-center justify-center h-6 w-6 rounded-full ${isToday ? "bg-primary text-primary-foreground" : ""}`}>{d.getDate()}</div>
+                  {feriado && (
+                    <span className="text-[9px] uppercase font-semibold text-amber-700 truncate ml-1">{feriado.nome}</span>
+                  )}
+                </div>
                 <div className="space-y-1">
                   {events.slice(0, 3).map((e) => (
                     <div key={e.id} className="text-[11px] truncate rounded px-1.5 py-0.5 border"

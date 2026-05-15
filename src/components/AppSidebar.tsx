@@ -10,6 +10,7 @@ import {
   Shield,
   LogOut,
   KeyRound,
+  CalendarOff,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const baseItems = [
   { to: "/componentes", label: "Componentes", icon: BookOpen },
   { to: "/turmas", label: "Turmas", icon: GraduationCap },
   { to: "/horarios", label: "Horários", icon: Clock },
+  { to: "/feriados", label: "Feriados", icon: CalendarOff },
   { to: "/relatorios", label: "Relatórios", icon: FileBarChart },
 ] as const;
 
