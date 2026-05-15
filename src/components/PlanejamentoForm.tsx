@@ -67,7 +67,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
   const { data: feriadosMun = [] } = useFeriadosMunicipais();
   const feriado = checkHoliday(data, feriadosMun);
 
-
+  async function uploadFile(file: File) {
     setUploading(true);
     try {
       const path = `${data}/${crypto.randomUUID()}-${file.name}`;
