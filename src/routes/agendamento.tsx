@@ -13,6 +13,7 @@ import { ReplicarAulasDialog } from "@/components/ReplicarAulasDialog";
 import { Copy } from "lucide-react";
 import type { Docente, Componente, Turma, Horario, PlanejamentoFull, Status } from "@/lib/db";
 import { PLAN_SELECT } from "@/lib/db";
+import { useFeriadosMunicipais, checkHoliday } from "@/lib/feriados";
 
 export const Route = createFileRoute("/agendamento")({ component: AgendamentoPage });
 
