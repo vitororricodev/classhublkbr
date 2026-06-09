@@ -84,7 +84,7 @@ export function ExcluirAulasMassaDialog({
     }
     setCounting(true);
     try {
-      const { count, error } = await buildQuery(filtros).select("id", { count: "exact", head: true });
+      const { count, error } = await applyFilters(supabase.from("planejamentos").select("id", { count: "exact", head: true }), filtros);
       if (error) throw error;
       setCount(count ?? 0);
       if (!count) {
