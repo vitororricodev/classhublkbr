@@ -41,13 +41,13 @@ type Props = {
   initial?: { docente?: string; componente?: string; turma?: string };
 };
 
-function buildQuery(f: Filtros) {
-  let q = supabase.from("planejamentos").gte("data", f.inicio).lte("data", f.fim);
-  if (f.docente !== "all") q = q.eq("docente_id", f.docente);
-  if (f.componente !== "all") q = q.eq("componente_id", f.componente);
-  if (f.turma !== "all") q = q.eq("turma_id", f.turma);
-  if (f.horario !== "all") q = q.eq("horario_id", f.horario);
-  return q;
+function applyFilters<T extends { gte: Function; lte: Function; eq: Function }>(q: T, f: Filtros): T {
+  let r: any = q.gte("data", f.inicio).lte("data", f.fim);
+  if (f.docente !== "all") r = r.eq("docente_id", f.docente);
+  if (f.componente !== "all") r = r.eq("componente_id", f.componente);
+  if (f.turma !== "all") r = r.eq("turma_id", f.turma);
+  if (f.horario !== "all") r = r.eq("horario_id", f.horario);
+  return r as T;
 }
 
 export function ExcluirAulasMassaDialog({
