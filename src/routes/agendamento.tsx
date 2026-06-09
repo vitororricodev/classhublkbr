@@ -30,6 +30,7 @@ function AgendamentoPage() {
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [replicarOpen, setReplicarOpen] = useState(false);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [filtros, setFiltros] = useState({ docente: "all", componente: "all", turma: "all", status: "all" });
 
   const { data: docentes = [] } = useQuery({ queryKey: ["docentes"], queryFn: async () => (await supabase.from("docentes").select("*").order("nome")).data as Docente[] });
