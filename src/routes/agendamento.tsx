@@ -154,6 +154,18 @@ function AgendamentoPage() {
       />
 
       <ReplicarAulasDialog open={replicarOpen} onClose={() => setReplicarOpen(false)} />
+
+      <ExcluirAulasMassaDialog
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        defaultInicio={fmtISO(monthStart)}
+        defaultFim={fmtISO(monthEnd)}
+        docentes={docentes}
+        componentes={componentes}
+        turmas={turmas}
+        horarios={horarios}
+        initial={{ docente: filtros.docente, componente: filtros.componente, turma: filtros.turma }}
+      />
     </div>
   );
 }
