@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PlanejamentoForm } from "@/components/PlanejamentoForm";
 import { ReplicarAulasDialog } from "@/components/ReplicarAulasDialog";
+import { ExcluirAulasMassaDialog } from "@/components/ExcluirAulasMassaDialog";
 import { Copy } from "lucide-react";
 import type { Docente, Componente, Turma, Horario, PlanejamentoFull, Status } from "@/lib/db";
 import { PLAN_SELECT } from "@/lib/db";
@@ -29,6 +30,7 @@ function AgendamentoPage() {
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [replicarOpen, setReplicarOpen] = useState(false);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [filtros, setFiltros] = useState({ docente: "all", componente: "all", turma: "all", status: "all" });
 
   const { data: docentes = [] } = useQuery({ queryKey: ["docentes"], queryFn: async () => (await supabase.from("docentes").select("*").order("nome")).data as Docente[] });
@@ -87,6 +89,7 @@ function AgendamentoPage() {
           <Button variant="outline" size="icon" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}><ChevronRight className="h-4 w-4" /></Button>
           <Button variant="outline" onClick={() => setCursor(startOfMonth(new Date()))}>Hoje</Button>
           <Button onClick={() => setReplicarOpen(true)}><Copy className="h-4 w-4 mr-1" />Replicar Aulas</Button>
+          <Button variant="destructive" onClick={() => setBulkDeleteOpen(true)}><Trash2 className="h-4 w-4 mr-1" />Excluir em Massa</Button>
         </div>
       </div>
 
@@ -151,6 +154,18 @@ function AgendamentoPage() {
       />
 
       <ReplicarAulasDialog open={replicarOpen} onClose={() => setReplicarOpen(false)} />
+
+      <ExcluirAulasMassaDialog
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        defaultInicio={fmtISO(monthStart)}
+        defaultFim={fmtISO(monthEnd)}
+        docentes={docentes}
+        componentes={componentes}
+        turmas={turmas}
+        horarios={horarios}
+        initial={{ docente: filtros.docente, componente: filtros.componente, turma: filtros.turma }}
+      />
     </div>
   );
 }
