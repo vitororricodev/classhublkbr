@@ -101,7 +101,7 @@ export function ExcluirAulasMassaDialog({
 
   const excluir = useMutation({
     mutationFn: async () => {
-      const { error, count } = await buildQuery(filtros).delete({ count: "exact" });
+      const { error, count } = await applyFilters(supabase.from("planejamentos").delete({ count: "exact" }), filtros);
       if (error) throw error;
       return count ?? 0;
     },
