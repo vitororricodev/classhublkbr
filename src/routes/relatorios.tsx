@@ -67,16 +67,108 @@ function RelatoriosPage() {
   const geradoEm = fmtDateTime(new Date());
 
   return (
-    <div className="p-8 space-y-6 print:p-0 print:space-y-0">
-      <div className="flex items-center justify-between no-print">
+  const handleExportPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginX = 32;
+
+    // Cabeçalho institucional
+    doc.setFillColor(109, 40, 217);
+    doc.rect(marginX, 28, 28, 28, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("P", marginX + 14, 48, { align: "center" });
+
+    doc.setTextColor(109, 40, 217);
+    doc.setFontSize(13);
+    doc.text("Planeja", marginX + 38, 44);
+    doc.setTextColor(85, 85, 85);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text("Sistema de Planejamento de Aulas", marginX + 38, 55);
+
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(8.5);
+    const metaX = pageWidth - marginX;
+    doc.text(`Emitido em: ${geradoEm}`, metaX, 36, { align: "right" });
+    doc.text(`Responsável: ${user?.nome ?? "—"}`, metaX, 47, { align: "right" });
+    doc.text(`Total de registros: ${sorted.length}`, metaX, 58, { align: "right" });
+
+    doc.setDrawColor(109, 40, 217);
+    doc.setLineWidth(1.2);
+    doc.line(marginX, 68, pageWidth - marginX, 68);
+
+    doc.setTextColor(26, 26, 26);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Relatório de Planejamento de Aulas", pageWidth / 2, 86, { align: "center" });
+
+    // Filtros
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(85, 85, 85);
+    const filtrosTxt = `Período: ${fmtDate(filtros.inicio)} a ${fmtDate(filtros.fim)}  ·  Docente: ${docenteLabel}  ·  Componente: ${componenteLabel}  ·  Turma: ${turmaLabel}  ·  Status: ${statusLabel}`;
+    const filtrosLines = doc.splitTextToSize(filtrosTxt, pageWidth - marginX * 2);
+    doc.text(filtrosLines, pageWidth / 2, 102, { align: "center" });
+
+    const body = sorted.map((r) => [
+      fmtDate(r.data),
+      `${r.horarios_padrao?.label ?? ""}${r.horarios_padrao?.hora_inicio ? `\n${r.horarios_padrao.hora_inicio.slice(0, 5)}${r.horarios_padrao.hora_fim ? `–${r.horarios_padrao.hora_fim.slice(0, 5)}` : ""}` : ""}`,
+      r.docentes?.nome ?? "—",
+      r.componentes_curriculares?.nome ?? "—",
+      r.turmas ? `${r.turmas.serie} ${r.turmas.nome}` : "—",
+      r.conteudo || "—",
+      r.status,
+    ]);
+
+    autoTable(doc, {
+      startY: 118,
+      head: [["Data", "Horário", "Docente", "Componente", "Turma", "Conteúdo", "Status"]],
+      body,
+      margin: { left: marginX, right: marginX, bottom: 36 },
+      styles: { font: "helvetica", fontSize: 9, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34] },
+      headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 9 },
+      alternateRowStyles: { fillColor: [246, 243, 251] },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 70 },
+        2: { cellWidth: "auto" },
+        3: { cellWidth: "auto" },
+        4: { cellWidth: 70 },
+        5: { cellWidth: "auto" },
+        6: { cellWidth: 60 },
+      },
+      showHead: "everyPage",
+      didDrawPage: () => {
+        const pageCount = doc.getNumberOfPages();
+        const currentPage = doc.getCurrentPageInfo().pageNumber;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(119, 119, 119);
+        doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
+        doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
+        doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
+      },
+    });
+
+    doc.save(`relatorio-aulas-${filtros.inicio}-a-${filtros.fim}.pdf`);
+  };
+
+  return (
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Relatórios</h1>
-          <p className="text-sm text-muted-foreground">Filtre e imprima relatórios de aulas.</p>
+          <p className="text-sm text-muted-foreground">Filtre e exporte relatórios de aulas em PDF.</p>
         </div>
-        <Button onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" />Imprimir Relatório</Button>
+        <Button onClick={handleExportPDF} disabled={sorted.length === 0}>
+          <FileDown className="h-4 w-4 mr-2" />Exportar PDF
+        </Button>
       </div>
 
-      <Card className="p-4 no-print">
+      <Card className="p-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={filtros.inicio} onChange={(e) => setFiltros({ ...filtros, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={filtros.fim} onChange={(e) => setFiltros({ ...filtros, fim: e.target.value })} /></div>
@@ -89,89 +181,45 @@ function RelatoriosPage() {
         </div>
       </Card>
 
-      {/* Screen preview + print area */}
-      <Card className="p-6 print-area print:p-0 print:shadow-none print:border-0 print:bg-transparent">
-        {/* Cabeçalho do relatório (visível em tela e na impressão) */}
-        <header className="report-header">
-          <div className="report-brand">
-            <div className="report-brand-mark">P</div>
-            <div className="report-brand-text">
-              <div className="name">Planeja</div>
-              <div className="sub">Sistema de Planejamento de Aulas</div>
-            </div>
-          </div>
-          <div className="report-meta">
-            <div><b>Emitido em:</b> {geradoEm}</div>
-            <div><b>Responsável:</b> {user?.nome ?? "—"}</div>
-            <div><b>Total de registros:</b> {sorted.length}</div>
-          </div>
-        </header>
-
-        <h1 className="report-title">Relatório de Planejamento de Aulas</h1>
-        <div className="report-period">
-          Período: <b>{fmtDate(filtros.inicio)}</b> a <b>{fmtDate(filtros.fim)}</b>
-          {" · "}Docente: <b>{docenteLabel}</b>
-          {" · "}Componente: <b>{componenteLabel}</b>
-          {" · "}Turma: <b>{turmaLabel}</b>
-          {" · "}Status: <b className="capitalize">{statusLabel}</b>
+      <Card className="p-4">
+        <div className="text-sm text-muted-foreground mb-3">
+          {isLoading ? "Carregando..." : `${sorted.length} registro(s) encontrado(s) no período de ${fmtDate(filtros.inicio)} a ${fmtDate(filtros.fim)}.`}
         </div>
-
-        {isLoading ? (
-          <div className="text-sm text-muted-foreground py-8 text-center">Carregando...</div>
-        ) : sorted.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-8 text-center">
-            Nenhum registro encontrado para os filtros selecionados.
-          </div>
-        ) : (
-          <table className="report-table">
-            <colgroup>
-              <col style={{ width: "9%" }} />
-              <col style={{ width: "11%" }} />
-              <col style={{ width: "16%" }} />
-              <col style={{ width: "16%" }} />
-              <col style={{ width: "12%" }} />
-              <col style={{ width: "26%" }} />
-              <col style={{ width: "10%" }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Horário</th>
-                <th>Docente</th>
-                <th>Componente</th>
-                <th>Turma</th>
-                <th>Conteúdo</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((r) => (
-                <tr key={r.id}>
-                  <td className="whitespace-nowrap">{fmtDate(r.data)}</td>
-                  <td className="whitespace-nowrap">
-                    {r.horarios_padrao?.label}
-                    <div className="text-[8pt] text-neutral-500">
-                      {r.horarios_padrao?.hora_inicio?.slice(0, 5)}
-                      {r.horarios_padrao?.hora_fim ? `–${r.horarios_padrao.hora_fim.slice(0, 5)}` : ""}
-                    </div>
-                  </td>
-                  <td>{r.docentes?.nome ?? "—"}</td>
-                  <td>{r.componentes_curriculares?.nome ?? "—"}</td>
-                  <td>{r.turmas ? `${r.turmas.serie} ${r.turmas.nome}` : "—"}</td>
-                  <td>{r.conteudo || <span className="text-neutral-400">—</span>}</td>
-                  <td>
-                    <span className={`status-pill status-${r.status}`}>{r.status}</span>
-                  </td>
+        {!isLoading && sorted.length > 0 && (
+          <div className="overflow-auto max-h-[480px] border rounded-md">
+            <table className="w-full text-sm">
+              <thead className="bg-muted sticky top-0">
+                <tr>
+                  <th className="text-left p-2">Data</th>
+                  <th className="text-left p-2">Horário</th>
+                  <th className="text-left p-2">Docente</th>
+                  <th className="text-left p-2">Componente</th>
+                  <th className="text-left p-2">Turma</th>
+                  <th className="text-left p-2">Conteúdo</th>
+                  <th className="text-left p-2">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sorted.slice(0, 50).map((r) => (
+                  <tr key={r.id} className="border-t">
+                    <td className="p-2 whitespace-nowrap">{fmtDate(r.data)}</td>
+                    <td className="p-2 whitespace-nowrap">{r.horarios_padrao?.label}</td>
+                    <td className="p-2">{r.docentes?.nome ?? "—"}</td>
+                    <td className="p-2">{r.componentes_curriculares?.nome ?? "—"}</td>
+                    <td className="p-2">{r.turmas ? `${r.turmas.serie} ${r.turmas.nome}` : "—"}</td>
+                    <td className="p-2">{r.conteudo || "—"}</td>
+                    <td className="p-2 capitalize">{r.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {sorted.length > 50 && (
+              <div className="p-2 text-xs text-muted-foreground text-center">
+                Pré-visualização de 50 de {sorted.length} registros. Exporte em PDF para ver todos.
+              </div>
+            )}
+          </div>
         )}
-
-        <footer className="report-footer">
-          <span>Planeja — Planejamento de Aulas</span>
-          <span>Emitido em {geradoEm}</span>
-        </footer>
       </Card>
     </div>
   );
