@@ -89,6 +89,7 @@ function AgendamentoPage() {
           <Button variant="outline" size="icon" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}><ChevronRight className="h-4 w-4" /></Button>
           <Button variant="outline" onClick={() => setCursor(startOfMonth(new Date()))}>Hoje</Button>
           <Button onClick={() => setReplicarOpen(true)}><Copy className="h-4 w-4 mr-1" />Replicar Aulas</Button>
+          <Button variant="destructive" onClick={() => setBulkDeleteOpen(true)}><Trash2 className="h-4 w-4 mr-1" />Excluir em Massa</Button>
         </div>
       </div>
 
