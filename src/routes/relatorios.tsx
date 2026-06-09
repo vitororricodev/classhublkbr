@@ -66,7 +66,6 @@ function RelatoriosPage() {
 
   const geradoEm = fmtDateTime(new Date());
 
-  return (
   const handleExportPDF = () => {
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
