@@ -108,7 +108,7 @@ export function ExcluirAulasMassaDialog({
     onSuccess: (removed) => {
       // Log da operação
       console.info("[exclusao-massa-aulas]", {
-        usuario: user?.username ?? user?.id ?? "anonimo",
+        usuario: user?.usuario ?? user?.id ?? "anonimo",
         filtros,
         removidos: removed,
         timestamp: new Date().toISOString(),
