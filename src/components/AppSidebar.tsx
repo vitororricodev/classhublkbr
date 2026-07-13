@@ -11,6 +11,7 @@ import {
   LogOut,
   KeyRound,
   CalendarOff,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
