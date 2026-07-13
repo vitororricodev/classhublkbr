@@ -9,7 +9,7 @@ import {
 import { useEffect } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/lib/auth-context";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: RootComponent,
@@ -61,13 +61,38 @@ function RootComponent() {
 function AuthGate() {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useAuth();
 
-  // Auth temporariamente desabilitado — redireciona /login para /
   useEffect(() => {
-    if (pathname === "/login") {
+    const isLogin = pathname === "/login";
+    const isChange = pathname === "/alterar-senha";
+
+    if (!user && !isLogin) {
+      router.navigate({ to: "/login" });
+      return;
+    }
+    if (user && user.primeiro_login && !isChange) {
+      router.navigate({ to: "/alterar-senha" });
+      return;
+    }
+    if (user && !user.primeiro_login && isLogin) {
       router.navigate({ to: "/" });
     }
-  }, [pathname, router]);
+  }, [pathname, user, router]);
+
+  // Telas full-screen sem sidebar
+  if (pathname === "/login" || pathname === "/alterar-senha") {
+    return (
+      <div className="min-h-screen w-full bg-background">
+        <Outlet />
+      </div>
+    );
+  }
+
+  // Aguarda hidratação da sessão antes de renderizar áreas protegidas
+  if (!user) {
+    return <div className="min-h-screen w-full bg-background" />;
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-background">
