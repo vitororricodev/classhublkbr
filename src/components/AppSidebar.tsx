@@ -25,6 +25,7 @@ const baseItems = [
   { to: "/horarios", label: "Horários", icon: Clock },
   { to: "/feriados", label: "Feriados", icon: CalendarOff },
   { to: "/relatorios", label: "Relatórios", icon: FileBarChart },
+  { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
 const roleLabel: Record<string, string> = {
