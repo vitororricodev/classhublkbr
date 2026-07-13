@@ -247,12 +247,62 @@ export type Database = {
         }
         Relationships: []
       }
+      usuarios: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+          primeiro_login: boolean
+          senha_hash: string
+          tipo: string
+          usuario: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+          primeiro_login?: boolean
+          senha_hash: string
+          tipo?: string
+          usuario: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          primeiro_login?: boolean
+          senha_hash?: string
+          tipo?: string
+          usuario?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      alterar_senha_usuario: {
+        Args: {
+          p_nova_senha: string
+          p_senha_atual: string
+          p_usuario_id: string
+        }
+        Returns: boolean
+      }
+      login_usuario: {
+        Args: { p_senha: string; p_usuario: string }
+        Returns: {
+          id: string
+          nome: string
+          primeiro_login: boolean
+          tipo: string
+          usuario: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "operador" | "visualizador"

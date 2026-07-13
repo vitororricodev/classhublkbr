@@ -1,8 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { useServerFn } from "@/lib/use-server-fn";
-import { changeMyPassword } from "@/lib/auth.functions";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +17,7 @@ function strength(pw: string) {
   if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
   if (/[0-9]/.test(pw)) s++;
   if (/[^A-Za-z0-9]/.test(pw)) s++;
-  return s; // 0..5
+  return s;
 }
 
 function StrengthBar({ pw }: { pw: string }) {
@@ -30,27 +29,46 @@ function StrengthBar({ pw }: { pw: string }) {
       <div className="h-1.5 w-full rounded bg-muted overflow-hidden">
         <div className={`h-full transition-all ${colors[s]}`} style={{ width: `${(s / 5) * 100}%` }} />
       </div>
-      <div className="text-xs text-muted-foreground">{pw ? labels[s] : "Mín. 6 caracteres, com letras e números"}</div>
+      <div className="text-xs text-muted-foreground">{pw ? labels[s] : "Mín. 4 caracteres"}</div>
     </div>
   );
 }
 
 function ChangePasswordPage() {
-  const fn = useServerFn(changeMyPassword);
-  const { user, refresh } = useAuth();
+  const { user, setUser, signOut } = useAuth();
   const navigate = useNavigate();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isFirst = !!user?.primeiro_login;
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      navigate({ to: "/login" });
+      return;
+    }
+    if (next !== confirm) {
+      toast.error("As senhas não conferem.");
+      return;
+    }
+    if (next.length < 4) {
+      toast.error("A nova senha deve ter pelo menos 4 caracteres.");
+      return;
+    }
     setLoading(true);
     try {
-      await fn({ data: { currentPassword: current, newPassword: next, confirmPassword: confirm } });
+      const { data, error } = await supabase.rpc("alterar_senha_usuario", {
+        p_usuario_id: user.id,
+        p_senha_atual: current,
+        p_nova_senha: next,
+      });
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error("Não foi possível alterar a senha.");
       toast.success("Senha alterada com sucesso.");
-      await refresh();
+      setUser({ ...user, primeiro_login: false });
       navigate({ to: "/" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao alterar senha.");
@@ -64,9 +82,9 @@ function ChangePasswordPage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
           <CardTitle>Alterar senha</CardTitle>
-          {user?.must_change_password && (
+          {isFirst && (
             <p className="text-sm text-amber-600 mt-1">
-              É necessário alterar a senha padrão antes de continuar.
+              Este é o seu primeiro acesso. Por segurança, escolha uma nova senha antes de continuar.
             </p>
           )}
         </CardHeader>
@@ -88,9 +106,16 @@ function ChangePasswordPage() {
                 <p className="text-xs text-destructive">As senhas não conferem.</p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Salvando..." : "Salvar nova senha"}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? "Salvando..." : "Salvar"}
+              </Button>
+              {isFirst && (
+                <Button type="button" variant="ghost" onClick={() => signOut().then(() => navigate({ to: "/login" }))}>
+                  Sair
+                </Button>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>

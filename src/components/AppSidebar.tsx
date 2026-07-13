@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -7,7 +7,6 @@ import {
   GraduationCap,
   Clock,
   FileBarChart,
-  Shield,
   LogOut,
   KeyRound,
   CalendarOff,
@@ -28,22 +27,22 @@ const baseItems = [
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
-const roleLabel: Record<string, string> = {
+const tipoLabel: Record<string, string> = {
   admin: "Administrador",
-  operador: "Operador",
-  visualizador: "Visualizador",
+  usuario: "Usuário",
 };
 
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
-  const items = [
-    ...baseItems,
-    ...(user?.role === "admin"
-      ? [{ to: "/usuarios" as const, label: "Usuários", icon: Shield }]
-      : []),
-  ];
+  const items = baseItems;
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/login" });
+  };
 
   return (
     <aside className="no-print w-60 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col min-h-screen">
@@ -76,7 +75,7 @@ export function AppSidebar() {
           <div className="px-2 py-1">
             <div className="text-sm font-medium truncate">{user.nome}</div>
             <div className="text-xs opacity-70">
-              {user.username} · {roleLabel[user.role]}
+              {user.usuario} · {tipoLabel[user.tipo] ?? user.tipo}
             </div>
           </div>
           <Link
@@ -88,7 +87,7 @@ export function AppSidebar() {
           <Button
             variant="ghost"
             className="w-full justify-start gap-2 text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
-            onClick={() => signOut()}
+            onClick={handleSignOut}
           >
             <LogOut className="h-4 w-4" /> Sair
           </Button>

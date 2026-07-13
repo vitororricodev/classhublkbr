@@ -112,7 +112,7 @@ function UsersPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 
-  if (user && user.role !== "admin") {
+  if (user && user.tipo !== "admin") {
     return (
       <div className="p-8">
         <Card>
