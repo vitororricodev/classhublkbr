@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: row.id,
         usuario: row.usuario,
         nome: row.nome,
-        tipo: row.tipo,
+        tipo: (row.tipo === "admin" ? "admin" : "usuario") as "admin" | "usuario",
         primeiro_login: row.primeiro_login,
       };
       setUser(u);
