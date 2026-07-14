@@ -60,13 +60,22 @@ function ChangePasswordPage() {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("alterar_senha_usuario", {
-        p_usuario_id: user.id,
-        p_senha_atual: current,
-        p_nova_senha: next,
-      });
-      if (error) throw new Error(error.message);
-      if (!data) throw new Error("Não foi possível alterar a senha.");
+      // Verifica senha atual
+      const { data: row, error: selErr } = await supabase
+        .from("usuarios")
+        .select("id, senha")
+        .eq("id", user.id)
+        .eq("ativo", true)
+        .maybeSingle();
+      if (selErr) throw new Error(selErr.message);
+      if (!row || (row as any).senha !== current) {
+        throw new Error("Senha atual incorreta.");
+      }
+      const { error: updErr } = await supabase
+        .from("usuarios")
+        .update({ senha: next, primeiro_login: false })
+        .eq("id", user.id);
+      if (updErr) throw new Error(updErr.message);
       toast.success("Senha alterada com sucesso.");
       setUser({ ...user, primeiro_login: false });
       navigate({ to: "/" });

@@ -254,7 +254,7 @@ export type Database = {
           id: string
           nome: string
           primeiro_login: boolean
-          senha_hash: string
+          senha: string
           tipo: string
           usuario: string
         }
@@ -264,7 +264,7 @@ export type Database = {
           id?: string
           nome: string
           primeiro_login?: boolean
-          senha_hash: string
+          senha?: string
           tipo?: string
           usuario: string
         }
@@ -274,7 +274,7 @@ export type Database = {
           id?: string
           nome?: string
           primeiro_login?: boolean
-          senha_hash?: string
+          senha?: string
           tipo?: string
           usuario?: string
         }
@@ -285,24 +285,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      alterar_senha_usuario: {
-        Args: {
-          p_nova_senha: string
-          p_senha_atual: string
-          p_usuario_id: string
-        }
-        Returns: boolean
-      }
-      login_usuario: {
-        Args: { p_senha: string; p_usuario: string }
-        Returns: {
-          id: string
-          nome: string
-          primeiro_login: boolean
-          tipo: string
-          usuario: string
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "admin" | "operador" | "visualizador"

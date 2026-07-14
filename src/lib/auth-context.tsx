@@ -54,13 +54,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (usuario: string, senha: string): Promise<AppUser> => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc("login_usuario", {
-        p_usuario: usuario,
-        p_senha: senha,
-      });
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("id, usuario, nome, tipo, primeiro_login, senha, ativo")
+        .eq("usuario", usuario)
+        .eq("ativo", true)
+        .maybeSingle();
       if (error) throw new Error(error.message);
-      const row = Array.isArray(data) ? data[0] : data;
-      if (!row) throw new Error("Usuário ou senha inválidos.");
+      if (!data || (data as any).senha !== senha) {
+        throw new Error("Usuário ou senha inválidos.");
+      }
+      const row = data as any;
       const u: AppUser = {
         id: row.id,
         usuario: row.usuario,
