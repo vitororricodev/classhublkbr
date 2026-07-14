@@ -54,23 +54,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (usuario: string, senha: string): Promise<AppUser> => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("usuarios")
-        .select("id, usuario, nome, tipo, primeiro_login, senha, ativo")
-        .eq("usuario", usuario)
-        .eq("ativo", true)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("login_usuario", {
+        p_usuario: usuario,
+        p_senha: senha,
+      });
       if (error) throw new Error(error.message);
-      if (!data || (data as any).senha !== senha) {
-        throw new Error("Usuário ou senha inválidos.");
-      }
-      const row = data as any;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) throw new Error("Usuário ou senha inválidos.");
       const u: AppUser = {
         id: row.id,
         usuario: row.usuario,
         nome: row.nome,
         tipo: (row.tipo === "admin" ? "admin" : "usuario") as "admin" | "usuario",
-        primeiro_login: row.primeiro_login,
+        primeiro_login: !!row.primeiro_login,
       };
       setUser(u);
       return u;
@@ -84,11 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [setUser]);
 
   const refresh = useCallback(async () => {
-    // No server-side session; nothing to refresh.
+    /* sessão apenas em localStorage */
   }, []);
 
   useEffect(() => {
-    // Sincroniza entre abas
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) setUserState(readStoredUser());
     };
