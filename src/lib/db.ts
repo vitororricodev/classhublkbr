@@ -15,7 +15,7 @@ export type Planejamento = {
   conteudo: string | null;
   anexo_url: string | null;
   status: Status;
-  criado_por: string | null;
+  owner_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -25,7 +25,6 @@ export type PlanejamentoFull = Planejamento & {
   componentes_curriculares: Componente | null;
   turmas: Turma | null;
   horarios_padrao: Horario | null;
-  criado_por_nome?: string | null;
 };
 
 export const PLAN_SELECT = `

@@ -3,12 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Users, CheckCircle2, Clock } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
 
 function Dashboard() {
+  const { user, isAdmin } = useAuth();
+  const scope = isAdmin ? null : user?.id ?? null;
   const { data, isLoading } = useQuery({
-    queryKey: ["dashboard-stats"],
+    queryKey: ["dashboard-stats", scope ?? "all"],
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const first = today.slice(0, 8) + "01";
@@ -17,12 +20,14 @@ function Dashboard() {
       next.setDate(1);
       const lastNext = next.toISOString().slice(0, 10);
 
+      const withScope = (q: any) => (scope ? q.eq("owner_id", scope) : q);
+
       const [mes, docs, hoje, planejados, realizados] = await Promise.all([
-        supabase.from("planejamentos").select("id", { count: "exact", head: true }).gte("data", first).lt("data", lastNext),
+        withScope(supabase.from("planejamentos").select("id", { count: "exact", head: true }).gte("data", first).lt("data", lastNext)),
         supabase.from("docentes").select("id", { count: "exact", head: true }).eq("ativo", true),
-        supabase.from("planejamentos").select("id", { count: "exact", head: true }).eq("data", today),
-        supabase.from("planejamentos").select("id", { count: "exact", head: true }).eq("status", "planejado"),
-        supabase.from("planejamentos").select("id", { count: "exact", head: true }).eq("status", "realizado"),
+        withScope(supabase.from("planejamentos").select("id", { count: "exact", head: true }).eq("data", today)),
+        withScope(supabase.from("planejamentos").select("id", { count: "exact", head: true }).eq("status", "planejado")),
+        withScope(supabase.from("planejamentos").select("id", { count: "exact", head: true }).eq("status", "realizado")),
       ]);
       return {
         mes: mes.count ?? 0,

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { Docente, Componente, Turma, Horario } from "@/lib/db";
+import { useAuth } from "@/lib/auth-context";
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -29,6 +30,7 @@ function fmtISO(d: Date) {
 
 export function ReplicarAulasDialog({ open, onClose }: Props) {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [docenteId, setDocenteId] = useState("");
   const [componenteId, setComponenteId] = useState("");
   const [turmaId, setTurmaId] = useState("");
@@ -113,7 +115,7 @@ export function ReplicarAulasDialog({ open, onClose }: Props) {
       if (error) throw error;
 
       const conflitos: { data: string; motivo: string }[] = [];
-      const aCriar: { data: string; horario_id: string; docente_id: string; componente_id: string; turma_id: string; conteudo: string | null; status: string }[] = [];
+      const aCriar: { data: string; horario_id: string; docente_id: string; componente_id: string; turma_id: string; conteudo: string | null; status: string; owner_id: string | null }[] = [];
 
       for (const dt of datasGeradas) {
         const noDia = (existentes ?? []).filter((p) => p.data === dt);
@@ -129,7 +131,7 @@ export function ReplicarAulasDialog({ open, onClose }: Props) {
         aCriar.push({
           data: dt, horario_id: horarioId, docente_id: docenteId,
           componente_id: componenteId, turma_id: turmaId,
-          conteudo: conteudo || null, status: "planejado",
+          conteudo: conteudo || null, status: "planejado", owner_id: user?.id ?? null,
         });
       }
 

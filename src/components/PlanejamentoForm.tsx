@@ -21,8 +21,8 @@ type Props = {
 };
 
 export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Props) {
-  const { user } = useAuth();
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [docenteId, setDocenteId] = useState("");
   const [componenteId, setComponenteId] = useState("");
   const [turmaId, setTurmaId] = useState("");
@@ -123,11 +123,10 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
         turma_id: turmaId, status, conteudo: conteudo || null, anexo_url: anexoUrl,
       };
       if (editing) {
-        // Não sobrescreve criado_por na edição
         const { error } = await supabase.from("planejamentos").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("planejamentos").insert({ ...payload, criado_por: user?.id ?? null });
+        const { error } = await supabase.from("planejamentos").insert({ ...payload, owner_id: user?.id ?? null });
         if (error) {
           if (error.code === "23505") throw new Error("Conflito de horário: este docente ou esta turma já possui aula neste horário.");
           throw error;

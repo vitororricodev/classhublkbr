@@ -41,8 +41,9 @@ type Props = {
   initial?: { docente?: string; componente?: string; turma?: string };
 };
 
-function applyFilters<T extends { gte: Function; lte: Function; eq: Function }>(q: T, f: Filtros): T {
+function applyFilters<T extends { gte: Function; lte: Function; eq: Function }>(q: T, f: Filtros, ownerId?: string | null): T {
   let r: any = q.gte("data", f.inicio).lte("data", f.fim);
+  if (ownerId) r = r.eq("owner_id", ownerId);
   if (f.docente !== "all") r = r.eq("docente_id", f.docente);
   if (f.componente !== "all") r = r.eq("componente_id", f.componente);
   if (f.turma !== "all") r = r.eq("turma_id", f.turma);
@@ -55,7 +56,8 @@ export function ExcluirAulasMassaDialog({
   docentes, componentes, turmas, horarios, initial,
 }: Props) {
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const ownerScope = isAdmin ? null : user?.id ?? null;
   const [filtros, setFiltros] = useState<Filtros>({
     inicio: defaultInicio,
     fim: defaultFim,
@@ -84,7 +86,7 @@ export function ExcluirAulasMassaDialog({
     }
     setCounting(true);
     try {
-      const { count, error } = await applyFilters(supabase.from("planejamentos").select("id", { count: "exact", head: true }), filtros);
+      const { count, error } = await applyFilters(supabase.from("planejamentos").select("id", { count: "exact", head: true }), filtros, ownerScope);
       if (error) throw error;
       setCount(count ?? 0);
       if (!count) {
@@ -101,7 +103,7 @@ export function ExcluirAulasMassaDialog({
 
   const excluir = useMutation({
     mutationFn: async () => {
-      const { error, count } = await applyFilters(supabase.from("planejamentos").delete({ count: "exact" }), filtros);
+      const { error, count } = await applyFilters(supabase.from("planejamentos").delete({ count: "exact" }), filtros, ownerScope);
       if (error) throw error;
       return count ?? 0;
     },

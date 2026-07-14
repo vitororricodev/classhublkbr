@@ -28,52 +28,32 @@ const MES_LABEL = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho"
 const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
 function AgendamentoPage() {
-  const { user } = useAuth();
-  const isAdmin = user?.tipo === "admin";
+  const { user, isAdmin } = useAuth();
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [replicarOpen, setReplicarOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
-  const [filtros, setFiltros] = useState({ docente: "all", componente: "all", turma: "all", status: "all", usuario: "all" });
+  const [filtros, setFiltros] = useState({ docente: "all", componente: "all", turma: "all", status: "all" });
 
   const { data: docentes = [] } = useQuery({ queryKey: ["docentes"], queryFn: async () => (await supabase.from("docentes").select("*").order("nome")).data as Docente[] });
   const { data: componentes = [] } = useQuery({ queryKey: ["componentes"], queryFn: async () => (await supabase.from("componentes_curriculares").select("*").order("nome")).data as Componente[] });
   const { data: turmas = [] } = useQuery({ queryKey: ["turmas"], queryFn: async () => (await supabase.from("turmas").select("*").order("nome")).data as Turma[] });
   const { data: horarios = [] } = useQuery({ queryKey: ["horarios"], queryFn: async () => (await supabase.from("horarios_padrao").select("*").eq("ativo", true).order("ordem")).data as Horario[] });
   const { data: feriadosMun = [] } = useFeriadosMunicipais();
-  const { data: usuariosList = [] } = useQuery({
-    queryKey: ["usuarios-lista"],
-    enabled: isAdmin,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("listar_usuarios");
-      if (error) throw error;
-      return (data ?? []) as Array<{ id: string; usuario: string; nome: string }>;
-    },
-  });
-  const usuariosMap = useMemo(() => {
-    const m: Record<string, string> = {};
-    for (const u of usuariosList) m[u.id] = u.nome;
-    return m;
-  }, [usuariosList]);
 
   const monthStart = useMemo(() => startOfMonth(cursor), [cursor]);
   const monthEnd = useMemo(() => endOfMonth(cursor), [cursor]);
 
   const { data: planejamentos = [] } = useQuery({
-    queryKey: ["planejamentos", fmtISO(monthStart), fmtISO(monthEnd), filtros, isAdmin, user?.id],
-    enabled: !!user,
+    queryKey: ["planejamentos", fmtISO(monthStart), fmtISO(monthEnd), filtros, isAdmin ? "all" : user?.id],
     queryFn: async () => {
       let q = supabase.from("planejamentos").select(PLAN_SELECT)
         .gte("data", fmtISO(monthStart)).lte("data", fmtISO(monthEnd));
+      if (!isAdmin && user?.id) q = q.eq("owner_id", user.id);
       if (filtros.docente !== "all") q = q.eq("docente_id", filtros.docente);
       if (filtros.componente !== "all") q = q.eq("componente_id", filtros.componente);
       if (filtros.turma !== "all") q = q.eq("turma_id", filtros.turma);
       if (filtros.status !== "all") q = q.eq("status", filtros.status);
-      if (isAdmin) {
-        if (filtros.usuario !== "all") q = q.eq("criado_por", filtros.usuario);
-      } else if (user) {
-        q = q.eq("criado_por", user.id);
-      }
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as PlanejamentoFull[];
@@ -117,17 +97,13 @@ function AgendamentoPage() {
       </div>
 
       <Card className="p-4">
-        <div className={`grid grid-cols-2 ${isAdmin ? "md:grid-cols-5" : "md:grid-cols-4"} gap-3`}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />
           <FiltroSelect label="Componente" value={filtros.componente} onChange={(v) => setFiltros({ ...filtros, componente: v })} options={[{ value: "all", label: "Todos" }, ...componentes.map((d) => ({ value: d.id, label: d.nome }))]} />
           <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} — ${d.nome}` }))]} />
           <FiltroSelect label="Status" value={filtros.status} onChange={(v) => setFiltros({ ...filtros, status: v })} options={[
             { value: "all", label: "Todos" }, { value: "planejado", label: "Planejado" }, { value: "realizado", label: "Realizado" }, { value: "cancelado", label: "Cancelado" }
           ]} />
-          {isAdmin && (
-            <FiltroSelect label="Usuário" value={filtros.usuario} onChange={(v) => setFiltros({ ...filtros, usuario: v })}
-              options={[{ value: "all", label: "Todos" }, ...usuariosList.map((u) => ({ value: u.id, label: u.nome }))]} />
-          )}
         </div>
       </Card>
 
@@ -161,10 +137,9 @@ function AgendamentoPage() {
                   {events.slice(0, 3).map((e) => (
                     <div key={e.id} className="text-[11px] truncate rounded px-1.5 py-0.5 border"
                       style={{ backgroundColor: hexAlpha(e.docentes?.cor_identificadora || "#7C3AED", 0.18), borderColor: hexAlpha(e.docentes?.cor_identificadora || "#7C3AED", 0.4), color: "#3b1078" }}
-                      title={`${e.horarios_padrao?.label} • ${e.turmas?.nome} • ${e.componentes_curriculares?.nome}${isAdmin && e.criado_por ? ` • por ${usuariosMap[e.criado_por] ?? "—"}` : ""}`}
+                      title={`${e.horarios_padrao?.label} • ${e.turmas?.nome} • ${e.componentes_curriculares?.nome}`}
                     >
                       {e.horarios_padrao?.hora_inicio?.slice(0,5)} {e.turmas?.nome} · {e.componentes_curriculares?.nome}
-                      {isAdmin && e.criado_por && <span className="opacity-70"> · {usuariosMap[e.criado_por] ?? "—"}</span>}
                     </div>
                   ))}
                   {events.length > 3 && <div className="text-[10px] text-muted-foreground">+{events.length - 3} aulas</div>}
@@ -179,9 +154,6 @@ function AgendamentoPage() {
         date={selectedDate}
         onClose={() => setSelectedDate(null)}
         horarios={horarios}
-        isAdmin={isAdmin}
-        currentUserId={user?.id ?? null}
-        usuariosMap={usuariosMap}
       />
 
       <ReplicarAulasDialog open={replicarOpen} onClose={() => setReplicarOpen(false)} />
@@ -220,23 +192,19 @@ function FiltroSelect({ label, value, onChange, options }: { label: string; valu
   );
 }
 
-function DiaSheet({
-  date, onClose, horarios, isAdmin, currentUserId, usuariosMap,
-}: {
-  date: string | null; onClose: () => void; horarios: Horario[];
-  isAdmin: boolean; currentUserId: string | null; usuariosMap: Record<string, string>;
-}) {
+function DiaSheet({ date, onClose, horarios }: { date: string | null; onClose: () => void; horarios: Horario[] }) {
   const qc = useQueryClient();
+  const { user, isAdmin } = useAuth();
   const [formOpen, setFormOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PlanejamentoFull | null>(null);
   const [horarioId, setHorarioId] = useState<string>("");
 
   const { data: dia = [] } = useQuery({
-    queryKey: ["planejamentos-dia", date, isAdmin, currentUserId],
+    queryKey: ["planejamentos-dia", date, isAdmin ? "all" : user?.id],
     enabled: !!date,
     queryFn: async () => {
       let q = supabase.from("planejamentos").select(PLAN_SELECT).eq("data", date!);
-      if (!isAdmin && currentUserId) q = q.eq("criado_por", currentUserId);
+      if (!isAdmin && user?.id) q = q.eq("owner_id", user.id);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as PlanejamentoFull[];
@@ -290,15 +258,10 @@ function DiaSheet({
                     <div><StatusBadge s={plan.status} /></div>
                     {plan.conteudo && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{plan.conteudo}</div>}
                     {plan.anexo_url && <a href={plan.anexo_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ver anexo</a>}
-                    {isAdmin && plan.criado_por && (
-                      <div className="text-[11px] text-muted-foreground">Cadastrado por: {usuariosMap[plan.criado_por] ?? "—"}</div>
-                    )}
-                    {(isAdmin || plan.criado_por === currentUserId) && (
-                      <div className="flex gap-2 pt-1">
-                        <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setHorarioId(h.id); setFormOpen(true); }}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
-                        <Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir aula?")) del.mutate(plan.id); }}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button>
-                      </div>
-                    )}
+                    <div className="flex gap-2 pt-1">
+                      <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setHorarioId(h.id); setFormOpen(true); }}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
+                      <Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir aula?")) del.mutate(plan.id); }}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button>
+                    </div>
                   </div>
                 )}
               </Card>

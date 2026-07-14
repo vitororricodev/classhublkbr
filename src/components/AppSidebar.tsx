@@ -11,6 +11,7 @@ import {
   KeyRound,
   CalendarOff,
   Settings,
+  UserCog,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ const baseItems = [
 ] as const;
 
 const adminItems = [
-  { to: "/usuarios", label: "Usuários", icon: Users },
+  { to: "/usuarios", label: "Usuários", icon: UserCog },
 ] as const;
 
 const tipoLabel: Record<string, string> = {
@@ -38,10 +39,10 @@ const tipoLabel: Record<string, string> = {
 
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const items = user?.tipo === "admin" ? [...baseItems, ...adminItems] : baseItems;
+  const items = isAdmin ? [...baseItems, ...adminItems] : baseItems;
 
   const handleSignOut = async () => {
     await signOut();

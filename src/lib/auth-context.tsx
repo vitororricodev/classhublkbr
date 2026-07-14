@@ -12,6 +12,7 @@ export type AppUser = {
 type Ctx = {
   user: AppUser | null;
   isLoading: boolean;
+  isAdmin: boolean;
   signIn: (usuario: string, senha: string) => Promise<AppUser>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -54,19 +55,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (usuario: string, senha: string): Promise<AppUser> => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc("login_usuario", {
-        p_usuario: usuario,
-        p_senha: senha,
-      });
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("id, usuario, nome, tipo, primeiro_login, senha, ativo")
+        .eq("usuario", usuario)
+        .eq("ativo", true)
+        .maybeSingle();
       if (error) throw new Error(error.message);
-      const row = Array.isArray(data) ? data[0] : data;
-      if (!row) throw new Error("Usuário ou senha inválidos.");
+      if (!data || (data as any).senha !== senha) {
+        throw new Error("Usuário ou senha inválidos.");
+      }
+      const row = data as any;
       const u: AppUser = {
         id: row.id,
         usuario: row.usuario,
         nome: row.nome,
         tipo: (row.tipo === "admin" ? "admin" : "usuario") as "admin" | "usuario",
-        primeiro_login: !!row.primeiro_login,
+        primeiro_login: row.primeiro_login,
       };
       setUser(u);
       return u;
@@ -80,10 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [setUser]);
 
   const refresh = useCallback(async () => {
-    /* sessão apenas em localStorage */
+    // No server-side session; nothing to refresh.
   }, []);
 
   useEffect(() => {
+    // Sincroniza entre abas
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) setUserState(readStoredUser());
     };
@@ -92,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, refresh, setUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isAdmin: user?.tipo === "admin", signIn, signOut, refresh, setUser }}>
       {children}
     </AuthContext.Provider>
   );

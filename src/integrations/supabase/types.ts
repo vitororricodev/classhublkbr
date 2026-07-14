@@ -158,11 +158,11 @@ export type Database = {
           componente_id: string
           conteudo: string | null
           created_at: string
-          criado_por: string | null
           data: string
           docente_id: string
           horario_id: string
           id: string
+          owner_id: string | null
           status: string
           turma_id: string
           updated_at: string
@@ -172,11 +172,11 @@ export type Database = {
           componente_id: string
           conteudo?: string | null
           created_at?: string
-          criado_por?: string | null
           data: string
           docente_id: string
           horario_id: string
           id?: string
+          owner_id?: string | null
           status?: string
           turma_id: string
           updated_at?: string
@@ -186,11 +186,11 @@ export type Database = {
           componente_id?: string
           conteudo?: string | null
           created_at?: string
-          criado_por?: string | null
           data?: string
           docente_id?: string
           horario_id?: string
           id?: string
+          owner_id?: string | null
           status?: string
           turma_id?: string
           updated_at?: string
@@ -201,20 +201,6 @@ export type Database = {
             columns: ["componente_id"]
             isOneToOne: false
             referencedRelation: "componentes_curriculares"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "planejamentos_criado_por_fkey"
-            columns: ["criado_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "planejamentos_criado_por_fkey"
-            columns: ["criado_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios_public"
             referencedColumns: ["id"]
           },
           {
@@ -229,6 +215,13 @@ export type Database = {
             columns: ["horario_id"]
             isOneToOne: false
             referencedRelation: "horarios_padrao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planejamentos_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
             referencedColumns: ["id"]
           },
           {
@@ -271,7 +264,7 @@ export type Database = {
           id: string
           nome: string
           primeiro_login: boolean
-          senha_hash: string
+          senha: string
           tipo: string
           usuario: string
         }
@@ -281,7 +274,7 @@ export type Database = {
           id?: string
           nome: string
           primeiro_login?: boolean
-          senha_hash: string
+          senha?: string
           tipo?: string
           usuario: string
         }
@@ -291,7 +284,7 @@ export type Database = {
           id?: string
           nome?: string
           primeiro_login?: boolean
-          senha_hash?: string
+          senha?: string
           tipo?: string
           usuario?: string
         }
@@ -299,81 +292,10 @@ export type Database = {
       }
     }
     Views: {
-      usuarios_public: {
-        Row: {
-          ativo: boolean | null
-          id: string | null
-          nome: string | null
-          tipo: string | null
-          usuario: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          id?: string | null
-          nome?: string | null
-          tipo?: string | null
-          usuario?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          id?: string | null
-          nome?: string | null
-          tipo?: string | null
-          usuario?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
-      alterar_senha_usuario: {
-        Args: {
-          p_nova_senha: string
-          p_senha_atual: string
-          p_usuario_id: string
-        }
-        Returns: boolean
-      }
-      atualizar_usuario: {
-        Args: { p_ativo: boolean; p_id: string; p_nome: string; p_tipo: string }
-        Returns: undefined
-      }
-      criar_usuario: {
-        Args: {
-          p_ativo: boolean
-          p_nome: string
-          p_senha: string
-          p_tipo: string
-          p_usuario: string
-        }
-        Returns: string
-      }
-      excluir_usuario: { Args: { p_id: string }; Returns: undefined }
-      listar_usuarios: {
-        Args: never
-        Returns: {
-          ativo: boolean
-          created_at: string
-          id: string
-          nome: string
-          primeiro_login: boolean
-          tipo: string
-          usuario: string
-        }[]
-      }
-      login_usuario: {
-        Args: { p_senha: string; p_usuario: string }
-        Returns: {
-          id: string
-          nome: string
-          primeiro_login: boolean
-          tipo: string
-          usuario: string
-        }[]
-      }
-      resetar_senha_usuario: {
-        Args: { p_id: string; p_nova: string }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "admin" | "operador" | "visualizador"

@@ -38,12 +38,14 @@ function RelatoriosPage() {
   const { data: componentes = [] } = useQuery({ queryKey: ["componentes"], queryFn: async () => (await supabase.from("componentes_curriculares").select("*").order("nome")).data as Componente[] });
   const { data: turmas = [] } = useQuery({ queryKey: ["turmas"], queryFn: async () => (await supabase.from("turmas").select("*").order("nome")).data as Turma[] });
 
+  const { isAdmin } = useAuth();
   const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["relatorio", filtros],
+    queryKey: ["relatorio", filtros, isAdmin ? "all" : user?.id],
     queryFn: async () => {
       let q = supabase.from("planejamentos").select(PLAN_SELECT)
         .gte("data", filtros.inicio).lte("data", filtros.fim)
         .order("data").order("horario_id");
+      if (!isAdmin && user?.id) q = q.eq("owner_id", user.id);
       if (filtros.docente !== "all") q = q.eq("docente_id", filtros.docente);
       if (filtros.componente !== "all") q = q.eq("componente_id", filtros.componente);
       if (filtros.turma !== "all") q = q.eq("turma_id", filtros.turma);
