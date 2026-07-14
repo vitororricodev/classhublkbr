@@ -15,6 +15,7 @@ import { Copy } from "lucide-react";
 import type { Docente, Componente, Turma, Horario, PlanejamentoFull, Status } from "@/lib/db";
 import { PLAN_SELECT } from "@/lib/db";
 import { useFeriadosMunicipais, checkHoliday } from "@/lib/feriados";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/agendamento")({ component: AgendamentoPage });
 
@@ -27,23 +28,40 @@ const MES_LABEL = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho"
 const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
 function AgendamentoPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.tipo === "admin";
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [replicarOpen, setReplicarOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
-  const [filtros, setFiltros] = useState({ docente: "all", componente: "all", turma: "all", status: "all" });
+  const [filtros, setFiltros] = useState({ docente: "all", componente: "all", turma: "all", status: "all", usuario: "all" });
 
   const { data: docentes = [] } = useQuery({ queryKey: ["docentes"], queryFn: async () => (await supabase.from("docentes").select("*").order("nome")).data as Docente[] });
   const { data: componentes = [] } = useQuery({ queryKey: ["componentes"], queryFn: async () => (await supabase.from("componentes_curriculares").select("*").order("nome")).data as Componente[] });
   const { data: turmas = [] } = useQuery({ queryKey: ["turmas"], queryFn: async () => (await supabase.from("turmas").select("*").order("nome")).data as Turma[] });
   const { data: horarios = [] } = useQuery({ queryKey: ["horarios"], queryFn: async () => (await supabase.from("horarios_padrao").select("*").eq("ativo", true).order("ordem")).data as Horario[] });
   const { data: feriadosMun = [] } = useFeriadosMunicipais();
+  const { data: usuariosList = [] } = useQuery({
+    queryKey: ["usuarios-lista"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("listar_usuarios");
+      if (error) throw error;
+      return (data ?? []) as Array<{ id: string; usuario: string; nome: string }>;
+    },
+  });
+  const usuariosMap = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const u of usuariosList) m[u.id] = u.nome;
+    return m;
+  }, [usuariosList]);
 
   const monthStart = useMemo(() => startOfMonth(cursor), [cursor]);
   const monthEnd = useMemo(() => endOfMonth(cursor), [cursor]);
 
   const { data: planejamentos = [] } = useQuery({
-    queryKey: ["planejamentos", fmtISO(monthStart), fmtISO(monthEnd), filtros],
+    queryKey: ["planejamentos", fmtISO(monthStart), fmtISO(monthEnd), filtros, isAdmin, user?.id],
+    enabled: !!user,
     queryFn: async () => {
       let q = supabase.from("planejamentos").select(PLAN_SELECT)
         .gte("data", fmtISO(monthStart)).lte("data", fmtISO(monthEnd));
@@ -51,6 +69,11 @@ function AgendamentoPage() {
       if (filtros.componente !== "all") q = q.eq("componente_id", filtros.componente);
       if (filtros.turma !== "all") q = q.eq("turma_id", filtros.turma);
       if (filtros.status !== "all") q = q.eq("status", filtros.status);
+      if (isAdmin) {
+        if (filtros.usuario !== "all") q = q.eq("criado_por", filtros.usuario);
+      } else if (user) {
+        q = q.eq("criado_por", user.id);
+      }
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as PlanejamentoFull[];
