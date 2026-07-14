@@ -117,13 +117,17 @@ function AgendamentoPage() {
       </div>
 
       <Card className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className={`grid grid-cols-2 ${isAdmin ? "md:grid-cols-5" : "md:grid-cols-4"} gap-3`}>
           <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />
           <FiltroSelect label="Componente" value={filtros.componente} onChange={(v) => setFiltros({ ...filtros, componente: v })} options={[{ value: "all", label: "Todos" }, ...componentes.map((d) => ({ value: d.id, label: d.nome }))]} />
           <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} — ${d.nome}` }))]} />
           <FiltroSelect label="Status" value={filtros.status} onChange={(v) => setFiltros({ ...filtros, status: v })} options={[
             { value: "all", label: "Todos" }, { value: "planejado", label: "Planejado" }, { value: "realizado", label: "Realizado" }, { value: "cancelado", label: "Cancelado" }
           ]} />
+          {isAdmin && (
+            <FiltroSelect label="Usuário" value={filtros.usuario} onChange={(v) => setFiltros({ ...filtros, usuario: v })}
+              options={[{ value: "all", label: "Todos" }, ...usuariosList.map((u) => ({ value: u.id, label: u.nome }))]} />
+          )}
         </div>
       </Card>
 
@@ -157,9 +161,10 @@ function AgendamentoPage() {
                   {events.slice(0, 3).map((e) => (
                     <div key={e.id} className="text-[11px] truncate rounded px-1.5 py-0.5 border"
                       style={{ backgroundColor: hexAlpha(e.docentes?.cor_identificadora || "#7C3AED", 0.18), borderColor: hexAlpha(e.docentes?.cor_identificadora || "#7C3AED", 0.4), color: "#3b1078" }}
-                      title={`${e.horarios_padrao?.label} • ${e.turmas?.nome} • ${e.componentes_curriculares?.nome}`}
+                      title={`${e.horarios_padrao?.label} • ${e.turmas?.nome} • ${e.componentes_curriculares?.nome}${isAdmin && e.criado_por ? ` • por ${usuariosMap[e.criado_por] ?? "—"}` : ""}`}
                     >
                       {e.horarios_padrao?.hora_inicio?.slice(0,5)} {e.turmas?.nome} · {e.componentes_curriculares?.nome}
+                      {isAdmin && e.criado_por && <span className="opacity-70"> · {usuariosMap[e.criado_por] ?? "—"}</span>}
                     </div>
                   ))}
                   {events.length > 3 && <div className="text-[10px] text-muted-foreground">+{events.length - 3} aulas</div>}
@@ -174,6 +179,9 @@ function AgendamentoPage() {
         date={selectedDate}
         onClose={() => setSelectedDate(null)}
         horarios={horarios}
+        isAdmin={isAdmin}
+        currentUserId={user?.id ?? null}
+        usuariosMap={usuariosMap}
       />
 
       <ReplicarAulasDialog open={replicarOpen} onClose={() => setReplicarOpen(false)} />
