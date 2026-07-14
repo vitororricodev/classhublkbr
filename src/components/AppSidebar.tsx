@@ -27,6 +27,10 @@ const baseItems = [
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
+const adminItems = [
+  { to: "/usuarios", label: "Usuários", icon: Users },
+] as const;
+
 const tipoLabel: Record<string, string> = {
   admin: "Administrador",
   usuario: "Usuário",
@@ -37,7 +41,7 @@ export function AppSidebar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const items = baseItems;
+  const items = user?.tipo === "admin" ? [...baseItems, ...adminItems] : baseItems;
 
   const handleSignOut = async () => {
     await signOut();
