@@ -220,17 +220,24 @@ function FiltroSelect({ label, value, onChange, options }: { label: string; valu
   );
 }
 
-function DiaSheet({ date, onClose, horarios }: { date: string | null; onClose: () => void; horarios: Horario[] }) {
+function DiaSheet({
+  date, onClose, horarios, isAdmin, currentUserId, usuariosMap,
+}: {
+  date: string | null; onClose: () => void; horarios: Horario[];
+  isAdmin: boolean; currentUserId: string | null; usuariosMap: Record<string, string>;
+}) {
   const qc = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PlanejamentoFull | null>(null);
   const [horarioId, setHorarioId] = useState<string>("");
 
   const { data: dia = [] } = useQuery({
-    queryKey: ["planejamentos-dia", date],
+    queryKey: ["planejamentos-dia", date, isAdmin, currentUserId],
     enabled: !!date,
     queryFn: async () => {
-      const { data, error } = await supabase.from("planejamentos").select(PLAN_SELECT).eq("data", date!);
+      let q = supabase.from("planejamentos").select(PLAN_SELECT).eq("data", date!);
+      if (!isAdmin && currentUserId) q = q.eq("criado_por", currentUserId);
+      const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as PlanejamentoFull[];
     },
@@ -283,10 +290,15 @@ function DiaSheet({ date, onClose, horarios }: { date: string | null; onClose: (
                     <div><StatusBadge s={plan.status} /></div>
                     {plan.conteudo && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{plan.conteudo}</div>}
                     {plan.anexo_url && <a href={plan.anexo_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ver anexo</a>}
-                    <div className="flex gap-2 pt-1">
-                      <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setHorarioId(h.id); setFormOpen(true); }}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
-                      <Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir aula?")) del.mutate(plan.id); }}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button>
-                    </div>
+                    {isAdmin && plan.criado_por && (
+                      <div className="text-[11px] text-muted-foreground">Cadastrado por: {usuariosMap[plan.criado_por] ?? "—"}</div>
+                    )}
+                    {(isAdmin || plan.criado_por === currentUserId) && (
+                      <div className="flex gap-2 pt-1">
+                        <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setHorarioId(h.id); setFormOpen(true); }}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
+                        <Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir aula?")) del.mutate(plan.id); }}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </Card>
