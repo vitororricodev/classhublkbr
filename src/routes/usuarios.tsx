@@ -460,10 +460,10 @@ function ResetPasswordDialog({
             if (!senha) return;
             setLoading(true);
             try {
-              const { error } = await supabase
-                .from("usuarios")
-                .update({ senha, primeiro_login: true })
-                .eq("id", user.id);
+              const { error } = await supabase.rpc("resetar_senha_usuario", {
+                p_id: user.id,
+                p_nova: senha,
+              });
               if (error) throw error;
               toast.success("Senha redefinida. O usuário deverá trocá-la no próximo acesso.");
               onSaved();
