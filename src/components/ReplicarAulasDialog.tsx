@@ -115,7 +115,7 @@ export function ReplicarAulasDialog({ open, onClose }: Props) {
       if (error) throw error;
 
       const conflitos: { data: string; motivo: string }[] = [];
-      const aCriar: { data: string; horario_id: string; docente_id: string; componente_id: string; turma_id: string; conteudo: string | null; status: string; owner_id: string | null }[] = [];
+      const aCriar: { data: string; horario_id: string; docente_id: string; componente_id: string; turma_id: string; conteudo: string | null; status: string; criado_por: string | null }[] = [];
 
       for (const dt of datasGeradas) {
         const noDia = (existentes ?? []).filter((p) => p.data === dt);

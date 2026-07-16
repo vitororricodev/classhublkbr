@@ -49,7 +49,7 @@ function AgendamentoPage() {
     queryFn: async () => {
       let q = supabase.from("planejamentos").select(PLAN_SELECT)
         .gte("data", fmtISO(monthStart)).lte("data", fmtISO(monthEnd));
-      if (!isAdmin && user?.id) q = q.eq("owner_id", user.id);
+      if (!isAdmin && user?.id) q = q.eq("criado_por", user.id);
       if (filtros.docente !== "all") q = q.eq("docente_id", filtros.docente);
       if (filtros.componente !== "all") q = q.eq("componente_id", filtros.componente);
       if (filtros.turma !== "all") q = q.eq("turma_id", filtros.turma);
@@ -204,7 +204,7 @@ function DiaSheet({ date, onClose, horarios }: { date: string | null; onClose: (
     enabled: !!date,
     queryFn: async () => {
       let q = supabase.from("planejamentos").select(PLAN_SELECT).eq("data", date!);
-      if (!isAdmin && user?.id) q = q.eq("owner_id", user.id);
+      if (!isAdmin && user?.id) q = q.eq("criado_por", user.id);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as PlanejamentoFull[];
