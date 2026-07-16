@@ -202,7 +202,7 @@ function DiaSheet({ date, onClose, horarios, turmas }: { date: string | null; on
   const [selectedTurma, setSelectedTurma] = useState<string | null>(null);
 
   // Reset turma selection whenever the day changes
-  useMemo(() => { setSelectedTurma(null); }, [date]);
+  useEffect(() => { setSelectedTurma(null); }, [date]);
 
   const { data: dia = [] } = useQuery({
     queryKey: ["planejamentos-dia", date, isAdmin ? "all" : user?.id],
