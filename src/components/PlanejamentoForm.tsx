@@ -18,9 +18,11 @@ type Props = {
   data: string;
   horarioId: string;
   editing?: Planejamento | null;
+  turmaId?: string;
+  lockTurma?: boolean;
 };
 
-export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Props) {
+export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turmaId: turmaIdProp, lockTurma }: Props) {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [docenteId, setDocenteId] = useState("");
@@ -40,9 +42,9 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
       setConteudo(editing.conteudo ?? "");
       setAnexoUrl(editing.anexo_url);
     } else {
-      setDocenteId(""); setComponenteId(""); setTurmaId(""); setStatus("planejado"); setConteudo(""); setAnexoUrl(null);
+      setDocenteId(""); setComponenteId(""); setTurmaId(turmaIdProp ?? ""); setStatus("planejado"); setConteudo(""); setAnexoUrl(null);
     }
-  }, [editing, open]);
+  }, [editing, open, turmaIdProp]);
 
   const { data: docentes = [] } = useQuery({
     queryKey: ["docentes", "ativos"],
@@ -103,19 +105,18 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
     mutationFn: async () => {
       if (!docenteId || !componenteId || !turmaId) throw new Error("Preencha docente, componente e turma");
 
-      // Validação de conflito (frontend)
+      // Validação de conflito (frontend) — apenas turma
       const { data: conflitos, error: cErr } = await supabase
         .from("planejamentos")
-        .select("id, docente_id, turma_id, status")
+        .select("id, turma_id, status")
         .eq("data", data)
         .eq("horario_id", horarioId)
+        .eq("turma_id", turmaId)
         .neq("status", "cancelado");
       if (cErr) throw cErr;
-      const conflito = (conflitos ?? []).some((p) =>
-        p.id !== editing?.id && (p.docente_id === docenteId || p.turma_id === turmaId)
-      );
+      const conflito = (conflitos ?? []).some((p) => p.id !== editing?.id);
       if (conflito) {
-        throw new Error("Conflito de horário: este docente ou esta turma já possui aula neste horário.");
+        throw new Error("Conflito de horário: esta turma já possui aula neste horário.");
       }
 
       const payload = {
@@ -126,9 +127,9 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
         const { error } = await supabase.from("planejamentos").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("planejamentos").insert({ ...payload, owner_id: user?.id ?? null });
+        const { error } = await supabase.from("planejamentos").insert({ ...payload, criado_por: user?.id ?? null });
         if (error) {
-          if (error.code === "23505") throw new Error("Conflito de horário: este docente ou esta turma já possui aula neste horário.");
+          if (error.code === "23505") throw new Error("Conflito de horário: esta turma já possui aula neste horário.");
           throw error;
         }
       }
@@ -174,7 +175,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Pr
           </div>
           <div className="space-y-2">
             <Label>Turma</Label>
-            <Select value={turmaId} onValueChange={setTurmaId}>
+            <Select value={turmaId} onValueChange={setTurmaId} disabled={!!lockTurma && !editing}>
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
               <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} — {t.nome}</SelectItem>)}</SelectContent>
             </Select>

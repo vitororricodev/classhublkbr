@@ -15,7 +15,7 @@ export type Planejamento = {
   conteudo: string | null;
   anexo_url: string | null;
   status: Status;
-  owner_id: string | null;
+  criado_por: string | null;
   created_at: string;
   updated_at: string;
 };

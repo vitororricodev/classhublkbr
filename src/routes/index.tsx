@@ -20,7 +20,7 @@ function Dashboard() {
       next.setDate(1);
       const lastNext = next.toISOString().slice(0, 10);
 
-      const withScope = (q: any) => (scope ? q.eq("owner_id", scope) : q);
+      const withScope = (q: any) => (scope ? q.eq("criado_por", scope) : q);
 
       const [mes, docs, hoje, planejados, realizados] = await Promise.all([
         withScope(supabase.from("planejamentos").select("id", { count: "exact", head: true }).gte("data", first).lt("data", lastNext)),

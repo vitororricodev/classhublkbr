@@ -318,17 +318,15 @@ function CreateUserDialog({
           }
           setLoading(true);
           try {
-            const { error } = await supabase.from("usuarios").insert({
-              usuario: usuario.trim().toLowerCase(),
-              nome: nome.trim(),
-              tipo,
-              senha,
-              ativo: true,
-              primeiro_login: true,
+            const { error } = await supabase.rpc("criar_usuario", {
+              p_usuario: usuario.trim().toLowerCase(),
+              p_nome: nome.trim(),
+              p_senha: senha,
+              p_tipo: tipo,
+              p_ativo: true,
             });
             if (error) {
-              if (error.code === "23505") throw new Error("Já existe um usuário com esse login.");
-              throw error;
+              throw new Error(error.message);
             }
             toast.success("Usuário criado. Ele deverá trocar a senha no primeiro acesso.");
             onCreated();
@@ -462,10 +460,10 @@ function ResetPasswordDialog({
             if (!senha) return;
             setLoading(true);
             try {
-              const { error } = await supabase
-                .from("usuarios")
-                .update({ senha, primeiro_login: true })
-                .eq("id", user.id);
+              const { error } = await supabase.rpc("resetar_senha_usuario", {
+                p_id: user.id,
+                p_nova: senha,
+              });
               if (error) throw error;
               toast.success("Senha redefinida. O usuário deverá trocá-la no próximo acesso.");
               onSaved();

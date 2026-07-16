@@ -43,7 +43,7 @@ type Props = {
 
 function applyFilters<T extends { gte: Function; lte: Function; eq: Function }>(q: T, f: Filtros, ownerId?: string | null): T {
   let r: any = q.gte("data", f.inicio).lte("data", f.fim);
-  if (ownerId) r = r.eq("owner_id", ownerId);
+  if (ownerId) r = r.eq("criado_por", ownerId);
   if (f.docente !== "all") r = r.eq("docente_id", f.docente);
   if (f.componente !== "all") r = r.eq("componente_id", f.componente);
   if (f.turma !== "all") r = r.eq("turma_id", f.turma);

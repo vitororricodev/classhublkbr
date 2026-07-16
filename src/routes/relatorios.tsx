@@ -45,7 +45,7 @@ function RelatoriosPage() {
       let q = supabase.from("planejamentos").select(PLAN_SELECT)
         .gte("data", filtros.inicio).lte("data", filtros.fim)
         .order("data").order("horario_id");
-      if (!isAdmin && user?.id) q = q.eq("owner_id", user.id);
+      if (!isAdmin && user?.id) q = q.eq("criado_por", user.id);
       if (filtros.docente !== "all") q = q.eq("docente_id", filtros.docente);
       if (filtros.componente !== "all") q = q.eq("componente_id", filtros.componente);
       if (filtros.turma !== "all") q = q.eq("turma_id", filtros.turma);
