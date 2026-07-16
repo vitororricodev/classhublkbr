@@ -193,12 +193,16 @@ function FiltroSelect({ label, value, onChange, options }: { label: string; valu
   );
 }
 
-function DiaSheet({ date, onClose, horarios }: { date: string | null; onClose: () => void; horarios: Horario[] }) {
+function DiaSheet({ date, onClose, horarios, turmas }: { date: string | null; onClose: () => void; horarios: Horario[]; turmas: Turma[] }) {
   const qc = useQueryClient();
   const { user, isAdmin } = useAuth();
   const [formOpen, setFormOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PlanejamentoFull | null>(null);
   const [horarioId, setHorarioId] = useState<string>("");
+  const [selectedTurma, setSelectedTurma] = useState<string | null>(null);
+
+  // Reset turma selection whenever the day changes
+  useMemo(() => { setSelectedTurma(null); }, [date]);
 
   const { data: dia = [] } = useQuery({
     queryKey: ["planejamentos-dia", date, isAdmin ? "all" : user?.id],
@@ -228,55 +232,99 @@ function DiaSheet({ date, onClose, horarios }: { date: string | null; onClose: (
 
   const dataLabel = date ? new Date(date + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }) : "";
 
+  const turmasAtivas = useMemo(() => turmas.filter((t) => t.ativo !== false), [turmas]);
+  const turmaSel = selectedTurma ? turmas.find((t) => t.id === selectedTurma) : null;
+  const diaDaTurma = useMemo(() => dia.filter((p) => p.turma_id === selectedTurma), [dia, selectedTurma]);
+
+  // Contador de aulas por turma no dia
+  const countPorTurma = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const p of dia) if (p.status !== "cancelado") m[p.turma_id] = (m[p.turma_id] ?? 0) + 1;
+    return m;
+  }, [dia]);
+
   return (
     <Sheet open={!!date} onOpenChange={(v) => !v && onClose()}>
       <SheetContent className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Fluxo do Dia · {dataLabel}</SheetTitle>
         </SheetHeader>
-        <div className="mt-6 space-y-3">
-          {horarios.length === 0 && <div className="text-sm text-muted-foreground">Cadastre horários padrão para começar.</div>}
-          {horarios.map((h) => {
-            const plan = dia.find((p) => p.horario_id === h.id && p.status !== "cancelado");
-            return (
-              <Card key={h.id} className="p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <div className="text-sm font-medium">{h.label}</div>
-                    <div className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0,5)} – {h.hora_fim?.slice(0,5)}</div>
-                  </div>
-                  {!plan && (
-                    <Button size="sm" onClick={() => { setEditingPlan(null); setHorarioId(h.id); setFormOpen(true); }}>
-                      <Plus className="h-4 w-4 mr-1" />Lançar Aula
-                    </Button>
-                  )}
-                </div>
-                {plan && (
-                  <div className="mt-3 rounded-md border p-3 space-y-2"
-                    style={{ borderLeft: `4px solid ${plan.docentes?.cor_identificadora || "#7C3AED"}` }}>
-                    <div className="text-sm font-medium">{plan.componentes_curriculares?.nome}</div>
-                    <div className="text-xs text-muted-foreground">{plan.docentes?.nome} · {plan.turmas?.serie} {plan.turmas?.nome}</div>
-                    <div><StatusBadge s={plan.status} /></div>
-                    {plan.conteudo && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{plan.conteudo}</div>}
-                    {plan.anexo_url && <a href={plan.anexo_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ver anexo</a>}
-                    <div className="flex gap-2 pt-1">
-                      <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setHorarioId(h.id); setFormOpen(true); }}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
-                      <Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir aula?")) del.mutate(plan.id); }}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button>
-                    </div>
-                  </div>
-                )}
-              </Card>
-            );
-          })}
-        </div>
 
-        {date && (
+        {!selectedTurma ? (
+          <div className="mt-6 space-y-3">
+            <div className="text-sm text-muted-foreground">Selecione a turma para ver e lançar aulas deste dia.</div>
+            {turmasAtivas.length === 0 && <div className="text-sm text-muted-foreground">Cadastre turmas para começar.</div>}
+            {turmasAtivas.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setSelectedTurma(t.id)}
+                className="w-full text-left rounded-md border p-3 hover:bg-accent/40 transition-colors flex items-center justify-between"
+              >
+                <div>
+                  <div className="text-sm font-medium">{t.serie} — {t.nome}</div>
+                  <div className="text-xs text-muted-foreground">{countPorTurma[t.id] ? `${countPorTurma[t.id]} aula(s) agendada(s)` : "Sem aulas neste dia"}</div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs text-muted-foreground">Turma selecionada</div>
+                <div className="text-sm font-medium">{turmaSel?.serie} — {turmaSel?.nome}</div>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedTurma(null)}>
+                <ChevronLeft className="h-4 w-4 mr-1" />Trocar turma
+              </Button>
+            </div>
+
+            {horarios.length === 0 && <div className="text-sm text-muted-foreground">Cadastre horários padrão para começar.</div>}
+            {horarios.map((h) => {
+              const plan = diaDaTurma.find((p) => p.horario_id === h.id && p.status !== "cancelado");
+              return (
+                <Card key={h.id} className="p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-medium">{h.label}</div>
+                      <div className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0,5)} – {h.hora_fim?.slice(0,5)}</div>
+                    </div>
+                    {!plan && (
+                      <Button size="sm" onClick={() => { setEditingPlan(null); setHorarioId(h.id); setFormOpen(true); }}>
+                        <Plus className="h-4 w-4 mr-1" />Lançar Aula
+                      </Button>
+                    )}
+                  </div>
+                  {plan && (
+                    <div className="mt-3 rounded-md border p-3 space-y-2"
+                      style={{ borderLeft: `4px solid ${plan.docentes?.cor_identificadora || "#7C3AED"}` }}>
+                      <div className="text-sm font-medium">{plan.componentes_curriculares?.nome}</div>
+                      <div className="text-xs text-muted-foreground">{plan.docentes?.nome} · {plan.turmas?.serie} {plan.turmas?.nome}</div>
+                      <div><StatusBadge s={plan.status} /></div>
+                      {plan.conteudo && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{plan.conteudo}</div>}
+                      {plan.anexo_url && <a href={plan.anexo_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ver anexo</a>}
+                      <div className="flex gap-2 pt-1">
+                        <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setHorarioId(h.id); setFormOpen(true); }}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
+                        <Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir aula?")) del.mutate(plan.id); }}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {date && selectedTurma && (
           <PlanejamentoForm
             open={formOpen}
             onClose={() => setFormOpen(false)}
             data={date}
             horarioId={horarioId}
             editing={editingPlan}
+            turmaId={selectedTurma}
+            lockTurma
           />
         )}
       </SheetContent>
