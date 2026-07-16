@@ -18,9 +18,11 @@ type Props = {
   data: string;
   horarioId: string;
   editing?: Planejamento | null;
+  turmaId?: string;
+  lockTurma?: boolean;
 };
 
-export function PlanejamentoForm({ open, onClose, data, horarioId, editing }: Props) {
+export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turmaId: turmaIdProp, lockTurma }: Props) {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [docenteId, setDocenteId] = useState("");
