@@ -154,6 +154,7 @@ function AgendamentoPage() {
         date={selectedDate}
         onClose={() => setSelectedDate(null)}
         horarios={horarios}
+        turmas={turmas}
       />
 
       <ReplicarAulasDialog open={replicarOpen} onClose={() => setReplicarOpen(false)} />
