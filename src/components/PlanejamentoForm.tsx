@@ -42,9 +42,9 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turm
       setConteudo(editing.conteudo ?? "");
       setAnexoUrl(editing.anexo_url);
     } else {
-      setDocenteId(""); setComponenteId(""); setTurmaId(""); setStatus("planejado"); setConteudo(""); setAnexoUrl(null);
+      setDocenteId(""); setComponenteId(""); setTurmaId(turmaIdProp ?? ""); setStatus("planejado"); setConteudo(""); setAnexoUrl(null);
     }
-  }, [editing, open]);
+  }, [editing, open, turmaIdProp]);
 
   const { data: docentes = [] } = useQuery({
     queryKey: ["docentes", "ativos"],
