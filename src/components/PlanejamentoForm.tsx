@@ -175,7 +175,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turm
           </div>
           <div className="space-y-2">
             <Label>Turma</Label>
-            <Select value={turmaId} onValueChange={setTurmaId}>
+            <Select value={turmaId} onValueChange={setTurmaId} disabled={!!lockTurma && !editing}>
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
               <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} — {t.nome}</SelectItem>)}</SelectContent>
             </Select>
