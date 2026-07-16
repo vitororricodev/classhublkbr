@@ -119,19 +119,15 @@ export function ReplicarAulasDialog({ open, onClose }: Props) {
 
       for (const dt of datasGeradas) {
         const noDia = (existentes ?? []).filter((p) => p.data === dt);
-        const conflitoDocente = noDia.some((p) => p.docente_id === docenteId);
         const conflitoTurma = noDia.some((p) => p.turma_id === turmaId);
-        if (conflitoDocente || conflitoTurma) {
-          conflitos.push({
-            data: dt,
-            motivo: conflitoDocente && conflitoTurma ? "Docente e turma ocupados" : conflitoDocente ? "Docente já tem aula" : "Turma já ocupada",
-          });
+        if (conflitoTurma) {
+          conflitos.push({ data: dt, motivo: "Turma já ocupada" });
           continue;
         }
         aCriar.push({
           data: dt, horario_id: horarioId, docente_id: docenteId,
           componente_id: componenteId, turma_id: turmaId,
-          conteudo: conteudo || null, status: "planejado", owner_id: user?.id ?? null,
+          conteudo: conteudo || null, status: "planejado", criado_por: user?.id ?? null,
         });
       }
 
