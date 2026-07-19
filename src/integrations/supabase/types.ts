@@ -56,18 +56,21 @@ export type Database = {
           created_at: string
           id: string
           nome: string
+          usa_laboratorio: boolean
         }
         Insert: {
           ativo?: boolean
           created_at?: string
           id?: string
           nome: string
+          usa_laboratorio?: boolean
         }
         Update: {
           ativo?: boolean
           created_at?: string
           id?: string
           nome?: string
+          usa_laboratorio?: boolean
         }
         Relationships: []
       }
@@ -268,34 +271,45 @@ export type Database = {
         Row: {
           ativo: boolean
           created_at: string
+          docente_id: string | null
           id: string
           nome: string
           primeiro_login: boolean
-          senha_hash: string
+          senha: string
           tipo: string
           usuario: string
         }
         Insert: {
           ativo?: boolean
           created_at?: string
+          docente_id?: string | null
           id?: string
           nome: string
           primeiro_login?: boolean
-          senha_hash: string
+          senha: string
           tipo?: string
           usuario: string
         }
         Update: {
           ativo?: boolean
           created_at?: string
+          docente_id?: string | null
           id?: string
           nome?: string
           primeiro_login?: boolean
-          senha_hash?: string
+          senha?: string
           tipo?: string
           usuario?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "usuarios_docente_id_fkey"
+            columns: ["docente_id"]
+            isOneToOne: false
+            referencedRelation: "docentes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -334,12 +348,19 @@ export type Database = {
         Returns: boolean
       }
       atualizar_usuario: {
-        Args: { p_ativo: boolean; p_id: string; p_nome: string; p_tipo: string }
+        Args: {
+          p_ativo: boolean
+          p_docente_id?: string | null
+          p_id: string
+          p_nome: string
+          p_tipo: string
+        }
         Returns: undefined
       }
       criar_usuario: {
         Args: {
           p_ativo: boolean
+          p_docente_id?: string | null
           p_nome: string
           p_senha: string
           p_tipo: string
@@ -353,6 +374,8 @@ export type Database = {
         Returns: {
           ativo: boolean
           created_at: string
+          docente_id: string | null
+          docente_nome: string | null
           id: string
           nome: string
           primeiro_login: boolean

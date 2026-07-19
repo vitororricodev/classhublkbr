@@ -37,6 +37,7 @@ create table if not exists public.componentes_curriculares (
   id uuid primary key default gen_random_uuid(),
   nome text not null,
   ativo boolean not null default true,
+  usa_laboratorio boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -85,6 +86,16 @@ create table if not exists public.planejamentos (
 create index if not exists idx_planejamentos_data on public.planejamentos(data);
 create index if not exists idx_planejamentos_docente on public.planejamentos(docente_id);
 create index if not exists idx_planejamentos_turma on public.planejamentos(turma_id);
+
+-- Impede conflitos de horário: mesma turma ou mesmo docente não podem ter
+-- dois planejamentos ativos (status <> 'cancelado') na mesma data/horário.
+create unique index if not exists uniq_turma_horario_data
+  on public.planejamentos (data, horario_id, turma_id)
+  where status <> 'cancelado';
+
+create unique index if not exists uniq_docente_horario_data
+  on public.planejamentos (data, horario_id, docente_id)
+  where status <> 'cancelado';
 
 drop trigger if exists trg_planejamentos_updated_at on public.planejamentos;
 create trigger trg_planejamentos_updated_at

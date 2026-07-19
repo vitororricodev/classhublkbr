@@ -28,10 +28,10 @@ function ComponentesPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Componente | null>(null);
-  const [form, setForm] = useState({ nome: "", ativo: true });
+  const [form, setForm] = useState({ nome: "", ativo: true, usa_laboratorio: false });
 
-  const openNew = () => { setEditing(null); setForm({ nome: "", ativo: true }); setOpen(true); };
-  const openEdit = (d: Componente) => { setEditing(d); setForm({ nome: d.nome, ativo: d.ativo }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ nome: "", ativo: true, usa_laboratorio: false }); setOpen(true); };
+  const openEdit = (d: Componente) => { setEditing(d); setForm({ nome: d.nome, ativo: d.ativo, usa_laboratorio: d.usa_laboratorio }); setOpen(true); };
 
   const save = useMutation({
     mutationFn: async () => {
@@ -71,6 +71,13 @@ function ComponentesPage() {
             <div className="space-y-4 py-2">
               <div className="space-y-2"><Label>Nome</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
               <div className="flex items-center gap-2"><Switch checked={form.ativo} onCheckedChange={(v) => setForm({ ...form, ativo: v })} /><Label>Ativo</Label></div>
+              <div className="flex items-center gap-2">
+                <Switch checked={form.usa_laboratorio} onCheckedChange={(v) => setForm({ ...form, usa_laboratorio: v })} />
+                <Label>Usa o Laboratório de Informática</Label>
+              </div>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Marque para componentes cujas aulas ocupam o laboratório (ex: Informática, Computação, Robótica). Isso alimenta o relatório de disponibilidade do laboratório.
+              </p>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
@@ -82,14 +89,15 @@ function ComponentesPage() {
 
       <Card className="p-0 overflow-hidden">
         <Table>
-          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Ativo</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Ativo</TableHead><TableHead>Usa Laboratório</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
           <TableBody>
-            {isLoading && <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>}
-            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Nenhum componente cadastrado.</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>}
+            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum componente cadastrado.</TableCell></TableRow>}
             {data.map((d) => (
               <TableRow key={d.id}>
                 <TableCell className="font-medium">{d.nome}</TableCell>
                 <TableCell>{d.ativo ? "Sim" : "Não"}</TableCell>
+                <TableCell>{d.usa_laboratorio ? "Sim" : "Não"}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button size="sm" variant="ghost" onClick={() => openEdit(d)}><Pencil className="h-4 w-4" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => { if (confirm("Excluir?")) del.mutate(d.id); }}><Trash2 className="h-4 w-4" /></Button>

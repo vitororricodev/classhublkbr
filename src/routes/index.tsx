@@ -9,7 +9,7 @@ export const Route = createFileRoute("/")({ component: Dashboard });
 
 function Dashboard() {
   const { user, isAdmin } = useAuth();
-  const scope = isAdmin ? null : user?.id ?? null;
+  const scope = isAdmin ? null : user?.docente_id ?? null;
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-stats", scope ?? "all"],
     queryFn: async () => {
@@ -20,7 +20,11 @@ function Dashboard() {
       next.setDate(1);
       const lastNext = next.toISOString().slice(0, 10);
 
-      const withScope = (q: any) => (scope ? q.eq("criado_por", scope) : q);
+      if (!isAdmin && !scope) {
+        return { mes: 0, docentes: 0, hoje: 0, planejados: 0, realizados: 0 };
+      }
+
+      const withScope = (q: any) => (scope ? q.eq("docente_id", scope) : q);
 
       const [mes, docs, hoje, planejados, realizados] = await Promise.all([
         withScope(supabase.from("planejamentos").select("id", { count: "exact", head: true }).gte("data", first).lt("data", lastNext)),

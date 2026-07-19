@@ -124,6 +124,11 @@ export function ReplicarAulasDialog({ open, onClose }: Props) {
           conflitos.push({ data: dt, motivo: "Turma já ocupada" });
           continue;
         }
+        const conflitoDocente = noDia.some((p) => p.docente_id === docenteId);
+        if (conflitoDocente) {
+          conflitos.push({ data: dt, motivo: "Docente já ocupado neste horário" });
+          continue;
+        }
         aCriar.push({
           data: dt, horario_id: horarioId, docente_id: docenteId,
           componente_id: componenteId, turma_id: turmaId,

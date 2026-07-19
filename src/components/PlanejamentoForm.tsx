@@ -105,18 +105,31 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turm
     mutationFn: async () => {
       if (!docenteId || !componenteId || !turmaId) throw new Error("Preencha docente, componente e turma");
 
-      // Validação de conflito (frontend) — apenas turma
-      const { data: conflitos, error: cErr } = await supabase
+      // Validação de conflito (frontend) — turma e docente
+      const { data: conflitosTurma, error: cErrTurma } = await supabase
         .from("planejamentos")
         .select("id, turma_id, status")
         .eq("data", data)
         .eq("horario_id", horarioId)
         .eq("turma_id", turmaId)
         .neq("status", "cancelado");
-      if (cErr) throw cErr;
-      const conflito = (conflitos ?? []).some((p) => p.id !== editing?.id);
-      if (conflito) {
+      if (cErrTurma) throw cErrTurma;
+      const conflitoTurma = (conflitosTurma ?? []).some((p) => p.id !== editing?.id);
+      if (conflitoTurma) {
         throw new Error("Conflito de horário: esta turma já possui aula neste horário.");
+      }
+
+      const { data: conflitosDocente, error: cErrDocente } = await supabase
+        .from("planejamentos")
+        .select("id, docente_id, status")
+        .eq("data", data)
+        .eq("horario_id", horarioId)
+        .eq("docente_id", docenteId)
+        .neq("status", "cancelado");
+      if (cErrDocente) throw cErrDocente;
+      const conflitoDocente = (conflitosDocente ?? []).some((p) => p.id !== editing?.id);
+      if (conflitoDocente) {
+        throw new Error("Conflito de horário: este docente já possui aula neste horário.");
       }
 
       const payload = {
@@ -125,11 +138,14 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turm
       };
       if (editing) {
         const { error } = await supabase.from("planejamentos").update(payload).eq("id", editing.id);
-        if (error) throw error;
+        if (error) {
+          if (error.code === "23505") throw new Error("Conflito de horário: verifique se a turma ou o docente já possuem aula neste horário.");
+          throw error;
+        }
       } else {
         const { error } = await supabase.from("planejamentos").insert({ ...payload, criado_por: user?.id ?? null });
         if (error) {
-          if (error.code === "23505") throw new Error("Conflito de horário: esta turma já possui aula neste horário.");
+          if (error.code === "23505") throw new Error("Conflito de horário: verifique se a turma ou o docente já possuem aula neste horário.");
           throw error;
         }
       }

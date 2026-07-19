@@ -7,6 +7,7 @@ export type AppUser = {
   nome: string;
   tipo: "admin" | "usuario";
   primeiro_login: boolean;
+  docente_id: string | null;
 };
 
 type Ctx = {
@@ -57,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from("usuarios")
-        .select("id, usuario, nome, tipo, primeiro_login, senha, ativo")
+        .select("id, usuario, nome, tipo, primeiro_login, senha, ativo, docente_id")
         .eq("usuario", usuario)
         .eq("ativo", true)
         .maybeSingle();
@@ -72,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         nome: row.nome,
         tipo: (row.tipo === "admin" ? "admin" : "usuario") as "admin" | "usuario",
         primeiro_login: row.primeiro_login,
+        docente_id: row.docente_id ?? null,
       };
       setUser(u);
       return u;

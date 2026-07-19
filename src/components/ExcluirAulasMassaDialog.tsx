@@ -43,7 +43,7 @@ type Props = {
 
 function applyFilters<T extends { gte: Function; lte: Function; eq: Function }>(q: T, f: Filtros, ownerId?: string | null): T {
   let r: any = q.gte("data", f.inicio).lte("data", f.fim);
-  if (ownerId) r = r.eq("criado_por", ownerId);
+  if (ownerId) r = r.eq("docente_id", ownerId);
   if (f.docente !== "all") r = r.eq("docente_id", f.docente);
   if (f.componente !== "all") r = r.eq("componente_id", f.componente);
   if (f.turma !== "all") r = r.eq("turma_id", f.turma);
@@ -57,7 +57,7 @@ export function ExcluirAulasMassaDialog({
 }: Props) {
   const qc = useQueryClient();
   const { user, isAdmin } = useAuth();
-  const ownerScope = isAdmin ? null : user?.id ?? null;
+  const ownerScope = isAdmin ? null : user?.docente_id ?? null;
   const [filtros, setFiltros] = useState<Filtros>({
     inicio: defaultInicio,
     fim: defaultFim,
@@ -80,6 +80,10 @@ export function ExcluirAulasMassaDialog({
   const validPeriod = !!filtros.inicio && !!filtros.fim && filtros.inicio <= filtros.fim;
 
   const preflight = async () => {
+    if (!isAdmin && !ownerScope) {
+      toast.error("Seu login não está vinculado a um docente. Peça para um administrador vincular seu usuário em Usuários.");
+      return;
+    }
     if (!validPeriod) {
       toast.error("Defina um período válido antes de continuar.");
       return;
@@ -103,6 +107,9 @@ export function ExcluirAulasMassaDialog({
 
   const excluir = useMutation({
     mutationFn: async () => {
+      if (!isAdmin && !ownerScope) {
+        throw new Error("Seu login não está vinculado a um docente.");
+      }
       const { error, count } = await applyFilters(supabase.from("planejamentos").delete({ count: "exact" }), filtros, ownerScope);
       if (error) throw error;
       return count ?? 0;

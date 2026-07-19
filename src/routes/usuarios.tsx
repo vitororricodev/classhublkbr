@@ -55,7 +55,9 @@ type Usuario = {
   tipo: Tipo;
   ativo: boolean;
   primeiro_login: boolean;
+  docente_id: string | null;
 };
+type DocenteOpt = { id: string; nome: string };
 
 const tipoLabel: Record<Tipo, string> = {
   admin: "Administrador",
@@ -77,12 +79,23 @@ function UsersPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("usuarios")
-        .select("id, usuario, nome, tipo, ativo, primeiro_login")
+        .select("id, usuario, nome, tipo, ativo, primeiro_login, docente_id")
         .order("usuario");
       if (error) throw error;
       return (data ?? []) as unknown as Usuario[];
     },
   });
+
+  const { data: docentes = [] } = useQuery({
+    queryKey: ["docentes", "select-usuarios"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("docentes").select("id, nome").order("nome");
+      if (error) throw error;
+      return (data ?? []) as DocenteOpt[];
+    },
+  });
+  const docenteNome = (id: string | null) => (id ? docentes.find((d) => d.id === id)?.nome ?? "—" : "—");
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -144,7 +157,7 @@ function UsersPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Usuários</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Cadastre acessos e defina o tipo de cada usuário. Usuários comuns veem apenas as aulas que lançarem; administradores veem tudo.
+            Cadastre acessos e defina o tipo de cada usuário. Usuários comuns veem apenas as aulas do docente vinculado a eles; administradores veem tudo.
           </p>
         </div>
         <Dialog open={openCreate} onOpenChange={setOpenCreate}>
@@ -154,6 +167,7 @@ function UsersPage() {
             </Button>
           </DialogTrigger>
           <CreateUserDialog
+            docentes={docentes}
             onClose={() => setOpenCreate(false)}
             onCreated={() => {
               invalidate();
@@ -179,6 +193,7 @@ function UsersPage() {
                 <TableHead>Usuário</TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead>Tipo</TableHead>
+                <TableHead>Docente vinculado</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -186,14 +201,14 @@ function UsersPage() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     Carregando...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     Nenhum usuário encontrado.
                   </TableCell>
                 </TableRow>
@@ -208,6 +223,9 @@ function UsersPage() {
                       <Badge variant={u.tipo === "admin" ? "default" : "secondary"}>
                         {tipoLabel[u.tipo]}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {u.tipo === "usuario" ? docenteNome(u.docente_id) : "—"}
                     </TableCell>
                     <TableCell>
                       {u.ativo ? (
@@ -271,6 +289,7 @@ function UsersPage() {
       {editing && (
         <EditUserDialog
           user={editing}
+          docentes={docentes}
           onClose={() => setEditing(null)}
           onSaved={() => {
             invalidate();
@@ -291,15 +310,18 @@ function UsersPage() {
 }
 
 function CreateUserDialog({
+  docentes,
   onClose,
   onCreated,
 }: {
+  docentes: DocenteOpt[];
   onClose: () => void;
   onCreated: () => void;
 }) {
   const [usuario, setUsuario] = useState("");
   const [nome, setNome] = useState("");
   const [tipo, setTipo] = useState<Tipo>("usuario");
+  const [docenteId, setDocenteId] = useState<string>("none");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -324,6 +346,7 @@ function CreateUserDialog({
               p_senha: senha,
               p_tipo: tipo,
               p_ativo: true,
+              p_docente_id: tipo === "usuario" && docenteId !== "none" ? docenteId : null,
             });
             if (error) {
               throw new Error(error.message);
@@ -350,11 +373,26 @@ function CreateUserDialog({
           <Select value={tipo} onValueChange={(v) => setTipo(v as Tipo)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="usuario">Usuário (vê apenas suas aulas)</SelectItem>
+              <SelectItem value="usuario">Usuário (vê apenas as aulas do docente vinculado)</SelectItem>
               <SelectItem value="admin">Administrador (vê tudo)</SelectItem>
             </SelectContent>
           </Select>
         </div>
+        {tipo === "usuario" && (
+          <div className="space-y-2">
+            <Label>Docente vinculado</Label>
+            <Select value={docenteId} onValueChange={setDocenteId}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum (definir depois)</SelectItem>
+                {docentes.map((d) => <SelectItem key={d.id} value={d.id}>{d.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Este usuário só verá as aulas em que este docente estiver lançado.
+            </p>
+          </div>
+        )}
         <div className="space-y-2">
           <Label>Senha inicial</Label>
           <Input type="text" value={senha} onChange={(e) => setSenha(e.target.value)} required />
@@ -371,15 +409,18 @@ function CreateUserDialog({
 
 function EditUserDialog({
   user,
+  docentes,
   onClose,
   onSaved,
 }: {
   user: Usuario;
+  docentes: DocenteOpt[];
   onClose: () => void;
   onSaved: () => void;
 }) {
   const [nome, setNome] = useState(user.nome);
   const [tipo, setTipo] = useState<Tipo>(user.tipo);
+  const [docenteId, setDocenteId] = useState<string>(user.docente_id ?? "none");
   const [loading, setLoading] = useState(false);
 
   return (
@@ -396,7 +437,11 @@ function EditUserDialog({
             try {
               const { error } = await supabase
                 .from("usuarios")
-                .update({ nome: nome.trim(), tipo })
+                .update({
+                  nome: nome.trim(),
+                  tipo,
+                  docente_id: tipo === "usuario" && docenteId !== "none" ? docenteId : null,
+                })
                 .eq("id", user.id);
               if (error) throw error;
               toast.success("Usuário atualizado.");
@@ -426,6 +471,21 @@ function EditUserDialog({
               </SelectContent>
             </Select>
           </div>
+          {tipo === "usuario" && (
+            <div className="space-y-2">
+              <Label>Docente vinculado</Label>
+              <Select value={docenteId} onValueChange={setDocenteId}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (definir depois)</SelectItem>
+                  {docentes.map((d) => <SelectItem key={d.id} value={d.id}>{d.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Este usuário só verá as aulas em que este docente estiver lançado.
+              </p>
+            </div>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
             <Button type="submit" disabled={loading}>{loading ? "Salvando..." : "Salvar"}</Button>

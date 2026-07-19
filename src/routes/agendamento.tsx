@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -45,11 +45,12 @@ function AgendamentoPage() {
   const monthEnd = useMemo(() => endOfMonth(cursor), [cursor]);
 
   const { data: planejamentos = [] } = useQuery({
-    queryKey: ["planejamentos", fmtISO(monthStart), fmtISO(monthEnd), filtros, isAdmin ? "all" : user?.id],
+    queryKey: ["planejamentos", fmtISO(monthStart), fmtISO(monthEnd), filtros, isAdmin ? "all" : user?.docente_id],
     queryFn: async () => {
+      if (!isAdmin && !user?.docente_id) return [] as PlanejamentoFull[];
       let q = supabase.from("planejamentos").select(PLAN_SELECT)
         .gte("data", fmtISO(monthStart)).lte("data", fmtISO(monthEnd));
-      if (!isAdmin && user?.id) q = q.eq("criado_por", user.id);
+      if (!isAdmin) q = q.eq("docente_id", user!.docente_id!);
       if (filtros.docente !== "all") q = q.eq("docente_id", filtros.docente);
       if (filtros.componente !== "all") q = q.eq("componente_id", filtros.componente);
       if (filtros.turma !== "all") q = q.eq("turma_id", filtros.turma);
@@ -98,14 +99,20 @@ function AgendamentoPage() {
 
       <Card className="p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />
+          {isAdmin && <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />}
           <FiltroSelect label="Componente" value={filtros.componente} onChange={(v) => setFiltros({ ...filtros, componente: v })} options={[{ value: "all", label: "Todos" }, ...componentes.map((d) => ({ value: d.id, label: d.nome }))]} />
           <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} — ${d.nome}` }))]} />
           <FiltroSelect label="Status" value={filtros.status} onChange={(v) => setFiltros({ ...filtros, status: v })} options={[
             { value: "all", label: "Todos" }, { value: "planejado", label: "Planejado" }, { value: "realizado", label: "Realizado" }, { value: "cancelado", label: "Cancelado" }
           ]} />
         </div>
+        {!isAdmin && !user?.docente_id && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mt-3">
+            Seu login ainda não está vinculado a um docente. Peça para um administrador vincular seu usuário em <b>Usuários</b> para você ver suas aulas aqui.
+          </p>
+        )}
       </Card>
+
 
       <Card className="overflow-hidden">
         <div className="grid grid-cols-7 bg-secondary text-xs font-medium">
@@ -150,7 +157,7 @@ function AgendamentoPage() {
         </div>
       </Card>
 
-      <DiaSheet
+      <DiaModal
         date={selectedDate}
         onClose={() => setSelectedDate(null)}
         horarios={horarios}
@@ -193,7 +200,7 @@ function FiltroSelect({ label, value, onChange, options }: { label: string; valu
   );
 }
 
-function DiaSheet({ date, onClose, horarios, turmas }: { date: string | null; onClose: () => void; horarios: Horario[]; turmas: Turma[] }) {
+function DiaModal({ date, onClose, horarios, turmas }: { date: string | null; onClose: () => void; horarios: Horario[]; turmas: Turma[] }) {
   const qc = useQueryClient();
   const { user, isAdmin } = useAuth();
   const [formOpen, setFormOpen] = useState(false);
@@ -205,11 +212,12 @@ function DiaSheet({ date, onClose, horarios, turmas }: { date: string | null; on
   useEffect(() => { setSelectedTurma(null); }, [date]);
 
   const { data: dia = [] } = useQuery({
-    queryKey: ["planejamentos-dia", date, isAdmin ? "all" : user?.id],
+    queryKey: ["planejamentos-dia", date, isAdmin ? "all" : user?.docente_id],
     enabled: !!date,
     queryFn: async () => {
+      if (!isAdmin && !user?.docente_id) return [] as PlanejamentoFull[];
       let q = supabase.from("planejamentos").select(PLAN_SELECT).eq("data", date!);
-      if (!isAdmin && user?.id) q = q.eq("criado_por", user.id);
+      if (!isAdmin) q = q.eq("docente_id", user!.docente_id!);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as PlanejamentoFull[];
@@ -244,32 +252,34 @@ function DiaSheet({ date, onClose, horarios, turmas }: { date: string | null; on
   }, [dia]);
 
   return (
-    <Sheet open={!!date} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Fluxo do Dia · {dataLabel}</SheetTitle>
-        </SheetHeader>
+    <Dialog open={!!date} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="capitalize">Fluxo do Dia · {dataLabel}</DialogTitle>
+        </DialogHeader>
 
         {!selectedTurma ? (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 space-y-3">
             <div className="text-sm text-muted-foreground">Selecione a turma para ver e lançar aulas deste dia.</div>
             {turmasAtivas.length === 0 && <div className="text-sm text-muted-foreground">Cadastre turmas para começar.</div>}
-            {turmasAtivas.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setSelectedTurma(t.id)}
-                className="w-full text-left rounded-md border p-3 hover:bg-accent/40 transition-colors flex items-center justify-between"
-              >
-                <div>
-                  <div className="text-sm font-medium">{t.serie} — {t.nome}</div>
-                  <div className="text-xs text-muted-foreground">{countPorTurma[t.id] ? `${countPorTurma[t.id]} aula(s) agendada(s)` : "Sem aulas neste dia"}</div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </button>
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {turmasAtivas.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setSelectedTurma(t.id)}
+                  className="w-full text-left rounded-md border p-3 hover:bg-accent/40 transition-colors flex items-center justify-between"
+                >
+                  <div>
+                    <div className="text-sm font-medium">{t.serie} — {t.nome}</div>
+                    <div className="text-xs text-muted-foreground">{countPorTurma[t.id] ? `${countPorTurma[t.id]} aula(s) agendada(s)` : "Sem aulas neste dia"}</div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs text-muted-foreground">Turma selecionada</div>
@@ -281,38 +291,40 @@ function DiaSheet({ date, onClose, horarios, turmas }: { date: string | null; on
             </div>
 
             {horarios.length === 0 && <div className="text-sm text-muted-foreground">Cadastre horários padrão para começar.</div>}
-            {horarios.map((h) => {
-              const plan = diaDaTurma.find((p) => p.horario_id === h.id && p.status !== "cancelado");
-              return (
-                <Card key={h.id} className="p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <div className="text-sm font-medium">{h.label}</div>
-                      <div className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0,5)} – {h.hora_fim?.slice(0,5)}</div>
-                    </div>
-                    {!plan && (
-                      <Button size="sm" onClick={() => { setEditingPlan(null); setHorarioId(h.id); setFormOpen(true); }}>
-                        <Plus className="h-4 w-4 mr-1" />Lançar Aula
-                      </Button>
-                    )}
-                  </div>
-                  {plan && (
-                    <div className="mt-3 rounded-md border p-3 space-y-2"
-                      style={{ borderLeft: `4px solid ${plan.docentes?.cor_identificadora || "#7C3AED"}` }}>
-                      <div className="text-sm font-medium">{plan.componentes_curriculares?.nome}</div>
-                      <div className="text-xs text-muted-foreground">{plan.docentes?.nome} · {plan.turmas?.serie} {plan.turmas?.nome}</div>
-                      <div><StatusBadge s={plan.status} /></div>
-                      {plan.conteudo && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{plan.conteudo}</div>}
-                      {plan.anexo_url && <a href={plan.anexo_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ver anexo</a>}
-                      <div className="flex gap-2 pt-1">
-                        <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setHorarioId(h.id); setFormOpen(true); }}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
-                        <Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir aula?")) del.mutate(plan.id); }}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {horarios.map((h) => {
+                const plan = diaDaTurma.find((p) => p.horario_id === h.id && p.status !== "cancelado");
+                return (
+                  <Card key={h.id} className="p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <div className="text-sm font-medium">{h.label}</div>
+                        <div className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0,5)} – {h.hora_fim?.slice(0,5)}</div>
                       </div>
+                      {!plan && (
+                        <Button size="sm" onClick={() => { setEditingPlan(null); setHorarioId(h.id); setFormOpen(true); }}>
+                          <Plus className="h-4 w-4 mr-1" />Lançar Aula
+                        </Button>
+                      )}
                     </div>
-                  )}
-                </Card>
-              );
-            })}
+                    {plan && (
+                      <div className="mt-3 rounded-md border p-3 space-y-2"
+                        style={{ borderLeft: `4px solid ${plan.docentes?.cor_identificadora || "#7C3AED"}` }}>
+                        <div className="text-sm font-medium">{plan.componentes_curriculares?.nome}</div>
+                        <div className="text-xs text-muted-foreground">{plan.docentes?.nome} · {plan.turmas?.serie} {plan.turmas?.nome}</div>
+                        <div><StatusBadge s={plan.status} /></div>
+                        {plan.conteudo && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{plan.conteudo}</div>}
+                        {plan.anexo_url && <a href={plan.anexo_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ver anexo</a>}
+                        <div className="flex gap-2 pt-1">
+                          <Button size="sm" variant="outline" onClick={() => { setEditingPlan(plan); setHorarioId(h.id); setFormOpen(true); }}><Pencil className="h-4 w-4 mr-1" />Editar</Button>
+                          <Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir aula?")) del.mutate(plan.id); }}><Trash2 className="h-4 w-4 mr-1" />Excluir</Button>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -327,8 +339,8 @@ function DiaSheet({ date, onClose, horarios, turmas }: { date: string | null; on
             lockTurma
           />
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
 

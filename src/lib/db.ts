@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type Docente = { id: string; nome: string; cor_identificadora: string; ativo: boolean; created_at: string };
-export type Componente = { id: string; nome: string; ativo: boolean; created_at: string };
+export type Componente = { id: string; nome: string; ativo: boolean; usa_laboratorio: boolean; created_at: string };
 export type Turma = { id: string; serie: string; nome: string; ativo: boolean; created_at: string };
 export type Horario = { id: string; label: string; hora_inicio: string; hora_fim: string; ordem: number; ativo: boolean };
 export type Status = "planejado" | "realizado" | "cancelado";
