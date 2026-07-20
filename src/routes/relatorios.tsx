@@ -580,7 +580,8 @@ type Ocupacao = { turma: Turma | null; docente: Docente | null; componente: Comp
 
 function RelatorioLaboratorio() {
   const { user } = useAuth();
-  const [periodo, setPeriodo] = useState({ inicio: todayISO(), fim: addDaysISO(todayISO(), 6) });
+  const [periodo, setPeriodo] = useState({ inicio: startOfWeekISO(), fim: endOfWeekISO() });
+  const [formato, setFormato] = useState<FormatoRelatorio>("tabela");
 
   const { data: horarios = [] } = useQuery({
     queryKey: ["horarios", "ativos", "ordenados"],
@@ -681,42 +682,79 @@ function RelatorioLaboratorio() {
     doc.setTextColor(85, 85, 85);
     doc.text(`Período: ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)}`, pageWidth / 2, 102, { align: "center" });
 
-    const body: (string | { content: string; styles: Record<string, unknown> })[][] = [];
-    for (const dt of datas) {
-      for (const h of horarios) {
-        const oc = mapaOcupacao.get(`${dt}__${h.id}`);
-        const statusTxt = oc ? "Ocupado" : "Livre";
-        body.push([
-          `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`,
-          `${h.label}${h.hora_inicio ? ` (${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""})` : ""}`,
-          { content: statusTxt, styles: { textColor: oc ? [185, 28, 28] : [21, 128, 61], fontStyle: "bold" } },
-          oc ? `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}` : "—",
-        ]);
+    if (formato === "tabela") {
+      const head = ["Horário", ...datas.map((dt) => `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`)];
+      const body = horarios.map((h) => [
+        `${h.label}${h.hora_inicio ? `\n${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""}` : ""}`,
+        ...datas.map((dt) => {
+          const oc = mapaOcupacao.get(`${dt}__${h.id}`);
+          if (!oc) return { content: "Livre", styles: { textColor: [21, 128, 61] } };
+          return {
+            content: `Ocupado\n${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"}\n${oc.docente?.nome ?? "—"}`,
+            styles: { textColor: [185, 28, 28] },
+          };
+        }),
+      ]);
+      autoTable(doc, {
+        startY: 118,
+        head: [head],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        body: body as any,
+        margin: { left: marginX, right: marginX, bottom: 36 },
+        styles: { font: "helvetica", fontSize: 8.5, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34], halign: "center" },
+        headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 8.5 },
+        alternateRowStyles: { fillColor: [246, 243, 251] },
+        columnStyles: { 0: { cellWidth: 80, halign: "left", fontStyle: "bold" } },
+        showHead: "everyPage",
+        didDrawPage: () => {
+          const pageCount = doc.getNumberOfPages();
+          const currentPage = doc.getCurrentPageInfo().pageNumber;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(119, 119, 119);
+          doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
+          doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
+          doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
+        },
+      });
+    } else {
+      const body: (string | { content: string; styles: Record<string, unknown> })[][] = [];
+      for (const dt of datas) {
+        for (const h of horarios) {
+          const oc = mapaOcupacao.get(`${dt}__${h.id}`);
+          const statusTxt = oc ? "Ocupado" : "Livre";
+          body.push([
+            `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`,
+            `${h.label}${h.hora_inicio ? ` (${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""})` : ""}`,
+            { content: statusTxt, styles: { textColor: oc ? [185, 28, 28] : [21, 128, 61], fontStyle: "bold" } },
+            oc ? `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}` : "—",
+          ]);
+        }
       }
-    }
 
-    autoTable(doc, {
-      startY: 118,
-      head: [["Data", "Horário", "Status", "Ocupado por"]],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      body: body as any,
-      margin: { left: marginX, right: marginX, bottom: 36 },
-      styles: { font: "helvetica", fontSize: 9, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34] },
-      headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 9 },
-      alternateRowStyles: { fillColor: [246, 243, 251] },
-      columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 110 }, 2: { cellWidth: 60 }, 3: { cellWidth: "auto" } },
-      showHead: "everyPage",
-      didDrawPage: () => {
-        const pageCount = doc.getNumberOfPages();
-        const currentPage = doc.getCurrentPageInfo().pageNumber;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(119, 119, 119);
-        doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
-        doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
-        doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
-      },
-    });
+      autoTable(doc, {
+        startY: 118,
+        head: [["Data", "Horário", "Status", "Ocupado por"]],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        body: body as any,
+        margin: { left: marginX, right: marginX, bottom: 36 },
+        styles: { font: "helvetica", fontSize: 9, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34] },
+        headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 9 },
+        alternateRowStyles: { fillColor: [246, 243, 251] },
+        columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 110 }, 2: { cellWidth: 60 }, 3: { cellWidth: "auto" } },
+        showHead: "everyPage",
+        didDrawPage: () => {
+          const pageCount = doc.getNumberOfPages();
+          const currentPage = doc.getCurrentPageInfo().pageNumber;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(119, 119, 119);
+          doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
+          doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
+          doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
+        },
+      });
+    }
 
     doc.save(`disponibilidade-laboratorio-${periodo.inicio}-a-${periodo.fim}.pdf`);
   };
@@ -737,6 +775,16 @@ function RelatorioLaboratorio() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={periodo.inicio} onChange={(e) => setPeriodo({ ...periodo, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={periodo.fim} onChange={(e) => setPeriodo({ ...periodo, fim: e.target.value })} /></div>
+          <div className="space-y-1">
+            <Label>Formato</Label>
+            <Select value={formato} onValueChange={(v) => setFormato(v as FormatoRelatorio)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tabela">Tabela (grade)</SelectItem>
+                <SelectItem value="lista">Lista</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 
@@ -756,7 +804,7 @@ function RelatorioLaboratorio() {
           <div className="text-sm text-muted-foreground mb-3">
             {isLoading ? "Carregando..." : datas.length === 0 ? "Selecione um período válido." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${datas.length} dia(s) letivo(s) · ${horarios.length} horário(s).`}
           </div>
-          {!isLoading && datas.length > 0 && horarios.length > 0 && (
+          {!isLoading && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
             <div className="overflow-auto max-h-[560px] border rounded-md">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
@@ -800,6 +848,38 @@ function RelatorioLaboratorio() {
                       })}
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!isLoading && formato === "lista" && (
+            <div className="overflow-auto max-h-[480px] border rounded-md">
+              <table className="w-full text-sm">
+                <thead className="bg-muted sticky top-0">
+                  <tr>
+                    <th className="text-left p-2">Data</th>
+                    <th className="text-left p-2">Horário</th>
+                    <th className="text-left p-2">Status</th>
+                    <th className="text-left p-2">Ocupado por</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {datas.flatMap((dt) =>
+                    horarios.map((h) => {
+                      const oc = mapaOcupacao.get(`${dt}__${h.id}`);
+                      return (
+                        <tr key={`${dt}__${h.id}`} className="border-t">
+                          <td className="p-2 whitespace-nowrap capitalize">{new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} {fmtDate(dt)}</td>
+                          <td className="p-2 whitespace-nowrap">{h.label}</td>
+                          <td className="p-2">{oc ? <Badge variant="destructive">Ocupado</Badge> : <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Livre</Badge>}</td>
+                          <td className="p-2 text-muted-foreground">
+                            {oc ? `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}` : "—"}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>

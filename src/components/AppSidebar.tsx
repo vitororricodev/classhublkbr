@@ -12,6 +12,7 @@ import {
   CalendarOff,
   Settings,
   UserCog,
+  MonitorSmartphone,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 const baseItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/agendamento", label: "Agendamento", icon: CalendarDays },
+  { to: "/laboratorio", label: "Laboratório", icon: MonitorSmartphone },
   { to: "/docentes", label: "Docentes", icon: Users },
   { to: "/componentes", label: "Componentes", icon: BookOpen },
   { to: "/turmas", label: "Turmas", icon: GraduationCap },

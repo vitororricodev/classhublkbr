@@ -13,6 +13,7 @@ import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as TurmasRouteImport } from './routes/turmas'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LaboratorioRouteImport } from './routes/laboratorio'
 import { Route as HorariosRouteImport } from './routes/horarios'
 import { Route as FeriadosRouteImport } from './routes/feriados'
 import { Route as DocentesRouteImport } from './routes/docentes'
@@ -40,6 +41,11 @@ const RelatoriosRoute = RelatoriosRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LaboratorioRoute = LaboratorioRouteImport.update({
+  id: '/laboratorio',
+  path: '/laboratorio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HorariosRoute = HorariosRouteImport.update({
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/docentes': typeof DocentesRoute
   '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
+  '/laboratorio': typeof LaboratorioRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
   '/turmas': typeof TurmasRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/docentes': typeof DocentesRoute
   '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
+  '/laboratorio': typeof LaboratorioRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
   '/turmas': typeof TurmasRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/docentes': typeof DocentesRoute
   '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
+  '/laboratorio': typeof LaboratorioRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
   '/turmas': typeof TurmasRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/docentes'
     | '/feriados'
     | '/horarios'
+    | '/laboratorio'
     | '/login'
     | '/relatorios'
     | '/turmas'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/docentes'
     | '/feriados'
     | '/horarios'
+    | '/laboratorio'
     | '/login'
     | '/relatorios'
     | '/turmas'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/docentes'
     | '/feriados'
     | '/horarios'
+    | '/laboratorio'
     | '/login'
     | '/relatorios'
     | '/turmas'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   DocentesRoute: typeof DocentesRoute
   FeriadosRoute: typeof FeriadosRoute
   HorariosRoute: typeof HorariosRoute
+  LaboratorioRoute: typeof LaboratorioRoute
   LoginRoute: typeof LoginRoute
   RelatoriosRoute: typeof RelatoriosRoute
   TurmasRoute: typeof TurmasRoute
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/laboratorio': {
+      id: '/laboratorio'
+      path: '/laboratorio'
+      fullPath: '/laboratorio'
+      preLoaderRoute: typeof LaboratorioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/horarios': {
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocentesRoute: DocentesRoute,
   FeriadosRoute: FeriadosRoute,
   HorariosRoute: HorariosRoute,
+  LaboratorioRoute: LaboratorioRoute,
   LoginRoute: LoginRoute,
   RelatoriosRoute: RelatoriosRoute,
   TurmasRoute: TurmasRoute,

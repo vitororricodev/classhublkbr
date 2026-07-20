@@ -20,9 +20,10 @@ type Props = {
   editing?: Planejamento | null;
   turmaId?: string;
   lockTurma?: boolean;
+  apenasLaboratorio?: boolean;
 };
 
-export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turmaId: turmaIdProp, lockTurma }: Props) {
+export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turmaId: turmaIdProp, lockTurma, apenasLaboratorio }: Props) {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [docenteId, setDocenteId] = useState("");
@@ -53,13 +54,14 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turm
       if (error) throw error; return data as Docente[];
     },
   });
-  const { data: componentes = [] } = useQuery({
+  const { data: componentesTodos = [] } = useQuery({
     queryKey: ["componentes", "ativos"],
     queryFn: async () => {
       const { data, error } = await supabase.from("componentes_curriculares").select("*").eq("ativo", true).order("nome");
       if (error) throw error; return data as Componente[];
     },
   });
+  const componentes = apenasLaboratorio ? componentesTodos.filter((c) => c.usa_laboratorio) : componentesTodos;
   const { data: turmas = [] } = useQuery({
     queryKey: ["turmas", "ativos"],
     queryFn: async () => {
@@ -188,6 +190,9 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turm
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
               <SelectContent>{componentes.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent>
             </Select>
+            {apenasLaboratorio && (
+              <p className="text-xs text-muted-foreground">Mostrando apenas componentes marcados como "Usa o Laboratório de Informática".</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Turma</Label>

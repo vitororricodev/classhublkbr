@@ -88,7 +88,6 @@ export function ExcluirAulasMassaDialog({
       toast.error("Defina um período válido antes de continuar.");
       return;
     }
-    // Contagem de aulas
     setCounting(true);
     try {
       const { count, error } = await applyFilters(supabase.from("planejamentos").select("id", { count: "exact", head: true }), filtros, ownerScope);
