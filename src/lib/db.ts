@@ -35,4 +35,33 @@ export const PLAN_SELECT = `
   horarios_padrao:horario_id (*)
 ` as const;
 
+export type StatusLab = "agendado" | "realizado" | "cancelado";
+export type LaboratorioAgendamento = {
+  id: string;
+  data: string;
+  horario_id: string;
+  turma_id: string;
+  docente_id: string | null;
+  componente_id: string | null;
+  observacao: string | null;
+  status: StatusLab;
+  criado_por: string | null;
+  created_at: string;
+};
+
+export type LaboratorioAgendamentoFull = LaboratorioAgendamento & {
+  docentes: Docente | null;
+  componentes_curriculares: Componente | null;
+  turmas: Turma | null;
+  horarios_padrao: Horario | null;
+};
+
+export const LAB_SELECT = `
+  *,
+  docentes:docente_id (*),
+  componentes_curriculares:componente_id (*),
+  turmas:turma_id (*),
+  horarios_padrao:horario_id (*)
+` as const;
+
 export { supabase };

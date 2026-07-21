@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { FileDown, MonitorSmartphone } from "lucide-react";
+import { FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { PLAN_SELECT } from "@/lib/db";
@@ -592,29 +592,18 @@ function RelatorioLaboratorio() {
     },
   });
 
-  const { data: componentesLab = [] } = useQuery({
-    queryKey: ["componentes", "usa_laboratorio"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("componentes_curriculares").select("*").eq("usa_laboratorio", true);
-      if (error) throw error;
-      return data as Componente[];
-    },
-  });
-
   const { data: ocupacoes = [], isLoading } = useQuery({
-    queryKey: ["planejamentos", "laboratorio", periodo],
+    queryKey: ["laboratorio_agendamentos", "disponibilidade", periodo],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("planejamentos")
-        .select(`data, horario_id, turmas:turma_id(*), docentes:docente_id(*), componentes_curriculares!inner(*)`)
+        .from("laboratorio_agendamentos")
+        .select(`data, horario_id, turmas:turma_id(*), docentes:docente_id(*), componentes_curriculares:componente_id(*)`)
         .gte("data", periodo.inicio)
         .lte("data", periodo.fim)
-        .eq("componentes_curriculares.usa_laboratorio", true)
         .neq("status", "cancelado");
       if (error) throw error;
       return (data ?? []) as unknown as { data: string; horario_id: string; turmas: Turma | null; docentes: Docente | null; componentes_curriculares: Componente | null }[];
     },
-    enabled: componentesLab.length > 0,
   });
 
   const datas = useMemo(() => {
@@ -632,9 +621,12 @@ function RelatorioLaboratorio() {
   }, [periodo]);
 
   const mapaOcupacao = useMemo(() => {
-    const m = new Map<string, Ocupacao>();
+    const m = new Map<string, Ocupacao[]>();
     for (const o of ocupacoes) {
-      m.set(`${o.data}__${o.horario_id}`, { turma: o.turmas, docente: o.docentes, componente: o.componentes_curriculares });
+      const key = `${o.data}__${o.horario_id}`;
+      const arr = m.get(key) ?? [];
+      arr.push({ turma: o.turmas, docente: o.docentes, componente: o.componentes_curriculares });
+      m.set(key, arr);
     }
     return m;
   }, [ocupacoes]);
@@ -687,11 +679,12 @@ function RelatorioLaboratorio() {
       const body = horarios.map((h) => [
         `${h.label}${h.hora_inicio ? `\n${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""}` : ""}`,
         ...datas.map((dt) => {
-          const oc = mapaOcupacao.get(`${dt}__${h.id}`);
-          if (!oc) return { content: "Livre", styles: { textColor: [21, 128, 61] } };
+          const ocs = mapaOcupacao.get(`${dt}__${h.id}`) ?? [];
+          if (ocs.length === 0) return { content: "Livre", styles: { textColor: [21, 128, 61] } };
+          const texto = ocs.map((oc) => `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} (${oc.docente?.nome ?? "—"})`).join("\n");
           return {
-            content: `Ocupado\n${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"}\n${oc.docente?.nome ?? "—"}`,
-            styles: { textColor: [185, 28, 28] },
+            content: `${ocs.length > 1 ? "Ocupado (revisar)" : "Ocupado"}\n${texto}`,
+            styles: { textColor: ocs.length > 1 ? [180, 130, 0] : [185, 28, 28] },
           };
         }),
       ]);
@@ -721,13 +714,13 @@ function RelatorioLaboratorio() {
       const body: (string | { content: string; styles: Record<string, unknown> })[][] = [];
       for (const dt of datas) {
         for (const h of horarios) {
-          const oc = mapaOcupacao.get(`${dt}__${h.id}`);
-          const statusTxt = oc ? "Ocupado" : "Livre";
+          const ocs = mapaOcupacao.get(`${dt}__${h.id}`) ?? [];
+          const statusTxt = ocs.length === 0 ? "Livre" : ocs.length > 1 ? "Ocupado (revisar)" : "Ocupado";
           body.push([
             `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`,
             `${h.label}${h.hora_inicio ? ` (${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""})` : ""}`,
-            { content: statusTxt, styles: { textColor: oc ? [185, 28, 28] : [21, 128, 61], fontStyle: "bold" } },
-            oc ? `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}` : "—",
+            { content: statusTxt, styles: { textColor: ocs.length > 1 ? [180, 130, 0] : ocs.length === 1 ? [185, 28, 28] : [21, 128, 61], fontStyle: "bold" } },
+            ocs.length > 0 ? ocs.map((oc) => `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}`).join(" | ") : "—",
           ]);
         }
       }
@@ -788,23 +781,11 @@ function RelatorioLaboratorio() {
         </div>
       </Card>
 
-      {componentesLab.length === 0 && (
-        <Card className="p-4 flex items-start gap-3 border-amber-300 bg-amber-50">
-          <MonitorSmartphone className="h-5 w-5 text-amber-700 mt-0.5 shrink-0" />
-          <div className="text-sm text-amber-900">
-            Nenhum componente curricular está marcado como "Usa o Laboratório de Informática".
-            Vá em <b>Componentes Curriculares</b> e marque os componentes correspondentes (ex: Informática, Computação)
-            para este relatório funcionar.
-          </div>
-        </Card>
-      )}
-
-      {componentesLab.length > 0 && (
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-3">
-            {isLoading ? "Carregando..." : datas.length === 0 ? "Selecione um período válido." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${datas.length} dia(s) letivo(s) · ${horarios.length} horário(s).`}
-          </div>
-          {!isLoading && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
+      <Card className="p-4">
+        <div className="text-sm text-muted-foreground mb-3">
+          {isLoading ? "Carregando..." : datas.length === 0 ? "Selecione um período válido." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${datas.length} dia(s) letivo(s) · ${horarios.length} horário(s).`}
+        </div>
+        {!isLoading && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
             <div className="overflow-auto max-h-[560px] border rounded-md">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
@@ -828,16 +809,22 @@ function RelatorioLaboratorio() {
                         </div>
                       </td>
                       {datas.map((dt) => {
-                        const oc = mapaOcupacao.get(`${dt}__${h.id}`);
+                        const ocs = mapaOcupacao.get(`${dt}__${h.id}`) ?? [];
                         return (
                           <td key={dt} className="p-2 text-center align-top">
-                            {oc ? (
+                            {ocs.length > 0 ? (
                               <div className="space-y-1">
-                                <Badge variant="destructive">Ocupado</Badge>
-                                <div className="text-xs text-muted-foreground leading-tight">
-                                  {oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"}
-                                  <br />
-                                  {oc.docente?.nome ?? "—"}
+                                <Badge variant={ocs.length > 1 ? "outline" : "destructive"} className={ocs.length > 1 ? "border-amber-400 text-amber-700 bg-amber-50" : ""}>
+                                  {ocs.length > 1 ? `Revisar (${ocs.length})` : "Ocupado"}
+                                </Badge>
+                                <div className="text-xs text-muted-foreground leading-tight space-y-1">
+                                  {ocs.map((oc, i) => (
+                                    <div key={i}>
+                                      {oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"}
+                                      <br />
+                                      {oc.docente?.nome ?? "—"}
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
                             ) : (
@@ -867,14 +854,22 @@ function RelatorioLaboratorio() {
                 <tbody>
                   {datas.flatMap((dt) =>
                     horarios.map((h) => {
-                      const oc = mapaOcupacao.get(`${dt}__${h.id}`);
+                      const ocs = mapaOcupacao.get(`${dt}__${h.id}`) ?? [];
                       return (
                         <tr key={`${dt}__${h.id}`} className="border-t">
                           <td className="p-2 whitespace-nowrap capitalize">{new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} {fmtDate(dt)}</td>
                           <td className="p-2 whitespace-nowrap">{h.label}</td>
-                          <td className="p-2">{oc ? <Badge variant="destructive">Ocupado</Badge> : <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Livre</Badge>}</td>
+                          <td className="p-2">
+                            {ocs.length > 1 ? (
+                              <Badge variant="outline" className="border-amber-400 text-amber-700 bg-amber-50">Revisar ({ocs.length})</Badge>
+                            ) : ocs.length === 1 ? (
+                              <Badge variant="destructive">Ocupado</Badge>
+                            ) : (
+                              <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Livre</Badge>
+                            )}
+                          </td>
                           <td className="p-2 text-muted-foreground">
-                            {oc ? `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}` : "—"}
+                            {ocs.length > 0 ? ocs.map((oc) => `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}`).join(" | ") : "—"}
                           </td>
                         </tr>
                       );
@@ -885,7 +880,6 @@ function RelatorioLaboratorio() {
             </div>
           )}
         </Card>
-      )}
     </div>
   );
 }

@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      laboratorio_agendamentos: {
+        Row: {
+          id: string
+          data: string
+          horario_id: string
+          turma_id: string
+          docente_id: string | null
+          componente_id: string | null
+          observacao: string | null
+          status: string
+          criado_por: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          data: string
+          horario_id: string
+          turma_id: string
+          docente_id?: string | null
+          componente_id?: string | null
+          observacao?: string | null
+          status?: string
+          criado_por?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          data?: string
+          horario_id?: string
+          turma_id?: string
+          docente_id?: string | null
+          componente_id?: string | null
+          observacao?: string | null
+          status?: string
+          criado_por?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "laboratorio_agendamentos_horario_id_fkey"
+            columns: ["horario_id"]
+            isOneToOne: false
+            referencedRelation: "horarios_padrao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "laboratorio_agendamentos_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "turmas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "laboratorio_agendamentos_docente_id_fkey"
+            columns: ["docente_id"]
+            isOneToOne: false
+            referencedRelation: "docentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "laboratorio_agendamentos_componente_id_fkey"
+            columns: ["componente_id"]
+            isOneToOne: false
+            referencedRelation: "componentes_curriculares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_users: {
         Row: {
           ativo: boolean

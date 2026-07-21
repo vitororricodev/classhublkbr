@@ -103,6 +103,28 @@ before update on public.planejamentos
 for each row execute function public.set_updated_at();
 
 -- =====================================================================
+-- Reservas do Laboratório de Informática (independentes de planejamentos)
+-- =====================================================================
+create table if not exists public.laboratorio_agendamentos (
+  id uuid primary key default gen_random_uuid(),
+  data date not null,
+  horario_id uuid not null references public.horarios_padrao(id) on delete cascade,
+  turma_id uuid not null references public.turmas(id) on delete cascade,
+  docente_id uuid references public.docentes(id) on delete set null,
+  componente_id uuid references public.componentes_curriculares(id) on delete set null,
+  observacao text,
+  status text not null default 'agendado' check (status in ('agendado', 'realizado', 'cancelado')),
+  criado_por uuid references public.usuarios(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+-- Nota: o laboratório pode ter mais de um agendamento no mesmo horário/dia
+-- (ex: dois professores revezando o mesmo componente). Isso é sinalizado
+-- como aviso na interface, não bloqueado no banco.
+create index if not exists idx_lab_agendamentos_data on public.laboratorio_agendamentos(data);
+create index if not exists idx_lab_agendamentos_turma on public.laboratorio_agendamentos(turma_id);
+
+-- =====================================================================
 -- RLS (modo aberto — autenticação ainda não implementada)
 -- =====================================================================
 alter table public.docentes                 enable row level security;
@@ -110,12 +132,13 @@ alter table public.componentes_curriculares enable row level security;
 alter table public.turmas                   enable row level security;
 alter table public.horarios_padrao          enable row level security;
 alter table public.planejamentos            enable row level security;
+alter table public.laboratorio_agendamentos enable row level security;
 
 do $$
 declare t text;
 begin
   for t in select unnest(array[
-    'docentes','componentes_curriculares','turmas','horarios_padrao','planejamentos'
+    'docentes','componentes_curriculares','turmas','horarios_padrao','planejamentos','laboratorio_agendamentos'
   ]) loop
     execute format('drop policy if exists open_all on public.%I', t);
     execute format(
