@@ -54,8 +54,15 @@ export function AppSidebar() {
   return (
     <aside className="no-print w-60 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col min-h-screen">
       <div className="px-6 py-6 border-b border-sidebar-border">
-        <div className="text-lg font-semibold tracking-tight">ClassHub L.K</div>
-        <div className="text-xs opacity-70 mt-0.5">Planejamento de aulas</div>
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-sidebar-accent text-sidebar-accent-foreground flex items-center justify-center shrink-0">
+            <GraduationCap className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-lg font-semibold tracking-tight leading-tight">ClassHub L.K</div>
+            <div className="text-xs opacity-70">Planejamento de aulas</div>
+          </div>
+        </div>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {items.map((it) => {
