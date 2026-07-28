@@ -28,10 +28,10 @@ function HorariosPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Horario | null>(null);
-  const [form, setForm] = useState({ label: "", hora_inicio: "07:00", hora_fim: "07:50", ordem: 1, ativo: true });
+  const [form, setForm] = useState({ label: "", hora_inicio: "07:00", hora_fim: "07:50", ordem: 1, ativo: true, eh_intervalo: false });
 
-  const openNew = () => { setEditing(null); setForm({ label: "", hora_inicio: "07:00", hora_fim: "07:50", ordem: (data[data.length - 1]?.ordem ?? 0) + 1, ativo: true }); setOpen(true); };
-  const openEdit = (d: Horario) => { setEditing(d); setForm({ label: d.label, hora_inicio: d.hora_inicio, hora_fim: d.hora_fim, ordem: d.ordem, ativo: d.ativo }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ label: "", hora_inicio: "07:00", hora_fim: "07:50", ordem: (data[data.length - 1]?.ordem ?? 0) + 1, ativo: true, eh_intervalo: false }); setOpen(true); };
+  const openEdit = (d: Horario) => { setEditing(d); setForm({ label: d.label, hora_inicio: d.hora_inicio, hora_fim: d.hora_fim, ordem: d.ordem, ativo: d.ativo, eh_intervalo: d.eh_intervalo }); setOpen(true); };
 
   const save = useMutation({
     mutationFn: async () => {
@@ -76,6 +76,13 @@ function HorariosPage() {
               </div>
               <div className="space-y-2"><Label>Ordem</Label><Input type="number" value={form.ordem} onChange={(e) => setForm({ ...form, ordem: Number(e.target.value) })} /></div>
               <div className="flex items-center gap-2"><Switch checked={form.ativo} onCheckedChange={(v) => setForm({ ...form, ativo: v })} /><Label>Ativo</Label></div>
+              <div className="flex items-center gap-2">
+                <Switch checked={form.eh_intervalo} onCheckedChange={(v) => setForm({ ...form, eh_intervalo: v })} />
+                <Label>É intervalo (recreio)</Label>
+              </div>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Marcado, este horário aparece destacado em vermelho nos relatórios, em vez de parecer um horário vago.
+              </p>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
@@ -87,10 +94,10 @@ function HorariosPage() {
 
       <Card className="p-0 overflow-hidden">
         <Table>
-          <TableHeader><TableRow><TableHead>Ordem</TableHead><TableHead>Rótulo</TableHead><TableHead>Início</TableHead><TableHead>Fim</TableHead><TableHead>Ativo</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Ordem</TableHead><TableHead>Rótulo</TableHead><TableHead>Início</TableHead><TableHead>Fim</TableHead><TableHead>Ativo</TableHead><TableHead>Intervalo</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
           <TableBody>
-            {isLoading && <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>}
-            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum horário cadastrado.</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>}
+            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum horário cadastrado.</TableCell></TableRow>}
             {data.map((d) => (
               <TableRow key={d.id}>
                 <TableCell>{d.ordem}</TableCell>
@@ -98,6 +105,7 @@ function HorariosPage() {
                 <TableCell>{d.hora_inicio?.slice(0,5)}</TableCell>
                 <TableCell>{d.hora_fim?.slice(0,5)}</TableCell>
                 <TableCell>{d.ativo ? "Sim" : "Não"}</TableCell>
+                <TableCell>{d.eh_intervalo ? "Sim" : "Não"}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button size="sm" variant="ghost" onClick={() => openEdit(d)}><Pencil className="h-4 w-4" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => { if (confirm("Excluir?")) del.mutate(d.id); }}><Trash2 className="h-4 w-4" /></Button>

@@ -197,6 +197,7 @@ export type Database = {
         Row: {
           ativo: boolean
           created_at: string
+          eh_intervalo: boolean
           hora_fim: string
           hora_inicio: string
           id: string
@@ -206,6 +207,7 @@ export type Database = {
         Insert: {
           ativo?: boolean
           created_at?: string
+          eh_intervalo?: boolean
           hora_fim: string
           hora_inicio: string
           id?: string
@@ -215,6 +217,7 @@ export type Database = {
         Update: {
           ativo?: boolean
           created_at?: string
+          eh_intervalo?: boolean
           hora_fim?: string
           hora_inicio?: string
           id?: string
@@ -222,6 +225,67 @@ export type Database = {
           ordem?: number
         }
         Relationships: []
+      }
+      categorias_ac: {
+        Row: { ativo: boolean; created_at: string; id: string; nome: string }
+        Insert: { ativo?: boolean; created_at?: string; id?: string; nome: string }
+        Update: { ativo?: boolean; created_at?: string; id?: string; nome?: string }
+        Relationships: []
+      }
+      atividades_complementares: {
+        Row: {
+          categoria_id: string
+          created_at: string
+          criado_por: string | null
+          data: string
+          docente_id: string
+          horario_id: string
+          id: string
+          observacao: string | null
+        }
+        Insert: {
+          categoria_id: string
+          created_at?: string
+          criado_por?: string | null
+          data: string
+          docente_id: string
+          horario_id: string
+          id?: string
+          observacao?: string | null
+        }
+        Update: {
+          categoria_id?: string
+          created_at?: string
+          criado_por?: string | null
+          data?: string
+          docente_id?: string
+          horario_id?: string
+          id?: string
+          observacao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atividades_complementares_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_ac"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atividades_complementares_docente_id_fkey"
+            columns: ["docente_id"]
+            isOneToOne: false
+            referencedRelation: "docentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atividades_complementares_horario_id_fkey"
+            columns: ["horario_id"]
+            isOneToOne: false
+            referencedRelation: "horarios_padrao"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       planejamentos: {
         Row: {

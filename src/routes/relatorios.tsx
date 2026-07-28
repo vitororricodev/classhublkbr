@@ -1,19 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { FileDown } from "lucide-react";
+import { FileDown, Plus, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { PLAN_SELECT } from "@/lib/db";
-import type { Docente, Componente, Turma, Horario, PlanejamentoFull } from "@/lib/db";
+import { PLAN_SELECT, AC_SELECT } from "@/lib/db";
+import type { Docente, Componente, Turma, Horario, PlanejamentoFull, CategoriaAC, AtividadeComplementarFull } from "@/lib/db";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/relatorios")({ component: RelatoriosPage });
@@ -304,6 +307,34 @@ function RelatorioDocente() {
     },
   });
 
+  const qc = useQueryClient();
+  const { data: acs = [], isLoading: isLoadingAC } = useQuery({
+    queryKey: ["atividades_complementares", scopedDocenteId, periodo],
+    enabled: !!scopedDocenteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("atividades_complementares")
+        .select(AC_SELECT)
+        .eq("docente_id", scopedDocenteId!)
+        .gte("data", periodo.inicio).lte("data", periodo.fim)
+        .order("data").order("horario_id");
+      if (error) throw error;
+      return (data ?? []) as unknown as AtividadeComplementarFull[];
+    },
+  });
+
+  const [acFormOpen, setAcFormOpen] = useState(false);
+  const [acEditing, setAcEditing] = useState<AtividadeComplementarFull | null>(null);
+
+  const delAC = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("atividades_complementares").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("AC excluída"); qc.invalidateQueries({ queryKey: ["atividades_complementares"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const docenteSelecionado = isAdmin ? docentesLista.find((d) => d.id === docenteId) : null;
   const nomeDocente = isAdmin ? (docenteSelecionado?.nome ?? null) : (user?.nome ?? null);
 
@@ -326,6 +357,12 @@ function RelatorioDocente() {
     for (const a of aulas) m.set(`${a.data}__${a.horario_id}`, a);
     return m;
   }, [aulas]);
+
+  const mapaAC = useMemo(() => {
+    const m = new Map<string, AtividadeComplementarFull>();
+    for (const a of acs) m.set(`${a.data}__${a.horario_id}`, a);
+    return m;
+  }, [acs]);
 
   const geradoEm = fmtDateTime(new Date());
 
@@ -374,9 +411,14 @@ function RelatorioDocente() {
     if (formato === "tabela") {
       const head = ["Horário", ...datas.map((dt) => `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`)];
       const body = horarios.map((h) => [
-        `${h.label}${h.hora_inicio ? `\n${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""}` : ""}`,
+        h.eh_intervalo
+          ? { content: `${h.label} (Intervalo)`, styles: { fillColor: [254, 226, 226], textColor: [153, 27, 27], fontStyle: "bold" } }
+          : `${h.label}${h.hora_inicio ? `\n${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""}` : ""}`,
         ...datas.map((dt) => {
+          if (h.eh_intervalo) return { content: "Intervalo", styles: { fillColor: [254, 226, 226], textColor: [153, 27, 27] } };
           const a = mapaAulas.get(`${dt}__${h.id}`);
+          const ac = mapaAC.get(`${dt}__${h.id}`);
+          if (ac) return { content: `AC — ${ac.categorias_ac?.nome ?? "—"}`, styles: { fillColor: [237, 233, 254], textColor: [91, 33, 182], fontStyle: "bold" } };
           if (!a) return "—";
           return `${a.componentes_curriculares?.nome ?? "—"}\n${a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}`;
         }),
@@ -384,7 +426,8 @@ function RelatorioDocente() {
       autoTable(doc, {
         startY: 118,
         head: [head],
-        body,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        body: body as any,
         margin: { left: marginX, right: marginX, bottom: 36 },
         styles: { font: "helvetica", fontSize: 8.5, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34], halign: "center" },
         headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 8.5 },
@@ -403,17 +446,20 @@ function RelatorioDocente() {
         },
       });
     } else {
-      const body = aulas.map((a) => [
-        fmtDate(a.data),
-        a.horarios_padrao?.label ?? "",
-        a.componentes_curriculares?.nome ?? "—",
-        a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—",
-        a.conteudo || "—",
-        a.status,
-      ]);
+      type LinhaLista = { data: string; ordem: number; horarioLabel: string; tipo: "Aula" | "AC"; col3: string; col4: string; status: string };
+      const linhasAulas: LinhaLista[] = aulas.map((a) => ({
+        data: a.data, ordem: a.horarios_padrao?.ordem ?? 0, horarioLabel: a.horarios_padrao?.label ?? "",
+        tipo: "Aula", col3: a.componentes_curriculares?.nome ?? "—", col4: a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—", status: a.status,
+      }));
+      const linhasAC: LinhaLista[] = acs.map((a) => ({
+        data: a.data, ordem: a.horarios_padrao?.ordem ?? 0, horarioLabel: a.horarios_padrao?.label ?? "",
+        tipo: "AC", col3: a.categorias_ac?.nome ?? "—", col4: a.observacao || "—", status: "—",
+      }));
+      const linhas = [...linhasAulas, ...linhasAC].sort((x, y) => x.data === y.data ? x.ordem - y.ordem : x.data.localeCompare(y.data));
+      const body = linhas.map((r) => [fmtDate(r.data), r.horarioLabel, r.tipo, r.col3, r.col4, r.status]);
       autoTable(doc, {
         startY: 118,
-        head: [["Data", "Horário", "Componente", "Turma", "Conteúdo", "Status"]],
+        head: [["Data", "Horário", "Tipo", "Componente / Categoria", "Turma / Observação", "Status"]],
         body,
         margin: { left: marginX, right: marginX, bottom: 36 },
         styles: { font: "helvetica", fontSize: 9, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34] },
@@ -444,9 +490,16 @@ function RelatorioDocente() {
             ? "Escolha um docente e um período para gerar a grade de aulas dele — útil para imprimir ou entregar a professores com menos familiaridade com o sistema."
             : "Sua grade de aulas no período selecionado."}
         </p>
-        <Button onClick={handleExportPDF} disabled={!scopedDocenteId || datas.length === 0}>
-          <FileDown className="h-4 w-4 mr-2" />Exportar PDF
-        </Button>
+        <div className="flex gap-2">
+          {isAdmin && (
+            <Button variant="outline" onClick={() => { setAcEditing(null); setAcFormOpen(true); }} disabled={!scopedDocenteId}>
+              <Plus className="h-4 w-4 mr-2" />Lançar AC
+            </Button>
+          )}
+          <Button onClick={handleExportPDF} disabled={!scopedDocenteId || datas.length === 0}>
+            <FileDown className="h-4 w-4 mr-2" />Exportar PDF
+          </Button>
+        </div>
       </div>
 
       <Card className="p-4">
@@ -488,10 +541,10 @@ function RelatorioDocente() {
       {scopedDocenteId && (
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-3">
-            {isLoading ? "Carregando..." : `${nomeDocente ?? "Docente"} · período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${aulas.length} aula(s).`}
+            {(isLoading || isLoadingAC) ? "Carregando..." : `${nomeDocente ?? "Docente"} · período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${aulas.length} aula(s) · ${acs.length} AC(s).`}
           </div>
 
-          {!isLoading && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
+          {!isLoading && !isLoadingAC && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
             <div className="overflow-auto max-h-[560px] border rounded-md">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
@@ -507,18 +560,33 @@ function RelatorioDocente() {
                 </thead>
                 <tbody>
                   {horarios.map((h) => (
-                    <tr key={h.id} className="border-t">
-                      <td className="p-2 sticky left-0 bg-background whitespace-nowrap font-medium">
+                    <tr key={h.id} className={`border-t ${h.eh_intervalo ? "bg-red-50" : ""}`}>
+                      <td className={`p-2 sticky left-0 whitespace-nowrap font-medium ${h.eh_intervalo ? "bg-red-50 text-red-800" : "bg-background"}`}>
                         {h.label}
-                        <div className="text-xs font-normal text-muted-foreground">
-                          {h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}
+                        <div className={`text-xs font-normal ${h.eh_intervalo ? "text-red-700/80" : "text-muted-foreground"}`}>
+                          {h.eh_intervalo ? "Intervalo" : `${h.hora_inicio?.slice(0, 5)}–${h.hora_fim?.slice(0, 5)}`}
                         </div>
                       </td>
                       {datas.map((dt) => {
+                        if (h.eh_intervalo) {
+                          return <td key={dt} className="p-2 text-center align-top bg-red-50 text-xs text-red-700/70">Intervalo</td>;
+                        }
                         const a = mapaAulas.get(`${dt}__${h.id}`);
+                        const ac = mapaAC.get(`${dt}__${h.id}`);
                         return (
                           <td key={dt} className="p-2 text-center align-top">
-                            {a ? (
+                            {ac ? (
+                              <div className="rounded-md border px-2 py-1 space-y-0.5 bg-violet-50 border-violet-200">
+                                <div className="text-xs font-medium text-violet-800">AC — {ac.categorias_ac?.nome ?? "—"}</div>
+                                {ac.observacao && <div className="text-[11px] text-violet-700/80">{ac.observacao}</div>}
+                                {isAdmin && (
+                                  <div className="flex gap-1 justify-center pt-1">
+                                    <Button size="sm" variant="outline" className="h-6 px-1.5" onClick={() => { setAcEditing(ac); setAcFormOpen(true); }}><Pencil className="h-3 w-3" /></Button>
+                                    <Button size="sm" variant="outline" className="h-6 px-1.5" onClick={() => { if (confirm("Excluir esta AC?")) delAC.mutate(ac.id); }}><Trash2 className="h-3 w-3" /></Button>
+                                  </div>
+                                )}
+                              </div>
+                            ) : a ? (
                               <div className="rounded-md border px-2 py-1 space-y-0.5" style={{ borderLeft: `4px solid ${a.docentes?.cor_identificadora || "#7C3AED"}` }}>
                                 <div className="text-xs font-medium">{a.componentes_curriculares?.nome ?? "—"}</div>
                                 <div className="text-[11px] text-muted-foreground">{a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}</div>
@@ -536,32 +604,45 @@ function RelatorioDocente() {
             </div>
           )}
 
-          {!isLoading && formato === "lista" && (
+          {!isLoading && !isLoadingAC && formato === "lista" && (
             <div className="overflow-auto max-h-[480px] border rounded-md">
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
                     <th className="text-left p-2">Data</th>
                     <th className="text-left p-2">Horário</th>
-                    <th className="text-left p-2">Componente</th>
-                    <th className="text-left p-2">Turma</th>
-                    <th className="text-left p-2">Conteúdo</th>
+                    <th className="text-left p-2">Tipo</th>
+                    <th className="text-left p-2">Componente / Categoria</th>
+                    <th className="text-left p-2">Turma / Observação</th>
                     <th className="text-left p-2">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {aulas.map((a) => (
-                    <tr key={a.id} className="border-t">
-                      <td className="p-2 whitespace-nowrap">{fmtDate(a.data)}</td>
-                      <td className="p-2 whitespace-nowrap">{a.horarios_padrao?.label}</td>
-                      <td className="p-2">{a.componentes_curriculares?.nome ?? "—"}</td>
-                      <td className="p-2">{a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}</td>
-                      <td className="p-2">{a.conteudo || "—"}</td>
-                      <td className="p-2 capitalize">{a.status}</td>
-                    </tr>
-                  ))}
-                  {aulas.length === 0 && (
-                    <tr><td colSpan={6} className="text-center text-muted-foreground py-6">Nenhuma aula neste período.</td></tr>
+                  {[
+                    ...aulas.map((a) => ({
+                      key: `aula-${a.id}`, data: a.data, ordem: a.horarios_padrao?.ordem ?? 0, horarioLabel: a.horarios_padrao?.label ?? "",
+                      tipo: "Aula" as const, col3: a.componentes_curriculares?.nome ?? "—", col4: a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—", status: a.status,
+                    })),
+                    ...acs.map((a) => ({
+                      key: `ac-${a.id}`, data: a.data, ordem: a.horarios_padrao?.ordem ?? 0, horarioLabel: a.horarios_padrao?.label ?? "",
+                      tipo: "AC" as const, col3: a.categorias_ac?.nome ?? "—", col4: a.observacao || "—", status: "—",
+                    })),
+                  ]
+                    .sort((x, y) => (x.data === y.data ? x.ordem - y.ordem : x.data.localeCompare(y.data)))
+                    .map((r) => (
+                      <tr key={r.key} className={`border-t ${r.tipo === "AC" ? "bg-violet-50" : ""}`}>
+                        <td className="p-2 whitespace-nowrap">{fmtDate(r.data)}</td>
+                        <td className="p-2 whitespace-nowrap">{r.horarioLabel}</td>
+                        <td className="p-2">
+                          {r.tipo === "AC" ? <Badge className="bg-violet-100 text-violet-800 hover:bg-violet-100">AC</Badge> : <Badge variant="secondary">Aula</Badge>}
+                        </td>
+                        <td className="p-2">{r.col3}</td>
+                        <td className="p-2">{r.col4}</td>
+                        <td className="p-2 capitalize">{r.status}</td>
+                      </tr>
+                    ))}
+                  {aulas.length === 0 && acs.length === 0 && (
+                    <tr><td colSpan={6} className="text-center text-muted-foreground py-6">Nenhuma aula ou AC neste período.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -569,7 +650,105 @@ function RelatorioDocente() {
           )}
         </Card>
       )}
+
+      {isAdmin && scopedDocenteId && acFormOpen && (
+        <LancarACDialog
+          open={acFormOpen}
+          onClose={() => setAcFormOpen(false)}
+          docenteId={scopedDocenteId}
+          horarios={horarios}
+          editing={acEditing}
+        />
+      )}
     </div>
+  );
+}
+
+function LancarACDialog({
+  open, onClose, docenteId, horarios, editing,
+}: {
+  open: boolean; onClose: () => void; docenteId: string; horarios: Horario[]; editing: AtividadeComplementarFull | null;
+}) {
+  const qc = useQueryClient();
+  const [data, setData] = useState(editing?.data ?? todayISO());
+  const [horarioId, setHorarioId] = useState(editing?.horario_id ?? "");
+  const [categoriaId, setCategoriaId] = useState(editing?.categoria_id ?? "");
+  const [observacao, setObservacao] = useState(editing?.observacao ?? "");
+
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias_ac", "ativas"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categorias_ac").select("*").eq("ativo", true).order("nome");
+      if (error) throw error;
+      return data as CategoriaAC[];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!horarioId) throw new Error("Selecione o horário.");
+      if (!categoriaId) throw new Error("Selecione a categoria.");
+      const payload = { docente_id: docenteId, data, horario_id: horarioId, categoria_id: categoriaId, observacao: observacao || null };
+      if (editing) {
+        const { error } = await supabase.from("atividades_complementares").update(payload).eq("id", editing.id);
+        if (error) {
+          if (error.code === "23505") throw new Error("Este docente já tem uma AC lançada neste horário/dia.");
+          throw error;
+        }
+      } else {
+        const { error } = await supabase.from("atividades_complementares").insert(payload);
+        if (error) {
+          if (error.code === "23505") throw new Error("Este docente já tem uma AC lançada neste horário/dia.");
+          throw error;
+        }
+      }
+    },
+    onSuccess: () => {
+      toast.success(editing ? "AC atualizada" : "AC lançada");
+      qc.invalidateQueries({ queryKey: ["atividades_complementares"] });
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{editing ? "Editar AC" : "Lançar Atividade Complementar"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2"><Label>Data</Label><Input type="date" value={data} onChange={(e) => setData(e.target.value)} /></div>
+            <div className="space-y-2">
+              <Label>Horário</Label>
+              <Select value={horarioId} onValueChange={setHorarioId}>
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                <SelectContent>{horarios.map((h) => <SelectItem key={h.id} value={h.id}>{h.label}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Categoria</Label>
+            <Select value={categoriaId} onValueChange={setCategoriaId}>
+              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <SelectContent>
+                {categorias.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Nenhuma categoria cadastrada — crie em "Categorias de AC".</div>}
+                {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Observação (opcional)</Label>
+            <Textarea rows={3} value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: Apresentou plano de aula do 2º bimestre, feedback positivo." />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -13,6 +13,7 @@ import {
   Settings,
   UserCog,
   MonitorSmartphone,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const baseItems = [
 
 const adminItems = [
   { to: "/usuarios", label: "Usuários", icon: UserCog },
+  { to: "/categorias-ac", label: "Categorias de AC", icon: ClipboardList },
 ] as const;
 
 const tipoLabel: Record<string, string> = {

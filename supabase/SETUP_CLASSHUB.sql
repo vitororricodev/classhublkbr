@@ -62,6 +62,7 @@ create table if not exists public.horarios_padrao (
   hora_fim time not null,
   ordem integer not null default 0,
   ativo boolean not null default true,
+  eh_intervalo boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -122,6 +123,33 @@ create table if not exists public.laboratorio_agendamentos (
 -- (ex: dois professores revezando o mesmo componente). Isso é sinalizado
 -- como aviso na interface, não bloqueado no banco.
 create index if not exists idx_lab_agendamentos_data on public.laboratorio_agendamentos(data);
+
+-- =====================================================================
+-- Atividade Complementar (AC) — lançada pela coordenação no horário do
+-- docente. Independente da agenda normal de aulas.
+-- =====================================================================
+create table if not exists public.categorias_ac (
+  id uuid primary key default gen_random_uuid(),
+  nome text not null,
+  ativo boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.atividades_complementares (
+  id uuid primary key default gen_random_uuid(),
+  docente_id uuid not null references public.docentes(id) on delete cascade,
+  data date not null,
+  horario_id uuid not null references public.horarios_padrao(id) on delete cascade,
+  categoria_id uuid not null references public.categorias_ac(id) on delete restrict,
+  observacao text,
+  criado_por uuid references public.usuarios(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists uniq_ac_docente_horario_data
+  on public.atividades_complementares (docente_id, data, horario_id);
+create index if not exists idx_ac_docente on public.atividades_complementares(docente_id);
+create index if not exists idx_ac_data on public.atividades_complementares(data);
 create index if not exists idx_lab_agendamentos_turma on public.laboratorio_agendamentos(turma_id);
 
 -- =====================================================================
@@ -133,12 +161,15 @@ alter table public.turmas                   enable row level security;
 alter table public.horarios_padrao          enable row level security;
 alter table public.planejamentos            enable row level security;
 alter table public.laboratorio_agendamentos enable row level security;
+alter table public.categorias_ac            enable row level security;
+alter table public.atividades_complementares enable row level security;
 
 do $$
 declare t text;
 begin
   for t in select unnest(array[
-    'docentes','componentes_curriculares','turmas','horarios_padrao','planejamentos','laboratorio_agendamentos'
+    'docentes','componentes_curriculares','turmas','horarios_padrao','planejamentos','laboratorio_agendamentos',
+    'categorias_ac','atividades_complementares'
   ]) loop
     execute format('drop policy if exists open_all on public.%I', t);
     execute format(
