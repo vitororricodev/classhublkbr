@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as TurmasRouteImport } from './routes/turmas'
+import { Route as SolicitarLaboratorioRouteImport } from './routes/solicitar-laboratorio'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LaboratorioRouteImport } from './routes/laboratorio'
@@ -20,6 +21,7 @@ import { Route as DocentesRouteImport } from './routes/docentes'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ComponentesRouteImport } from './routes/componentes'
 import { Route as CategoriasAcRouteImport } from './routes/categorias-ac'
+import { Route as AprovacoesLaboratorioRouteImport } from './routes/aprovacoes-laboratorio'
 import { Route as AlterarSenhaRouteImport } from './routes/alterar-senha'
 import { Route as AgendamentoRouteImport } from './routes/agendamento'
 import { Route as IndexRouteImport } from './routes/index'
@@ -32,6 +34,11 @@ const UsuariosRoute = UsuariosRouteImport.update({
 const TurmasRoute = TurmasRouteImport.update({
   id: '/turmas',
   path: '/turmas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SolicitarLaboratorioRoute = SolicitarLaboratorioRouteImport.update({
+  id: '/solicitar-laboratorio',
+  path: '/solicitar-laboratorio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RelatoriosRoute = RelatoriosRouteImport.update({
@@ -79,6 +86,11 @@ const CategoriasAcRoute = CategoriasAcRouteImport.update({
   path: '/categorias-ac',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AprovacoesLaboratorioRoute = AprovacoesLaboratorioRouteImport.update({
+  id: '/aprovacoes-laboratorio',
+  path: '/aprovacoes-laboratorio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlterarSenhaRoute = AlterarSenhaRouteImport.update({
   id: '/alterar-senha',
   path: '/alterar-senha',
@@ -99,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agendamento': typeof AgendamentoRoute
   '/alterar-senha': typeof AlterarSenhaRoute
+  '/aprovacoes-laboratorio': typeof AprovacoesLaboratorioRoute
   '/categorias-ac': typeof CategoriasAcRoute
   '/componentes': typeof ComponentesRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -108,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/laboratorio': typeof LaboratorioRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
+  '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
   '/turmas': typeof TurmasRoute
   '/usuarios': typeof UsuariosRoute
 }
@@ -115,6 +129,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agendamento': typeof AgendamentoRoute
   '/alterar-senha': typeof AlterarSenhaRoute
+  '/aprovacoes-laboratorio': typeof AprovacoesLaboratorioRoute
   '/categorias-ac': typeof CategoriasAcRoute
   '/componentes': typeof ComponentesRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -124,6 +139,7 @@ export interface FileRoutesByTo {
   '/laboratorio': typeof LaboratorioRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
+  '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
   '/turmas': typeof TurmasRoute
   '/usuarios': typeof UsuariosRoute
 }
@@ -132,6 +148,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agendamento': typeof AgendamentoRoute
   '/alterar-senha': typeof AlterarSenhaRoute
+  '/aprovacoes-laboratorio': typeof AprovacoesLaboratorioRoute
   '/categorias-ac': typeof CategoriasAcRoute
   '/componentes': typeof ComponentesRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -141,6 +158,7 @@ export interface FileRoutesById {
   '/laboratorio': typeof LaboratorioRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
+  '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
   '/turmas': typeof TurmasRoute
   '/usuarios': typeof UsuariosRoute
 }
@@ -150,6 +168,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agendamento'
     | '/alterar-senha'
+    | '/aprovacoes-laboratorio'
     | '/categorias-ac'
     | '/componentes'
     | '/configuracoes'
@@ -159,6 +178,7 @@ export interface FileRouteTypes {
     | '/laboratorio'
     | '/login'
     | '/relatorios'
+    | '/solicitar-laboratorio'
     | '/turmas'
     | '/usuarios'
   fileRoutesByTo: FileRoutesByTo
@@ -166,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agendamento'
     | '/alterar-senha'
+    | '/aprovacoes-laboratorio'
     | '/categorias-ac'
     | '/componentes'
     | '/configuracoes'
@@ -175,6 +196,7 @@ export interface FileRouteTypes {
     | '/laboratorio'
     | '/login'
     | '/relatorios'
+    | '/solicitar-laboratorio'
     | '/turmas'
     | '/usuarios'
   id:
@@ -182,6 +204,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agendamento'
     | '/alterar-senha'
+    | '/aprovacoes-laboratorio'
     | '/categorias-ac'
     | '/componentes'
     | '/configuracoes'
@@ -191,6 +214,7 @@ export interface FileRouteTypes {
     | '/laboratorio'
     | '/login'
     | '/relatorios'
+    | '/solicitar-laboratorio'
     | '/turmas'
     | '/usuarios'
   fileRoutesById: FileRoutesById
@@ -199,6 +223,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgendamentoRoute: typeof AgendamentoRoute
   AlterarSenhaRoute: typeof AlterarSenhaRoute
+  AprovacoesLaboratorioRoute: typeof AprovacoesLaboratorioRoute
   CategoriasAcRoute: typeof CategoriasAcRoute
   ComponentesRoute: typeof ComponentesRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
@@ -208,6 +233,7 @@ export interface RootRouteChildren {
   LaboratorioRoute: typeof LaboratorioRoute
   LoginRoute: typeof LoginRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  SolicitarLaboratorioRoute: typeof SolicitarLaboratorioRoute
   TurmasRoute: typeof TurmasRoute
   UsuariosRoute: typeof UsuariosRoute
 }
@@ -226,6 +252,13 @@ declare module '@tanstack/react-router' {
       path: '/turmas'
       fullPath: '/turmas'
       preLoaderRoute: typeof TurmasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solicitar-laboratorio': {
+      id: '/solicitar-laboratorio'
+      path: '/solicitar-laboratorio'
+      fullPath: '/solicitar-laboratorio'
+      preLoaderRoute: typeof SolicitarLaboratorioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/relatorios': {
@@ -291,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriasAcRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/aprovacoes-laboratorio': {
+      id: '/aprovacoes-laboratorio'
+      path: '/aprovacoes-laboratorio'
+      fullPath: '/aprovacoes-laboratorio'
+      preLoaderRoute: typeof AprovacoesLaboratorioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alterar-senha': {
       id: '/alterar-senha'
       path: '/alterar-senha'
@@ -319,6 +359,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgendamentoRoute: AgendamentoRoute,
   AlterarSenhaRoute: AlterarSenhaRoute,
+  AprovacoesLaboratorioRoute: AprovacoesLaboratorioRoute,
   CategoriasAcRoute: CategoriasAcRoute,
   ComponentesRoute: ComponentesRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
@@ -328,6 +369,7 @@ const rootRouteChildren: RootRouteChildren = {
   LaboratorioRoute: LaboratorioRoute,
   LoginRoute: LoginRoute,
   RelatoriosRoute: RelatoriosRoute,
+  SolicitarLaboratorioRoute: SolicitarLaboratorioRoute,
   TurmasRoute: TurmasRoute,
   UsuariosRoute: UsuariosRoute,
 }

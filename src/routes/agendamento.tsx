@@ -293,6 +293,14 @@ function DiaModal({ date, onClose, horarios, turmas }: { date: string | null; on
             {horarios.length === 0 && <div className="text-sm text-muted-foreground">Cadastre horários padrão para começar.</div>}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {horarios.map((h) => {
+                if (h.eh_intervalo) {
+                  return (
+                    <Card key={h.id} className="p-3 bg-red-50 border-red-200">
+                      <div className="text-sm font-medium text-red-800">{h.label}</div>
+                      <div className="text-xs text-red-700/80">Intervalo</div>
+                    </Card>
+                  );
+                }
                 const plan = diaDaTurma.find((p) => p.horario_id === h.id && p.status !== "cancelado");
                 return (
                   <Card key={h.id} className="p-3">

@@ -6,9 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, MonitorSmartphone, Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, MonitorSmartphone, Plus, Pencil, Trash2, AlertTriangle, Projector, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { LAB_SELECT } from "@/lib/db";
 import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, StatusLab, Turma } from "@/lib/db";
@@ -128,14 +129,17 @@ function LaboratorioPage() {
               </thead>
               <tbody>
                 {horarios.map((h) => (
-                  <tr key={h.id} className="border-t">
-                    <td className="p-2 sticky left-0 bg-background whitespace-nowrap font-medium">
+                  <tr key={h.id} className={`border-t ${h.eh_intervalo ? "bg-red-50" : ""}`}>
+                    <td className={`p-2 sticky left-0 whitespace-nowrap font-medium ${h.eh_intervalo ? "bg-red-50 text-red-800" : "bg-background"}`}>
                       {h.label}
-                      <div className="text-xs font-normal text-muted-foreground">
-                        {h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}
+                      <div className={`text-xs font-normal ${h.eh_intervalo ? "text-red-700/80" : "text-muted-foreground"}`}>
+                        {h.eh_intervalo ? "Intervalo" : `${h.hora_inicio?.slice(0, 5)}–${h.hora_fim?.slice(0, 5)}`}
                       </div>
                     </td>
                     {datas.map((dt) => {
+                      if (h.eh_intervalo) {
+                        return <td key={dt} className="p-2 text-center align-top bg-red-50 text-xs text-red-700/70">Intervalo</td>;
+                      }
                       const lista = mapa.get(`${dt}__${h.id}`) ?? [];
                       return (
                         <td key={dt} className="p-2 text-center align-top min-w-[160px]">
@@ -151,6 +155,12 @@ function LaboratorioPage() {
                                 {a.docentes && <div className="text-[11px] text-muted-foreground">{a.docentes.nome}</div>}
                                 {a.componentes_curriculares && <div className="text-[11px] text-muted-foreground">{a.componentes_curriculares.nome}</div>}
                                 {a.observacao && <div className="text-[11px] text-muted-foreground italic">{a.observacao}</div>}
+                                {(a.usar_projetor || a.usar_equipamento_som) && (
+                                  <div className="flex gap-1">
+                                    {a.usar_projetor && <span title="Projetor"><Projector className="h-3 w-3 text-muted-foreground" /></span>}
+                                    {a.usar_equipamento_som && <span title="Equipamento de som"><Volume2 className="h-3 w-3 text-muted-foreground" /></span>}
+                                  </div>
+                                )}
                                 <div className="flex gap-1 pt-1">
                                   <Button size="sm" variant="outline" className="h-6 px-1.5" onClick={() => abrirEdicao(a)}><Pencil className="h-3 w-3" /></Button>
                                   <ExcluirBotao id={a.id} />
@@ -219,6 +229,8 @@ function LaboratorioAgendamentoForm({
   const [docenteId, setDocenteId] = useState<string>("none");
   const [componenteId, setComponenteId] = useState<string>("none");
   const [observacao, setObservacao] = useState("");
+  const [usarProjetor, setUsarProjetor] = useState(false);
+  const [usarSom, setUsarSom] = useState(false);
   const [status, setStatus] = useState<StatusLab>("agendado");
 
   useEffect(() => {
@@ -227,9 +239,11 @@ function LaboratorioAgendamentoForm({
       setDocenteId(editing.docente_id ?? "none");
       setComponenteId(editing.componente_id ?? "none");
       setObservacao(editing.observacao ?? "");
+      setUsarProjetor(editing.usar_projetor);
+      setUsarSom(editing.usar_equipamento_som);
       setStatus(editing.status);
     } else {
-      setTurmaId(""); setDocenteId("none"); setComponenteId("none"); setObservacao(""); setStatus("agendado");
+      setTurmaId(""); setDocenteId("none"); setComponenteId("none"); setObservacao(""); setUsarProjetor(false); setUsarSom(false); setStatus("agendado");
     }
   }, [editing, open]);
 
@@ -254,6 +268,8 @@ function LaboratorioAgendamentoForm({
         docente_id: docenteId === "none" ? null : docenteId,
         componente_id: componenteId === "none" ? null : componenteId,
         observacao: observacao || null,
+        usar_projetor: usarProjetor,
+        usar_equipamento_som: usarSom,
         status,
       };
 
@@ -329,6 +345,16 @@ function LaboratorioAgendamentoForm({
           <div className="space-y-2">
             <Label>O que vai ser feito</Label>
             <Textarea rows={3} value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: Assistir vídeo sobre a Segunda Guerra Mundial" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2 border rounded-md px-3 py-2">
+              <Switch checked={usarProjetor} onCheckedChange={setUsarProjetor} />
+              <Label className="cursor-pointer" onClick={() => setUsarProjetor(!usarProjetor)}>Projetor</Label>
+            </div>
+            <div className="flex items-center gap-2 border rounded-md px-3 py-2">
+              <Switch checked={usarSom} onCheckedChange={setUsarSom} />
+              <Label className="cursor-pointer" onClick={() => setUsarSom(!usarSom)}>Equipamento de som</Label>
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Status</Label>

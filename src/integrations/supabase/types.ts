@@ -24,6 +24,8 @@ export type Database = {
           componente_id: string | null
           observacao: string | null
           status: string
+          usar_projetor: boolean
+          usar_equipamento_som: boolean
           criado_por: string | null
           created_at: string
         }
@@ -36,6 +38,8 @@ export type Database = {
           componente_id?: string | null
           observacao?: string | null
           status?: string
+          usar_projetor?: boolean
+          usar_equipamento_som?: boolean
           criado_por?: string | null
           created_at?: string
         }
@@ -48,6 +52,8 @@ export type Database = {
           componente_id?: string | null
           observacao?: string | null
           status?: string
+          usar_projetor?: boolean
+          usar_equipamento_som?: boolean
           criado_por?: string | null
           created_at?: string
         }
@@ -78,6 +84,89 @@ export type Database = {
             columns: ["componente_id"]
             isOneToOne: false
             referencedRelation: "componentes_curriculares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solicitacoes_laboratorio: {
+        Row: {
+          id: string
+          docente_id: string
+          data: string
+          horario_id: string
+          componente_id: string
+          turma_id: string
+          conteudo: string | null
+          usar_projetor: boolean
+          usar_equipamento_som: boolean
+          status: string
+          motivo_rejeicao: string | null
+          decidido_por: string | null
+          decidido_em: string | null
+          criado_por: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          docente_id: string
+          data: string
+          horario_id: string
+          componente_id: string
+          turma_id: string
+          conteudo?: string | null
+          usar_projetor?: boolean
+          usar_equipamento_som?: boolean
+          status?: string
+          motivo_rejeicao?: string | null
+          decidido_por?: string | null
+          decidido_em?: string | null
+          criado_por?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          docente_id?: string
+          data?: string
+          horario_id?: string
+          componente_id?: string
+          turma_id?: string
+          conteudo?: string | null
+          usar_projetor?: boolean
+          usar_equipamento_som?: boolean
+          status?: string
+          motivo_rejeicao?: string | null
+          decidido_por?: string | null
+          decidido_em?: string | null
+          criado_por?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_laboratorio_docente_id_fkey"
+            columns: ["docente_id"]
+            isOneToOne: false
+            referencedRelation: "docentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_laboratorio_horario_id_fkey"
+            columns: ["horario_id"]
+            isOneToOne: false
+            referencedRelation: "horarios_padrao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_laboratorio_componente_id_fkey"
+            columns: ["componente_id"]
+            isOneToOne: false
+            referencedRelation: "componentes_curriculares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_laboratorio_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "turmas"
             referencedColumns: ["id"]
           },
         ]

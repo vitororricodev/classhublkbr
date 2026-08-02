@@ -856,8 +856,11 @@ function RelatorioLaboratorio() {
     if (formato === "tabela") {
       const head = ["Horário", ...datas.map((dt) => `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`)];
       const body = horarios.map((h) => [
-        `${h.label}${h.hora_inicio ? `\n${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""}` : ""}`,
+        h.eh_intervalo
+          ? { content: `${h.label} (Intervalo)`, styles: { fillColor: [254, 226, 226], textColor: [153, 27, 27], fontStyle: "bold" } }
+          : `${h.label}${h.hora_inicio ? `\n${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""}` : ""}`,
         ...datas.map((dt) => {
+          if (h.eh_intervalo) return { content: "Intervalo", styles: { fillColor: [254, 226, 226], textColor: [153, 27, 27] } };
           const ocs = mapaOcupacao.get(`${dt}__${h.id}`) ?? [];
           if (ocs.length === 0) return { content: "Livre", styles: { textColor: [21, 128, 61] } };
           const texto = ocs.map((oc) => `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} (${oc.docente?.nome ?? "—"})`).join("\n");
@@ -893,6 +896,15 @@ function RelatorioLaboratorio() {
       const body: (string | { content: string; styles: Record<string, unknown> })[][] = [];
       for (const dt of datas) {
         for (const h of horarios) {
+          if (h.eh_intervalo) {
+            body.push([
+              `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`,
+              `${h.label}`,
+              { content: "Intervalo", styles: { textColor: [153, 27, 27], fontStyle: "bold" } },
+              "—",
+            ]);
+            continue;
+          }
           const ocs = mapaOcupacao.get(`${dt}__${h.id}`) ?? [];
           const statusTxt = ocs.length === 0 ? "Livre" : ocs.length > 1 ? "Ocupado (revisar)" : "Ocupado";
           body.push([
@@ -980,14 +992,17 @@ function RelatorioLaboratorio() {
                 </thead>
                 <tbody>
                   {horarios.map((h) => (
-                    <tr key={h.id} className="border-t">
-                      <td className="p-2 sticky left-0 bg-background whitespace-nowrap font-medium">
+                    <tr key={h.id} className={`border-t ${h.eh_intervalo ? "bg-red-50" : ""}`}>
+                      <td className={`p-2 sticky left-0 whitespace-nowrap font-medium ${h.eh_intervalo ? "bg-red-50 text-red-800" : "bg-background"}`}>
                         {h.label}
-                        <div className="text-xs font-normal text-muted-foreground">
-                          {h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}
+                        <div className={`text-xs font-normal ${h.eh_intervalo ? "text-red-700/80" : "text-muted-foreground"}`}>
+                          {h.eh_intervalo ? "Intervalo" : `${h.hora_inicio?.slice(0, 5)}–${h.hora_fim?.slice(0, 5)}`}
                         </div>
                       </td>
                       {datas.map((dt) => {
+                        if (h.eh_intervalo) {
+                          return <td key={dt} className="p-2 text-center align-top bg-red-50 text-xs text-red-700/70">Intervalo</td>;
+                        }
                         const ocs = mapaOcupacao.get(`${dt}__${h.id}`) ?? [];
                         return (
                           <td key={dt} className="p-2 text-center align-top">
@@ -1033,6 +1048,16 @@ function RelatorioLaboratorio() {
                 <tbody>
                   {datas.flatMap((dt) =>
                     horarios.map((h) => {
+                      if (h.eh_intervalo) {
+                        return (
+                          <tr key={`${dt}__${h.id}`} className="border-t bg-red-50">
+                            <td className="p-2 whitespace-nowrap capitalize text-red-800">{new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} {fmtDate(dt)}</td>
+                            <td className="p-2 whitespace-nowrap text-red-800">{h.label}</td>
+                            <td className="p-2"><Badge variant="outline" className="border-red-300 text-red-800 bg-red-100">Intervalo</Badge></td>
+                            <td className="p-2 text-red-700/70">—</td>
+                          </tr>
+                        );
+                      }
                       const ocs = mapaOcupacao.get(`${dt}__${h.id}`) ?? [];
                       return (
                         <tr key={`${dt}__${h.id}`} className="border-t">

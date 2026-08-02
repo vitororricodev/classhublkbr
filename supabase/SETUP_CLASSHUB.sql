@@ -115,9 +115,33 @@ create table if not exists public.laboratorio_agendamentos (
   componente_id uuid references public.componentes_curriculares(id) on delete set null,
   observacao text,
   status text not null default 'agendado' check (status in ('agendado', 'realizado', 'cancelado')),
+  usar_projetor boolean not null default false,
+  usar_equipamento_som boolean not null default false,
   criado_por uuid references public.usuarios(id) on delete set null,
   created_at timestamptz not null default now()
 );
+
+create table if not exists public.solicitacoes_laboratorio (
+  id uuid primary key default gen_random_uuid(),
+  docente_id uuid not null references public.docentes(id) on delete cascade,
+  data date not null,
+  horario_id uuid not null references public.horarios_padrao(id) on delete cascade,
+  componente_id uuid not null references public.componentes_curriculares(id) on delete restrict,
+  turma_id uuid not null references public.turmas(id) on delete cascade,
+  conteudo text,
+  usar_projetor boolean not null default false,
+  usar_equipamento_som boolean not null default false,
+  status text not null default 'pendente' check (status in ('pendente', 'aprovado', 'rejeitado')),
+  motivo_rejeicao text,
+  decidido_por uuid references public.usuarios(id) on delete set null,
+  decidido_em timestamptz,
+  criado_por uuid references public.usuarios(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_solic_lab_status on public.solicitacoes_laboratorio(status);
+create index if not exists idx_solic_lab_docente on public.solicitacoes_laboratorio(docente_id);
+create index if not exists idx_solic_lab_data on public.solicitacoes_laboratorio(data);
 
 -- Nota: o laboratório pode ter mais de um agendamento no mesmo horário/dia
 -- (ex: dois professores revezando o mesmo componente). Isso é sinalizado
@@ -163,13 +187,14 @@ alter table public.planejamentos            enable row level security;
 alter table public.laboratorio_agendamentos enable row level security;
 alter table public.categorias_ac            enable row level security;
 alter table public.atividades_complementares enable row level security;
+alter table public.solicitacoes_laboratorio enable row level security;
 
 do $$
 declare t text;
 begin
   for t in select unnest(array[
     'docentes','componentes_curriculares','turmas','horarios_padrao','planejamentos','laboratorio_agendamentos',
-    'categorias_ac','atividades_complementares'
+    'categorias_ac','atividades_complementares','solicitacoes_laboratorio'
   ]) loop
     execute format('drop policy if exists open_all on public.%I', t);
     execute format(
