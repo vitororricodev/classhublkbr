@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Check, X, Projector, Volume2, ClipboardCheck } from "lucide-react";
+import { Check, X, Projector, Volume2, ClipboardCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { SOLIC_SELECT } from "@/lib/db";
 import type { SolicitacaoLaboratorioFull } from "@/lib/db";
@@ -100,7 +100,9 @@ function AprovacoesLaboratorioPage() {
             {s.usar_projetor && <Badge variant="outline" className="gap-1"><Projector className="h-3 w-3" />Projetor</Badge>}
             {s.usar_equipamento_som && <Badge variant="outline" className="gap-1"><Volume2 className="h-3 w-3" />Som</Badge>}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">Enviada em {fmtDateTime(s.created_at)}</div>
+          <div className="text-xs font-medium text-foreground/80 mt-1 flex items-center gap-1">
+            <Clock className="h-3 w-3" />Solicitado em: {fmtDateTime(s.created_at)}
+          </div>
           {s.status !== "pendente" && s.decidido_em && (
             <div className="text-xs text-muted-foreground">
               {s.status === "aprovado" ? "Aprovada" : "Rejeitada"} em {fmtDateTime(s.decidido_em)}
