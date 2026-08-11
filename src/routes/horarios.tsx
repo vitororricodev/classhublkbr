@@ -58,8 +58,8 @@ function HorariosPage() {
   });
 
   return (
-    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Horários Padrão</h1>
           <p className="text-sm text-muted-foreground">Defina os blocos de horário usados nas aulas.</p>
@@ -70,7 +70,7 @@ function HorariosPage() {
             <DialogHeader><DialogTitle>{editing ? "Editar horário" : "Novo horário"}</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">
               <div className="space-y-2"><Label>Rótulo</Label><Input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="Ex.: 1ª aula" /></div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2"><Label>Início</Label><Input type="time" value={form.hora_inicio} onChange={(e) => setForm({ ...form, hora_inicio: e.target.value })} /></div>
                 <div className="space-y-2"><Label>Fim</Label><Input type="time" value={form.hora_fim} onChange={(e) => setForm({ ...form, hora_fim: e.target.value })} /></div>
               </div>
@@ -92,8 +92,7 @@ function HorariosPage() {
         </Dialog>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
+      <Card className="p-0 overflow-hidden">
         <Table>
           <TableHeader><TableRow><TableHead>Ordem</TableHead><TableHead>Rótulo</TableHead><TableHead>Início</TableHead><TableHead>Fim</TableHead><TableHead>Ativo</TableHead><TableHead>Intervalo</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
           <TableBody>
@@ -115,7 +114,6 @@ function HorariosPage() {
             ))}
           </TableBody>
         </Table>
-        </div>
       </Card>
     </div>
   );

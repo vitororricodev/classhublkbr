@@ -58,8 +58,8 @@ function TurmasPage() {
   });
 
   return (
-    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Turmas</h1>
           <p className="text-sm text-muted-foreground">Cadastro de turmas e séries.</p>
@@ -81,8 +81,7 @@ function TurmasPage() {
         </Dialog>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
+      <Card className="p-0 overflow-hidden">
         <Table>
           <TableHeader><TableRow><TableHead>Série</TableHead><TableHead>Nome</TableHead><TableHead>Ativo</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
           <TableBody>
@@ -101,7 +100,6 @@ function TurmasPage() {
             ))}
           </TableBody>
         </Table>
-        </div>
       </Card>
     </div>
   );

@@ -12,13 +12,16 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import type { CategoriaAC } from "@/lib/db";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/categorias-ac")({ component: CategoriasACPage });
 
 function CategoriasACPage() {
+  const { isAdmin } = useAuth();
   const qc = useQueryClient();
   const { data = [], isLoading } = useQuery({
     queryKey: ["categorias_ac"],
+    enabled: isAdmin,
     queryFn: async () => {
       const { data, error } = await supabase.from("categorias_ac").select("*").order("nome");
       if (error) throw error;
@@ -57,9 +60,20 @@ function CategoriasACPage() {
     onError: (e: Error) => toast.error("Não foi possível excluir — pode haver AC já lançadas com esta categoria."),
   });
 
+  if (!isAdmin) {
+    return (
+      <div className="p-8">
+        <Card className="p-6">
+          <h1 className="text-lg font-semibold mb-1">Acesso restrito</h1>
+          <p className="text-sm text-muted-foreground">Somente administradores gerenciam categorias de AC.</p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Categorias de AC</h1>
           <p className="text-sm text-muted-foreground">Categorias de Atividade Complementar (ex: Humanas, Exatas, Linguagens).</p>
@@ -80,8 +94,7 @@ function CategoriasACPage() {
         </Dialog>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
+      <Card className="p-0 overflow-hidden">
         <Table>
           <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Ativa</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
           <TableBody>
@@ -99,7 +112,6 @@ function CategoriasACPage() {
             ))}
           </TableBody>
         </Table>
-        </div>
       </Card>
     </div>
   );

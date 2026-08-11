@@ -34,17 +34,17 @@ function fmtDateTime(d: Date) {
 function RelatoriosPage() {
   const { isAdmin } = useAuth();
   return (
-    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
+    <div className="p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Relatórios</h1>
         <p className="text-sm text-muted-foreground">Filtre e exporte relatórios de aulas em PDF.</p>
       </div>
 
       <Tabs defaultValue={isAdmin ? "geral" : "docente"}>
-        <TabsList className="w-full justify-start overflow-x-auto">
-          <TabsTrigger value="geral" className="whitespace-nowrap">Relatório Geral</TabsTrigger>
-          <TabsTrigger value="docente" className="whitespace-nowrap">Grade do Docente</TabsTrigger>
-          <TabsTrigger value="laboratorio" className="whitespace-nowrap">Disponibilidade do Laboratório</TabsTrigger>
+        <TabsList>
+          <TabsTrigger value="geral">Relatório Geral</TabsTrigger>
+          <TabsTrigger value="docente">Grade do Docente</TabsTrigger>
+          <TabsTrigger value="laboratorio">Disponibilidade do Laboratório</TabsTrigger>
         </TabsList>
         <TabsContent value="geral">
           <RelatorioGeral />
@@ -200,7 +200,7 @@ function RelatorioGeral() {
       </div>
 
       <Card className="p-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={filtros.inicio} onChange={(e) => setFiltros({ ...filtros, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={filtros.fim} onChange={(e) => setFiltros({ ...filtros, fim: e.target.value })} /></div>
           {isAdmin && <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />}
@@ -222,7 +222,7 @@ function RelatorioGeral() {
           {isLoading ? "Carregando..." : `${sorted.length} registro(s) encontrado(s) no período de ${fmtDate(filtros.inicio)} a ${fmtDate(filtros.fim)}.`}
         </div>
         {!isLoading && sorted.length > 0 && (
-          <div className="overflow-auto max-h-120 border rounded-md">
+          <div className="overflow-auto max-h-[480px] border rounded-md">
             <table className="w-full text-sm">
               <thead className="bg-muted sticky top-0">
                 <tr>
@@ -503,7 +503,7 @@ function RelatorioDocente() {
       </div>
 
       <Card className="p-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {isAdmin && (
             <div className="space-y-1 col-span-2 md:col-span-1">
               <Label>Docente</Label>
@@ -545,7 +545,7 @@ function RelatorioDocente() {
           </div>
 
           {!isLoading && !isLoadingAC && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
-            <div className="overflow-auto max-h-140 border rounded-md">
+            <div className="overflow-auto max-h-[560px] border rounded-md">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
@@ -605,7 +605,7 @@ function RelatorioDocente() {
           )}
 
           {!isLoading && !isLoadingAC && formato === "lista" && (
-            <div className="overflow-auto max-h-120 border rounded-md">
+            <div className="overflow-auto max-h-[480px] border rounded-md">
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
@@ -718,7 +718,7 @@ function LancarACDialog({
           <DialogTitle>{editing ? "Editar AC" : "Lançar Atividade Complementar"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2"><Label>Data</Label><Input type="date" value={data} onChange={(e) => setData(e.target.value)} /></div>
             <div className="space-y-2">
               <Label>Horário</Label>
@@ -956,7 +956,7 @@ function RelatorioLaboratorio() {
       </div>
 
       <Card className="p-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={periodo.inicio} onChange={(e) => setPeriodo({ ...periodo, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={periodo.fim} onChange={(e) => setPeriodo({ ...periodo, fim: e.target.value })} /></div>
           <div className="space-y-1">
@@ -977,7 +977,7 @@ function RelatorioLaboratorio() {
           {isLoading ? "Carregando..." : datas.length === 0 ? "Selecione um período válido." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${datas.length} dia(s) letivo(s) · ${horarios.length} horário(s).`}
         </div>
         {!isLoading && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
-            <div className="overflow-auto max-h-140 border rounded-md">
+            <div className="overflow-auto max-h-[560px] border rounded-md">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
@@ -1035,7 +1035,7 @@ function RelatorioLaboratorio() {
           )}
 
           {!isLoading && formato === "lista" && (
-            <div className="overflow-auto max-h-120 border rounded-md">
+            <div className="overflow-auto max-h-[480px] border rounded-md">
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>

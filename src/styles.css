@@ -95,59 +95,6 @@
   }
 }
 
-@media (max-width: 767px) {
-  main > div,
-  .print-area > div {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
-
-  main > div.p-8,
-  .print-area > div.p-8 {
-    padding: 1rem !important;
-  }
-
-  main > div.space-y-6,
-  .print-area > div.space-y-6 {
-    gap: 1rem !important;
-  }
-
-  main > div > .flex.items-center.justify-between,
-  .print-area > div > .flex.items-center.justify-between {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-  }
-
-  main > div > .flex.items-center.justify-between > .flex,
-  .print-area > div > .flex.items-center.justify-between > .flex {
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
-  main > div .tabs-list,
-  .print-area > div .tabs-list {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  table:not(.report-table) {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  table:not(.report-table) thead,
-  table:not(.report-table) tbody,
-  table:not(.report-table) tr {
-    width: max-content;
-    min-width: 100%;
-  }
-}
-
 /* ================= Report (screen + print) ================= */
 .report-header {
   display: flex;

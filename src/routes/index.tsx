@@ -51,12 +51,12 @@ function Dashboard() {
   ];
 
   return (
-    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
+    <div className="p-8 space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground mt-1">Visão geral dos planejamentos e cadastros.</p>
       </header>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c) => (
           <Card key={c.label} className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">

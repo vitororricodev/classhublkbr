@@ -27,6 +27,7 @@ function addDaysISO(iso: string, days: number) { const d = new Date(iso + "T00:0
 const statusLabel: Record<StatusLab, string> = { agendado: "Agendado", realizado: "Realizado", cancelado: "Cancelado" };
 
 function LaboratorioPage() {
+  const { isAdmin } = useAuth();
   const [weekStart, setWeekStart] = useState(() => startOfWeekISO(new Date()));
   const weekEnd = useMemo(() => addDaysISO(weekStart, 6), [weekStart]);
 
@@ -35,6 +36,7 @@ function LaboratorioPage() {
 
   const { data: horarios = [] } = useQuery({
     queryKey: ["horarios", "ativos", "ordenados"],
+    enabled: isAdmin,
     queryFn: async () => {
       const { data, error } = await supabase.from("horarios_padrao").select("*").eq("ativo", true).order("ordem");
       if (error) throw error;
@@ -44,6 +46,7 @@ function LaboratorioPage() {
 
   const { data: aulas = [], isLoading } = useQuery({
     queryKey: ["laboratorio_agendamentos", weekStart, weekEnd],
+    enabled: isAdmin,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("laboratorio_agendamentos")
@@ -85,9 +88,23 @@ function LaboratorioPage() {
     setFormOpen(true);
   };
 
+  if (!isAdmin) {
+    return (
+      <div className="p-8">
+        <Card className="p-6">
+          <h1 className="text-lg font-semibold mb-1">Acesso restrito</h1>
+          <p className="text-sm text-muted-foreground">
+            Somente administradores gerenciam a agenda do laboratório diretamente. Para pedir um horário, use{" "}
+            <b>Solicitar Laboratório</b> no menu.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <MonitorSmartphone className="h-6 w-6 text-primary" />Laboratório de Informática
@@ -96,7 +113,7 @@ function LaboratorioPage() {
             Controle, agendamento e histórico do laboratório — independente da agenda normal de aulas.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => setWeekStart(addDaysISO(weekStart, -7))}><ChevronLeft className="h-4 w-4" /></Button>
           <Button variant="outline" onClick={() => setWeekStart(startOfWeekISO(new Date()))}>Semana atual</Button>
           <Button variant="outline" size="icon" onClick={() => setWeekStart(addDaysISO(weekStart, 7))}><ChevronRight className="h-4 w-4" /></Button>
@@ -114,8 +131,8 @@ function LaboratorioPage() {
         {horarios.length === 0 ? (
           <div className="text-sm text-muted-foreground">Cadastre horários padrão para começar.</div>
         ) : (
-          <div className="overflow-auto max-h-155 border rounded-md">
-            <table className="w-full min-w-225 text-sm border-collapse">
+          <div className="overflow-auto max-h-[620px] border rounded-md">
+            <table className="w-full text-sm border-collapse">
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
                   <th className="text-left p-2 sticky left-0 bg-muted z-20 whitespace-nowrap">Horário</th>
@@ -142,7 +159,7 @@ function LaboratorioPage() {
                       }
                       const lista = mapa.get(`${dt}__${h.id}`) ?? [];
                       return (
-                        <td key={dt} className="p-2 text-center align-top min-w-40">
+                        <td key={dt} className="p-2 text-center align-top min-w-[160px]">
                           <div className="space-y-1.5">
                             {lista.length > 1 && (
                               <div className="flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
@@ -346,7 +363,7 @@ function LaboratorioAgendamentoForm({
             <Label>O que vai ser feito</Label>
             <Textarea rows={3} value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: Assistir vídeo sobre a Segunda Guerra Mundial" />
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2 border rounded-md px-3 py-2">
               <Switch checked={usarProjetor} onCheckedChange={setUsarProjetor} />
               <Label className="cursor-pointer" onClick={() => setUsarProjetor(!usarProjetor)}>Projetor</Label>
