@@ -128,7 +128,7 @@ function AprovacoesLaboratorioPage() {
   );
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
       <div>
         <h1 className="text-2xl font-semibold flex items-center gap-2">
           <ClipboardCheck className="h-6 w-6 text-primary" />Aprovações do Laboratório
@@ -137,9 +137,9 @@ function AprovacoesLaboratorioPage() {
       </div>
 
       <Tabs defaultValue="pendentes">
-        <TabsList>
-          <TabsTrigger value="pendentes">Pendentes {pendentes.length > 0 && `(${pendentes.length})`}</TabsTrigger>
-          <TabsTrigger value="historico">Histórico</TabsTrigger>
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="pendentes" className="whitespace-nowrap">Pendentes {pendentes.length > 0 && `(${pendentes.length})`}</TabsTrigger>
+          <TabsTrigger value="historico" className="whitespace-nowrap">Histórico</TabsTrigger>
         </TabsList>
         <TabsContent value="pendentes" className="space-y-3 pt-4">
           {loadingPend && <p className="text-sm text-muted-foreground">Carregando...</p>}

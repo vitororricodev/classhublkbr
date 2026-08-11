@@ -136,7 +136,7 @@ function UsersPage() {
 
   if (!isAdmin) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Card>
           <CardHeader>
             <CardTitle>Acesso restrito</CardTitle>
@@ -152,8 +152,8 @@ function UsersPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <header className="flex items-end justify-between gap-4 flex-wrap">
+    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Usuários</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -183,10 +183,11 @@ function UsersPage() {
             placeholder="Buscar por usuário ou nome..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="max-w-sm"
+            className="w-full max-w-sm"
           />
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -283,6 +284,7 @@ function UsersPage() {
               })}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

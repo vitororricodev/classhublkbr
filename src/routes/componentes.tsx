@@ -58,8 +58,8 @@ function ComponentesPage() {
   });
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Componentes Curriculares</h1>
           <p className="text-sm text-muted-foreground">Disciplinas oferecidas.</p>
@@ -87,7 +87,8 @@ function ComponentesPage() {
         </Dialog>
       </div>
 
-      <Card className="p-0 overflow-hidden">
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Ativo</TableHead><TableHead>Usa Laboratório</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
           <TableBody>
@@ -106,6 +107,7 @@ function ComponentesPage() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
     </div>
   );

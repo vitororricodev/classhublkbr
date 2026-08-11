@@ -58,8 +58,8 @@ function DocentesPage() {
   });
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 space-y-6 sm:p-6 lg:p-8">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Docentes</h1>
           <p className="text-sm text-muted-foreground">Cadastro de docentes e cores identificadoras.</p>
@@ -93,7 +93,8 @@ function DocentesPage() {
         </Dialog>
       </div>
 
-      <Card className="p-0 overflow-hidden">
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -116,6 +117,7 @@ function DocentesPage() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
     </div>
   );
