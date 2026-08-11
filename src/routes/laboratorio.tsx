@@ -346,7 +346,7 @@ function LaboratorioAgendamentoForm({
             <Label>O que vai ser feito</Label>
             <Textarea rows={3} value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: Assistir vídeo sobre a Segunda Guerra Mundial" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-2 border rounded-md px-3 py-2">
               <Switch checked={usarProjetor} onCheckedChange={setUsarProjetor} />
               <Label className="cursor-pointer" onClick={() => setUsarProjetor(!usarProjetor)}>Projetor</Label>

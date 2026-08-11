@@ -718,7 +718,7 @@ function LancarACDialog({
           <DialogTitle>{editing ? "Editar AC" : "Lançar Atividade Complementar"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-2"><Label>Data</Label><Input type="date" value={data} onChange={(e) => setData(e.target.value)} /></div>
             <div className="space-y-2">
               <Label>Horário</Label>

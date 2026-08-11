@@ -70,7 +70,7 @@ function HorariosPage() {
             <DialogHeader><DialogTitle>{editing ? "Editar horário" : "Novo horário"}</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">
               <div className="space-y-2"><Label>Rótulo</Label><Input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="Ex.: 1ª aula" /></div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-2"><Label>Início</Label><Input type="time" value={form.hora_inicio} onChange={(e) => setForm({ ...form, hora_inicio: e.target.value })} /></div>
                 <div className="space-y-2"><Label>Fim</Label><Input type="time" value={form.hora_fim} onChange={(e) => setForm({ ...form, hora_fim: e.target.value })} /></div>
               </div>
