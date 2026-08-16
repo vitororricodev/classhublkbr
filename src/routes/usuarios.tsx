@@ -58,6 +58,11 @@ type Usuario = {
   docente_id: string | null;
 };
 type DocenteOpt = { id: string; nome: string };
+type LaboratorioOpt = { id: string; nome: string };
+type VinculoLaboratorio = { usuario_id: string; laboratorio_id: string };
+// Schema gerado é atualizado após a migration ser aplicada no Supabase.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
 
 const tipoLabel: Record<Tipo, string> = {
   admin: "Administrador",
@@ -95,7 +100,27 @@ function UsersPage() {
       return (data ?? []) as DocenteOpt[];
     },
   });
+  const { data: laboratorios = [] } = useQuery({
+    queryKey: ["laboratorios", "select-usuarios"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await sb.from("laboratorios").select("id, nome").eq("ativo", true).order("nome");
+      if (error) throw error;
+      return (data ?? []) as LaboratorioOpt[];
+    },
+  });
+  const { data: vinculos = [] } = useQuery({
+    queryKey: ["usuarios_laboratorios"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await sb.from("usuarios_laboratorios").select("usuario_id, laboratorio_id");
+      if (error) throw error;
+      return (data ?? []) as VinculoLaboratorio[];
+    },
+  });
   const docenteNome = (id: string | null) => (id ? docentes.find((d) => d.id === id)?.nome ?? "—" : "—");
+  const laboratoriosDoUsuario = (id: string) => vinculos.filter((v) => v.usuario_id === id).map((v) => v.laboratorio_id);
+  const nomesLaboratorios = (id: string) => laboratoriosDoUsuario(id).map((labId) => laboratorios.find((l) => l.id === labId)?.nome).filter(Boolean).join(", ") || "—";
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -105,7 +130,10 @@ function UsersPage() {
     );
   }, [data, search]);
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["usuarios"] });
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["usuarios"] });
+    qc.invalidateQueries({ queryKey: ["usuarios_laboratorios"] });
+  };
 
   const toggleM = useMutation({
     mutationFn: async (u: Usuario) => {
@@ -171,6 +199,7 @@ function UsersPage() {
           </DialogTrigger>
           <CreateUserDialog
             docentes={docentes}
+            laboratorios={laboratorios}
             onClose={() => setOpenCreate(false)}
             onCreated={() => {
               invalidate();
@@ -197,6 +226,7 @@ function UsersPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Docente vinculado</TableHead>
+                <TableHead>Responsável por</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -204,14 +234,14 @@ function UsersPage() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     Carregando...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     Nenhum usuário encontrado.
                   </TableCell>
                 </TableRow>
@@ -229,6 +259,9 @@ function UsersPage() {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {u.tipo === "usuario" ? docenteNome(u.docente_id) : "—"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {u.tipo === "usuario" ? nomesLaboratorios(u.id) : "—"}
                     </TableCell>
                     <TableCell>
                       {u.ativo ? (
@@ -293,6 +326,8 @@ function UsersPage() {
         <EditUserDialog
           user={editing}
           docentes={docentes}
+          laboratorios={laboratorios}
+          laboratorioIds={laboratoriosDoUsuario(editing.id)}
           onClose={() => setEditing(null)}
           onSaved={() => {
             invalidate();
@@ -314,10 +349,12 @@ function UsersPage() {
 
 function CreateUserDialog({
   docentes,
+  laboratorios,
   onClose,
   onCreated,
 }: {
   docentes: DocenteOpt[];
+  laboratorios: LaboratorioOpt[];
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -326,6 +363,7 @@ function CreateUserDialog({
   const [tipo, setTipo] = useState<Tipo>("usuario");
   const [docenteId, setDocenteId] = useState<string>("none");
   const [senha, setSenha] = useState("");
+  const [laboratorioIds, setLaboratorioIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   return (
@@ -343,7 +381,7 @@ function CreateUserDialog({
           }
           setLoading(true);
           try {
-            const { error } = await supabase.rpc("criar_usuario", {
+            const { data: novoUsuarioId, error } = await supabase.rpc("criar_usuario", {
               p_usuario: usuario.trim().toLowerCase(),
               p_nome: nome.trim(),
               p_senha: senha,
@@ -353,6 +391,12 @@ function CreateUserDialog({
             });
             if (error) {
               throw new Error(error.message);
+            }
+            if (tipo === "usuario" && laboratorioIds.length > 0) {
+              const { error: vinculoError } = await sb.from("usuarios_laboratorios").insert(
+                laboratorioIds.map((laboratorio_id) => ({ usuario_id: novoUsuarioId, laboratorio_id })),
+              );
+              if (vinculoError) throw new Error(vinculoError.message);
             }
             toast.success("Usuário criado. Ele deverá trocar a senha no primeiro acesso.");
             onCreated();
@@ -382,19 +426,20 @@ function CreateUserDialog({
           </Select>
         </div>
         {tipo === "usuario" && (
-          <div className="space-y-2">
-            <Label>Docente vinculado</Label>
-            <Select value={docenteId} onValueChange={setDocenteId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nenhum (definir depois)</SelectItem>
-                {docentes.map((d) => <SelectItem key={d.id} value={d.id}>{d.nome}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Este usuário só verá as aulas em que este docente estiver lançado.
-            </p>
-          </div>
+          <>
+            <div className="space-y-2">
+              <Label>Docente vinculado</Label>
+              <Select value={docenteId} onValueChange={setDocenteId}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (definir depois)</SelectItem>
+                  {docentes.map((d) => <SelectItem key={d.id} value={d.id}>{d.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Este usuário só verá as aulas em que este docente estiver lançado.</p>
+            </div>
+            <LaboratoriosResponsaveis laboratorios={laboratorios} value={laboratorioIds} onChange={setLaboratorioIds} />
+          </>
         )}
         <div className="space-y-2">
           <Label>Senha inicial</Label>
@@ -413,11 +458,15 @@ function CreateUserDialog({
 function EditUserDialog({
   user,
   docentes,
+  laboratorios,
+  laboratorioIds: initialLaboratorioIds,
   onClose,
   onSaved,
 }: {
   user: Usuario;
   docentes: DocenteOpt[];
+  laboratorios: LaboratorioOpt[];
+  laboratorioIds: string[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -425,6 +474,7 @@ function EditUserDialog({
   const [tipo, setTipo] = useState<Tipo>(user.tipo);
   const [docenteId, setDocenteId] = useState<string>(user.docente_id ?? "none");
   const [loading, setLoading] = useState(false);
+  const [laboratorioIds, setLaboratorioIds] = useState(initialLaboratorioIds);
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -446,6 +496,14 @@ function EditUserDialog({
                 p_docente_id: tipo === "usuario" && docenteId !== "none" ? docenteId : null,
               });
               if (error) throw error;
+              const { error: removerVinculosError } = await sb.from("usuarios_laboratorios").delete().eq("usuario_id", user.id);
+              if (removerVinculosError) throw new Error(removerVinculosError.message);
+              if (tipo === "usuario" && laboratorioIds.length > 0) {
+                const { error: vinculoError } = await sb.from("usuarios_laboratorios").insert(
+                  laboratorioIds.map((laboratorio_id) => ({ usuario_id: user.id, laboratorio_id })),
+                );
+                if (vinculoError) throw new Error(vinculoError.message);
+              }
               toast.success("Usuário atualizado.");
               onSaved();
             } catch (err) {
@@ -473,7 +531,8 @@ function EditUserDialog({
               </SelectContent>
             </Select>
           </div>
-          {tipo === "usuario" && (
+        {tipo === "usuario" && (
+          <>
             <div className="space-y-2">
               <Label>Docente vinculado</Label>
               <Select value={docenteId} onValueChange={setDocenteId}>
@@ -487,6 +546,8 @@ function EditUserDialog({
                 Este usuário só verá as aulas em que este docente estiver lançado.
               </p>
             </div>
+            <LaboratoriosResponsaveis laboratorios={laboratorios} value={laboratorioIds} onChange={setLaboratorioIds} />
+          </>
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
@@ -495,6 +556,24 @@ function EditUserDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function LaboratoriosResponsaveis({ laboratorios, value, onChange }: { laboratorios: LaboratorioOpt[]; value: string[]; onChange: (ids: string[]) => void }) {
+  const toggle = (id: string) => onChange(value.includes(id) ? value.filter((item) => item !== id) : [...value, id]);
+  return (
+    <div className="space-y-2">
+      <Label>Responsável por laboratório</Label>
+      <div className="space-y-2 rounded-md border p-3">
+        {laboratorios.map((laboratorio) => (
+          <label key={laboratorio.id} className="flex cursor-pointer items-center gap-2 text-sm">
+            <input type="checkbox" checked={value.includes(laboratorio.id)} onChange={() => toggle(laboratorio.id)} />
+            {laboratorio.nome}
+          </label>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">O responsável pode gerenciar a agenda e aprovar pedidos apenas dos ambientes marcados.</p>
+    </div>
   );
 }
 

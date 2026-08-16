@@ -8,6 +8,7 @@ export type AppUser = {
   tipo: "admin" | "usuario";
   primeiro_login: boolean;
   docente_id: string | null;
+  laboratorio_ids: string[];
 };
 
 type Ctx = {
@@ -30,7 +31,10 @@ function readStoredUser(): AppUser | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed.id === "string" && typeof parsed.usuario === "string") {
-      return parsed as AppUser;
+      return {
+        ...parsed,
+        laboratorio_ids: Array.isArray(parsed.laboratorio_ids) ? parsed.laboratorio_ids : [],
+      } as AppUser;
     }
   } catch {
     /* ignore */
@@ -67,6 +71,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Usuário ou senha inválidos.");
       }
       const row = data as any;
+      // Schema gerado será atualizado junto da próxima revisão de tipos do Supabase.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: vinculos, error: vinculosError } = await (supabase as any)
+        .from("usuarios_laboratorios")
+        .select("laboratorio_id")
+        .eq("usuario_id", row.id);
+      if (vinculosError) throw new Error(vinculosError.message);
       const u: AppUser = {
         id: row.id,
         usuario: row.usuario,
@@ -74,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         tipo: (row.tipo === "admin" ? "admin" : "usuario") as "admin" | "usuario",
         primeiro_login: row.primeiro_login,
         docente_id: row.docente_id ?? null,
+        laboratorio_ids: (vinculos ?? []).map((v: { laboratorio_id: string }) => v.laboratorio_id),
       };
       setUser(u);
       return u;

@@ -1,6 +1,6 @@
 ---
 tags: [classhub, proposta, laboratorio]
-status: planejado
+status: implementado
 ---
 
 # Expansão: Laboratório Multidisciplinar
@@ -50,7 +50,7 @@ flowchart TD
 
 1. **Hub de laboratórios** — nova rota que exibe os dois cards e direciona à agenda do ambiente escolhido.
 2. **Agenda/solicitação** — reutiliza a tela existente, recebendo o laboratório pela URL; pendências e ocupações ficam isoladas por ambiente.
-3. **Gestão de laboratórios** — seção própria no menu. Administradores acessam os dois ambientes e definem seus responsáveis; cada responsável acessa somente sua agenda e suas aprovações.
+3. **Gestão de responsáveis** — na tela de Usuários, o administrador marca quais laboratórios cada usuário comum responde. Cada responsável acessa somente sua agenda e suas aprovações pelo hub de laboratórios.
 4. **Relatórios** — seletor de laboratório para gerar a ocupação de cada ambiente sem misturar registros.
 
 ## Migration e compatibilidade
@@ -69,6 +69,6 @@ flowchart TD
 - A mesma data/horário pode ser usado simultaneamente em laboratórios diferentes.
 - A aprovação cria reserva no laboratório correto.
 - O novo laboratório começa sem registros importados dos componentes de Computação.
-- Administradores conseguem gerir e aprovar os dois ambientes.
+- Administradores conseguem gerir e aprovar os dois ambientes; responsáveis são vinculados na tela de Usuários e recebem acesso somente aos ambientes marcados.
 - O responsável de um laboratório não consegue visualizar nem decidir solicitações do outro, pela interface ou pela RPC.
 - Backup, restauração e relatório incluem os dois ambientes.

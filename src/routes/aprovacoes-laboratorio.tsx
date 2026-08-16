@@ -31,14 +31,15 @@ const statusBadge: Record<string, ReactNode> = {
 
 function AprovacoesLaboratorioPage() {
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { laboratorio } = useLaboratorioAtual();
+  const podeGerir = !!laboratorio && (isAdmin || user?.laboratorio_ids.includes(laboratorio.id));
   const [rejeitando, setRejeitando] = useState<SolicitacaoLaboratorioFull | null>(null);
   const [motivo, setMotivo] = useState("");
 
   const { data: pendentes = [], isLoading: loadingPend } = useQuery({
     queryKey: ["solicitacoes_laboratorio", "pendentes", laboratorio?.id],
-    enabled: !!laboratorio,
+    enabled: podeGerir,
     queryFn: async () => {
       const { data, error } = await sb.from("solicitacoes_laboratorio").select(SOLIC_SELECT).eq("laboratorio_id", laboratorio!.id).eq("status", "pendente").order("created_at");
       if (error) throw error;
@@ -48,7 +49,7 @@ function AprovacoesLaboratorioPage() {
 
   const { data: historico = [], isLoading: loadingHist } = useQuery({
     queryKey: ["solicitacoes_laboratorio", "historico", laboratorio?.id],
-    enabled: !!laboratorio,
+    enabled: podeGerir,
     queryFn: async () => {
       const { data, error } = await sb.from("solicitacoes_laboratorio").select(SOLIC_SELECT).eq("laboratorio_id", laboratorio!.id).neq("status", "pendente").order("decidido_em", { ascending: false }).limit(50);
       if (error) throw error;
@@ -91,6 +92,10 @@ function AprovacoesLaboratorioPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  if (laboratorio && !podeGerir) {
+    return <div className="p-4 sm:p-6 lg:p-8"><Card className="p-6"><h1 className="text-lg font-semibold">Acesso restrito</h1><p className="mt-1 text-sm text-muted-foreground">Você não é responsável por este laboratório.</p></Card></div>;
+  }
 
   const Item = ({ s }: { s: SolicitacaoLaboratorioFull }) => (
     <Card className="p-4">

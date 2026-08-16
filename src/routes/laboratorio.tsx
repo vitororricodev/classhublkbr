@@ -30,8 +30,9 @@ function addDaysISO(iso: string, days: number) { const d = new Date(iso + "T00:0
 const statusLabel: Record<StatusLab, string> = { agendado: "Agendado", realizado: "Realizado", cancelado: "Cancelado" };
 
 function LaboratorioPage() {
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { laboratorio } = useLaboratorioAtual();
+  const podeGerir = !!laboratorio && (isAdmin || user?.laboratorio_ids.includes(laboratorio.id));
   const [weekStart, setWeekStart] = useState(() => startOfWeekISO(new Date()));
   const weekEnd = useMemo(() => addDaysISO(weekStart, 6), [weekStart]);
 
@@ -40,7 +41,7 @@ function LaboratorioPage() {
 
   const { data: horarios = [] } = useQuery({
     queryKey: ["horarios", "ativos", "ordenados"],
-    enabled: isAdmin && !!laboratorio,
+    enabled: podeGerir,
     queryFn: async () => {
       const { data, error } = await supabase.from("horarios_padrao").select("*").eq("ativo", true).order("ordem");
       if (error) throw error;
@@ -50,7 +51,7 @@ function LaboratorioPage() {
 
   const { data: aulas = [], isLoading } = useQuery({
     queryKey: ["laboratorio_agendamentos", laboratorio?.id, weekStart, weekEnd],
-    enabled: isAdmin && !!laboratorio,
+    enabled: podeGerir,
     queryFn: async () => {
       const { data, error } = await sb
         .from("laboratorio_agendamentos")
@@ -93,14 +94,13 @@ function LaboratorioPage() {
     setFormOpen(true);
   };
 
-  if (!isAdmin) {
+  if (laboratorio && !podeGerir) {
     return (
       <div className="p-4 sm:p-6 lg:p-8">
         <Card className="p-6">
           <h1 className="text-lg font-semibold mb-1">Acesso restrito</h1>
           <p className="text-sm text-muted-foreground">
-            Somente administradores gerenciam a agenda do laboratório diretamente. Para pedir um horário, use{" "}
-            <b>Solicitar Laboratório</b> no menu.
+            Você não é responsável por este laboratório. Para pedir um horário, use <b>Laboratórios</b> no menu.
           </p>
         </Card>
       </div>

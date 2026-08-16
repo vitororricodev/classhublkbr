@@ -17,8 +17,6 @@ import {
   UserCog,
   MonitorSmartphone,
   ClipboardList,
-  Send,
-  ClipboardCheck,
   ChevronDown,
   DatabaseBackup,
   Menu,
@@ -39,8 +37,6 @@ const agendaGroup: NavGroup = {
   items: [
     { to: "/agendamento", label: "Agendamento", icon: CalendarDays },
     { to: "/laboratorios", label: "Laboratórios", icon: MonitorSmartphone },
-    { to: "/laboratorio", label: "Gerenciar Laboratórios", icon: Settings, adminOnly: true },
-    { to: "/aprovacoes-laboratorio", label: "Aprovações do Lab", icon: ClipboardCheck, adminOnly: true, badgeKey: "labPendentes" },
   ],
 };
 
@@ -127,17 +123,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { data: pendentesCount = 0 } = useQuery({
-    queryKey: ["solicitacoes_laboratorio", "pendentes-count"],
-    enabled: isAdmin,
-    refetchInterval: 60000,
-    queryFn: async () => {
-      const { count, error } = await supabase.from("solicitacoes_laboratorio").select("id", { count: "exact", head: true }).eq("status", "pendente");
-      if (error) throw error;
-      return count ?? 0;
-    },
-  });
-  const badges = { labPendentes: pendentesCount };
+  const badges = {};
 
   const handleSignOut = async () => {
     await signOut();
