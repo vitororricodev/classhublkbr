@@ -86,3 +86,7 @@ O arquivo externo `QUADRO DE AC.docx`, recebido em 16/08/2026, define uma escala
 | Humanas | Sexta-feira | 13h30–17h05 | Ariane, Fernanda e Larissa da Purificação. |
 
 Os docentes correspondem aos cadastros ativos e o encerramento correto é 17h05, compatível com a agenda padrão. Antes de inserir ACs por data, deve ser definido apenas o período letivo e como tratar os dois registros de Humanas sem faixa de horário.
+
+### Povoamento executado
+
+Em 16/08/2026, foram criadas as categorias **Exatas e Ciências da Natureza**, **Linguagens** e **Humanas**, além de **1.900 lançamentos de AC** no período de 16/08/2026 a 31/12/2026. Cada grupo foi lançado nos horários letivos inteiramente contidos em sua faixa, sem incluir intervalos. Como o turno de Larissa de Jesus e Raíssa não estava preenchido no quadro, foi adotada a faixa matutina de 08h15–11h30, coerente com a separação dos blocos de sexta-feira. Não havia feriados ativos cadastrados nesse período no momento do lançamento.
