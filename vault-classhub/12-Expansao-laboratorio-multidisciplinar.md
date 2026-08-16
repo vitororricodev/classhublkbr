@@ -81,8 +81,8 @@ O arquivo externo `QUADRO DE AC.docx`, recebido em 16/08/2026, define uma escala
 |---|---|---|---|
 | Exatas e Ciências da Natureza | Quarta-feira | 13h50–17h05 | Eduarda, Cláudio, Henrique, Laiane, Leonardo, Lícia, Maíra, Neidiane e Pedro. |
 | Linguagens | Quinta-feira | 08h15–11h30 | Flávia, Gabriel, Joedson, Leandro, Letícia, Mariane e Thiago. |
-| Linguagens | Quinta-feira | 13h30–17h50 | Aline, Anna Beatriz e Maria Jeocastra. |
+| Linguagens | Quinta-feira | 13h30–17h05 | Aline, Anna Beatriz e Maria Jeocastra. |
 | Humanas | Sexta-feira | Manhã, sem horário preenchido no arquivo | Larissa de Jesus e Raíssa. |
-| Humanas | Sexta-feira | 13h30–17h50 | Ariane, Fernanda e Larissa da Purificação. |
+| Humanas | Sexta-feira | 13h30–17h05 | Ariane, Fernanda e Larissa da Purificação. |
 
-Os docentes correspondem aos cadastros ativos, mas a agenda padrão atual termina às 17h05. Antes de inserir ACs por data, deve ser definido o período letivo e como tratar o bloco até 17h50 e os dois registros de Humanas sem faixa de horário.
+Os docentes correspondem aos cadastros ativos e o encerramento correto é 17h05, compatível com a agenda padrão. Antes de inserir ACs por data, deve ser definido apenas o período letivo e como tratar os dois registros de Humanas sem faixa de horário.
