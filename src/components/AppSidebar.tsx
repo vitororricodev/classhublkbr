@@ -160,8 +160,8 @@ export function AppSidebar() {
     <>
       <header className="no-print sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground md:hidden">
         <div>
-          <div className="text-base font-semibold tracking-tight">ClassHub L.K</div>
-          <div className="text-[11px] opacity-70">Planejamento de aulas</div>
+          <div className="text-base font-semibold tracking-tight">SGE</div>
+          <div className="text-[11px] opacity-70">Sistema de Gerenciamento Escolar</div>
         </div>
         <Button variant="ghost" size="icon" aria-label="Abrir menu" className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" onClick={() => setMobileOpen(true)}>
           <Menu className="h-5 w-5" />
@@ -177,8 +177,8 @@ export function AppSidebar() {
       </Sheet>
       <aside className="no-print hidden min-h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="border-b border-sidebar-border px-6 py-6">
-          <div className="text-lg font-semibold tracking-tight">ClassHub L.K</div>
-          <div className="mt-0.5 text-xs opacity-70">Planejamento de aulas</div>
+          <div className="text-lg font-semibold tracking-tight">SGE</div>
+          <div className="mt-0.5 text-xs opacity-70">Sistema de Gerenciamento Escolar</div>
         </div>
         {navigation()}
       </aside>

@@ -143,7 +143,7 @@ function AgendamentoPage() {
                 <div className="space-y-1">
                   {events.slice(0, 3).map((e) => (
                     <div key={e.id} className="text-[11px] truncate rounded px-1.5 py-0.5 border"
-                      style={{ backgroundColor: hexAlpha(e.docentes?.cor_identificadora || "#7C3AED", 0.18), borderColor: hexAlpha(e.docentes?.cor_identificadora || "#7C3AED", 0.4), color: "#3b1078" }}
+                      style={{ backgroundColor: hexAlpha(e.docentes?.cor_identificadora || "#007BB8", 0.18), borderColor: hexAlpha(e.docentes?.cor_identificadora || "#007BB8", 0.4), color: "#07536f" }}
                       title={`${e.horarios_padrao?.label} • ${e.turmas?.nome} • ${e.componentes_curriculares?.nome}`}
                     >
                       {e.horarios_padrao?.hora_inicio?.slice(0,5)} {e.turmas?.nome} · {e.componentes_curriculares?.nome}
@@ -317,7 +317,7 @@ function DiaModal({ date, onClose, horarios, turmas }: { date: string | null; on
                     </div>
                     {plan && (
                       <div className="mt-3 rounded-md border p-3 space-y-2"
-                        style={{ borderLeft: `4px solid ${plan.docentes?.cor_identificadora || "#7C3AED"}` }}>
+                        style={{ borderLeft: `4px solid ${plan.docentes?.cor_identificadora || "#007BB8"}` }}>
                         <div className="text-sm font-medium">{plan.componentes_curriculares?.nome}</div>
                         <div className="text-xs text-muted-foreground">{plan.docentes?.nome} · {plan.turmas?.serie} {plan.turmas?.nome}</div>
                         <div><StatusBadge s={plan.status} /></div>

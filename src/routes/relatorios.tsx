@@ -109,20 +109,20 @@ function RelatorioGeral() {
     const marginX = 32;
 
     // Cabeçalho institucional
-    doc.setFillColor(109, 40, 217);
+    doc.setFillColor(0, 123, 184);
     doc.rect(marginX, 28, 28, 28, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("P", marginX + 14, 48, { align: "center" });
+    doc.text("S", marginX + 14, 48, { align: "center" });
 
-    doc.setTextColor(109, 40, 217);
+    doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("Planeja", marginX + 38, 44);
+    doc.text("SGE", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Sistema de Planejamento de Aulas", marginX + 38, 55);
+    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -131,7 +131,7 @@ function RelatorioGeral() {
     doc.text(`Responsável: ${user?.nome ?? "—"}`, metaX, 47, { align: "right" });
     doc.text(`Total de registros: ${sorted.length}`, metaX, 58, { align: "right" });
 
-    doc.setDrawColor(109, 40, 217);
+    doc.setDrawColor(0, 123, 184);
     doc.setLineWidth(1.2);
     doc.line(marginX, 68, pageWidth - marginX, 68);
 
@@ -164,8 +164,8 @@ function RelatorioGeral() {
       body,
       margin: { left: marginX, right: marginX, bottom: 36 },
       styles: { font: "helvetica", fontSize: 9, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34] },
-      headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 9 },
-      alternateRowStyles: { fillColor: [246, 243, 251] },
+      headStyles: { fillColor: [0, 123, 184], textColor: 255, fontStyle: "bold", fontSize: 9 },
+      alternateRowStyles: { fillColor: [240, 249, 252] },
       columnStyles: {
         0: { cellWidth: 60 },
         1: { cellWidth: 70 },
@@ -182,7 +182,7 @@ function RelatorioGeral() {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(119, 119, 119);
-        doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
+        doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
         doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
         doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
       },
@@ -373,20 +373,20 @@ function RelatorioDocente() {
     const pageHeight = doc.internal.pageSize.getHeight();
     const marginX = 32;
 
-    doc.setFillColor(109, 40, 217);
+    doc.setFillColor(0, 123, 184);
     doc.rect(marginX, 28, 28, 28, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("P", marginX + 14, 48, { align: "center" });
+    doc.text("S", marginX + 14, 48, { align: "center" });
 
-    doc.setTextColor(109, 40, 217);
+    doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("Planeja", marginX + 38, 44);
+    doc.text("SGE", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Sistema de Planejamento de Aulas", marginX + 38, 55);
+    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -394,7 +394,7 @@ function RelatorioDocente() {
     doc.text(`Emitido em: ${geradoEm}`, metaX, 36, { align: "right" });
     doc.text(`Gerado por: ${user?.nome ?? "—"}`, metaX, 47, { align: "right" });
 
-    doc.setDrawColor(109, 40, 217);
+    doc.setDrawColor(0, 123, 184);
     doc.setLineWidth(1.2);
     doc.line(marginX, 68, pageWidth - marginX, 68);
 
@@ -418,7 +418,7 @@ function RelatorioDocente() {
           if (h.eh_intervalo) return { content: "Intervalo", styles: { fillColor: [254, 226, 226], textColor: [153, 27, 27] } };
           const a = mapaAulas.get(`${dt}__${h.id}`);
           const ac = mapaAC.get(`${dt}__${h.id}`);
-          if (ac) return { content: `AC — ${ac.categorias_ac?.nome ?? "—"}`, styles: { fillColor: [237, 233, 254], textColor: [91, 33, 182], fontStyle: "bold" } };
+          if (ac) return { content: `AC — ${ac.categorias_ac?.nome ?? "—"}`, styles: { fillColor: [226, 245, 251], textColor: [0, 108, 159], fontStyle: "bold" } };
           if (!a) return "—";
           return `${a.componentes_curriculares?.nome ?? "—"}\n${a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}`;
         }),
@@ -430,8 +430,8 @@ function RelatorioDocente() {
         body: body as any,
         margin: { left: marginX, right: marginX, bottom: 36 },
         styles: { font: "helvetica", fontSize: 8.5, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34], halign: "center" },
-        headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 8.5 },
-        alternateRowStyles: { fillColor: [246, 243, 251] },
+        headStyles: { fillColor: [0, 123, 184], textColor: 255, fontStyle: "bold", fontSize: 8.5 },
+        alternateRowStyles: { fillColor: [240, 249, 252] },
         columnStyles: { 0: { cellWidth: 80, halign: "left", fontStyle: "bold" } },
         showHead: "everyPage",
         didDrawPage: () => {
@@ -440,7 +440,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
+          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -463,8 +463,8 @@ function RelatorioDocente() {
         body,
         margin: { left: marginX, right: marginX, bottom: 36 },
         styles: { font: "helvetica", fontSize: 9, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34] },
-        headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 9 },
-        alternateRowStyles: { fillColor: [246, 243, 251] },
+        headStyles: { fillColor: [0, 123, 184], textColor: 255, fontStyle: "bold", fontSize: 9 },
+        alternateRowStyles: { fillColor: [240, 249, 252] },
         showHead: "everyPage",
         didDrawPage: () => {
           const pageCount = doc.getNumberOfPages();
@@ -472,7 +472,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
+          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -587,7 +587,7 @@ function RelatorioDocente() {
                                 )}
                               </div>
                             ) : a ? (
-                              <div className="rounded-md border px-2 py-1 space-y-0.5" style={{ borderLeft: `4px solid ${a.docentes?.cor_identificadora || "#7C3AED"}` }}>
+                              <div className="rounded-md border px-2 py-1 space-y-0.5" style={{ borderLeft: `4px solid ${a.docentes?.cor_identificadora || "#007BB8"}` }}>
                                 <div className="text-xs font-medium">{a.componentes_curriculares?.nome ?? "—"}</div>
                                 <div className="text-[11px] text-muted-foreground">{a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}</div>
                               </div>
@@ -818,20 +818,20 @@ function RelatorioLaboratorio() {
     const pageHeight = doc.internal.pageSize.getHeight();
     const marginX = 32;
 
-    doc.setFillColor(109, 40, 217);
+    doc.setFillColor(0, 123, 184);
     doc.rect(marginX, 28, 28, 28, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("P", marginX + 14, 48, { align: "center" });
+    doc.text("S", marginX + 14, 48, { align: "center" });
 
-    doc.setTextColor(109, 40, 217);
+    doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("Planeja", marginX + 38, 44);
+    doc.text("SGE", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Sistema de Planejamento de Aulas", marginX + 38, 55);
+    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -839,7 +839,7 @@ function RelatorioLaboratorio() {
     doc.text(`Emitido em: ${geradoEm}`, metaX, 36, { align: "right" });
     doc.text(`Responsável: ${user?.nome ?? "—"}`, metaX, 47, { align: "right" });
 
-    doc.setDrawColor(109, 40, 217);
+    doc.setDrawColor(0, 123, 184);
     doc.setLineWidth(1.2);
     doc.line(marginX, 68, pageWidth - marginX, 68);
 
@@ -877,8 +877,8 @@ function RelatorioLaboratorio() {
         body: body as any,
         margin: { left: marginX, right: marginX, bottom: 36 },
         styles: { font: "helvetica", fontSize: 8.5, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34], halign: "center" },
-        headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 8.5 },
-        alternateRowStyles: { fillColor: [246, 243, 251] },
+        headStyles: { fillColor: [0, 123, 184], textColor: 255, fontStyle: "bold", fontSize: 8.5 },
+        alternateRowStyles: { fillColor: [240, 249, 252] },
         columnStyles: { 0: { cellWidth: 80, halign: "left", fontStyle: "bold" } },
         showHead: "everyPage",
         didDrawPage: () => {
@@ -887,7 +887,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
+          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -923,8 +923,8 @@ function RelatorioLaboratorio() {
         body: body as any,
         margin: { left: marginX, right: marginX, bottom: 36 },
         styles: { font: "helvetica", fontSize: 9, cellPadding: 5, overflow: "linebreak", valign: "top", textColor: [34, 34, 34] },
-        headStyles: { fillColor: [109, 40, 217], textColor: 255, fontStyle: "bold", fontSize: 9 },
-        alternateRowStyles: { fillColor: [246, 243, 251] },
+        headStyles: { fillColor: [0, 123, 184], textColor: 255, fontStyle: "bold", fontSize: 9 },
+        alternateRowStyles: { fillColor: [240, 249, 252] },
         columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 110 }, 2: { cellWidth: 60 }, 3: { cellWidth: "auto" } },
         showHead: "everyPage",
         didDrawPage: () => {
@@ -933,7 +933,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("Planeja — Planejamento de Aulas", marginX, pageHeight - 16);
+          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },

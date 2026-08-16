@@ -28,9 +28,9 @@ function DocentesPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Docente | null>(null);
-  const [form, setForm] = useState({ nome: "", cor_identificadora: "#7C3AED", ativo: true });
+  const [form, setForm] = useState({ nome: "", cor_identificadora: "#007BB8", ativo: true });
 
-  const openNew = () => { setEditing(null); setForm({ nome: "", cor_identificadora: "#7C3AED", ativo: true }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ nome: "", cor_identificadora: "#007BB8", ativo: true }); setOpen(true); };
   const openEdit = (d: Docente) => { setEditing(d); setForm({ nome: d.nome, cor_identificadora: d.cor_identificadora, ativo: d.ativo }); setOpen(true); };
 
   const save = useMutation({

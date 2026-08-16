@@ -41,8 +41,8 @@ function LoginPage() {
             <GraduationCap className="h-7 w-7" />
           </div>
           <div>
-            <div className="text-2xl font-semibold tracking-tight">ClassHub</div>
-            <div className="text-xs text-muted-foreground mt-1">Planejamento de aulas</div>
+            <div className="text-2xl font-semibold tracking-tight">SGE</div>
+            <div className="text-xs text-muted-foreground mt-1">Sistema de Gerenciamento Escolar</div>
           </div>
         </CardHeader>
         <CardContent className="pt-4">

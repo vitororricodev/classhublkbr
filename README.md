@@ -1,4 +1,4 @@
-# ClassHub
+# SGE — Sistema de Gerenciamento Escolar
 
 Sistema web de planejamento e agendamento acadêmico desenvolvido para gerenciamento interno de aulas, horários, docentes e planejamentos escolares.
 
@@ -6,7 +6,7 @@ Sistema web de planejamento e agendamento acadêmico desenvolvido para gerenciam
 
 # Visão Geral
 
-O ClassHub é uma plataforma moderna voltada para organização acadêmica, permitindo:
+O SGE é uma plataforma moderna voltada para organização acadêmica, permitindo:
 
 * gerenciamento de docentes;
 * gerenciamento de turmas;
@@ -349,7 +349,7 @@ git pull origin main
 
 ```bash
 git add .
-git commit -m "Atualizações no ClassHub"
+git commit -m "Atualizações no SGE"
 git push origin main
 ```
 
@@ -361,8 +361,9 @@ git push origin main
 
 | Cor             | Código  |
 | --------------- | ------- |
-| Roxo Principal  | #6D28D9 |
-| Roxo Secundário | #7C3AED |
+| Azul Institucional | #007BB8 |
+| Azul-Ciano | #00A3D7 |
+| Dourado | #F2C94C |
 | Branco          | #FFFFFF |
 | Cinza Claro     | #F5F5F5 |
 
@@ -370,7 +371,7 @@ git push origin main
 
 # Objetivo do Projeto
 
-O ClassHub foi desenvolvido para:
+O SGE foi desenvolvido para:
 
 * facilitar organização acadêmica;
 * centralizar planejamentos;

@@ -71,7 +71,7 @@ function Dashboard() {
       </div>
 
       <Card className="shadow-sm">
-        <CardHeader><CardTitle>Bem-vindo ao Planeja</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Bem-vindo ao SGE</CardTitle></CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>Use o menu lateral para gerenciar docentes, componentes, turmas, horários e relatórios.</p>
           <p>Acesse <span className="font-medium text-foreground">Agendamento</span> para visualizar e lançar aulas no calendário.</p>

@@ -30,4 +30,4 @@ tags: [classhub, frontend, codigo]
 
 ## Estilos
 
-`src/styles.css` contém tokens e estilo global Tailwind. A identidade exposta no README usa roxos `#6D28D9` e `#7C3AED`.
+`src/styles.css` contém tokens e estilo global Tailwind. A identidade visual do SGE usa o azul institucional `#007BB8`, azul-ciano `#00A3D7` e dourado `#F2C94C`, extraídos do emblema da escola.

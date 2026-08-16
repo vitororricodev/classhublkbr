@@ -172,7 +172,7 @@ function LaboratorioPage() {
                               </div>
                             )}
                             {lista.map((a) => (
-                              <div key={a.id} className="rounded-md border p-2 space-y-1 text-left" style={{ borderLeft: `4px solid ${a.docentes?.cor_identificadora || "#7C3AED"}` }}>
+                              <div key={a.id} className="rounded-md border p-2 space-y-1 text-left" style={{ borderLeft: `4px solid ${a.docentes?.cor_identificadora || "#007BB8"}` }}>
                                 <div className="text-xs font-medium">{a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}</div>
                                 {a.docentes && <div className="text-[11px] text-muted-foreground">{a.docentes.nome}</div>}
                                 {a.componentes_curriculares && <div className="text-[11px] text-muted-foreground">{a.componentes_curriculares.nome}</div>}

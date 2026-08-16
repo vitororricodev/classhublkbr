@@ -43,46 +43,44 @@
 :root {
   --radius: 0.625rem;
 
-  --background: oklch(0.985 0.002 280);
-  --foreground: oklch(0.22 0.04 280);
+  --background: oklch(0.985 0.006 215);
+  --foreground: oklch(0.24 0.045 230);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 280);
+  --card-foreground: oklch(0.24 0.045 230);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 280);
+  --popover-foreground: oklch(0.24 0.045 230);
 
-  /* Roxo principal #6D28D9 */
-  --primary: oklch(0.46 0.22 295);
+  /* Identidade EMAVO: azul institucional, ciano e dourado. */
+  --primary: oklch(0.52 0.14 228);
   --primary-foreground: oklch(0.99 0 0);
 
-  /* Roxo secundário #7C3AED para hover/active */
-  --primary-hover: oklch(0.52 0.23 295);
+  --primary-hover: oklch(0.58 0.15 225);
 
-  --secondary: oklch(0.96 0.01 280);
-  --secondary-foreground: oklch(0.3 0.06 295);
+  --secondary: oklch(0.95 0.025 220);
+  --secondary-foreground: oklch(0.32 0.09 228);
 
-  --muted: oklch(0.965 0.005 280);
-  --muted-foreground: oklch(0.55 0.03 280);
+  --muted: oklch(0.965 0.012 220);
+  --muted-foreground: oklch(0.55 0.035 230);
 
-  --accent: oklch(0.95 0.04 295);
-  --accent-foreground: oklch(0.3 0.1 295);
+  --accent: oklch(0.93 0.06 92);
+  --accent-foreground: oklch(0.32 0.08 95);
 
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.92 0.01 280);
-  --input: oklch(0.92 0.01 280);
-  --ring: oklch(0.52 0.23 295);
+  --border: oklch(0.9 0.02 220);
+  --input: oklch(0.9 0.02 220);
+  --ring: oklch(0.58 0.15 225);
 
-  /* Sidebar — roxo escuro */
-  --sidebar: oklch(0.32 0.15 295);
-  --sidebar-foreground: oklch(0.97 0.02 295);
+  --sidebar: oklch(0.38 0.12 228);
+  --sidebar-foreground: oklch(0.98 0.01 220);
   --sidebar-primary: oklch(0.99 0 0);
-  --sidebar-primary-foreground: oklch(0.32 0.15 295);
-  --sidebar-accent: oklch(0.4 0.18 295);
+  --sidebar-primary-foreground: oklch(0.38 0.12 228);
+  --sidebar-accent: oklch(0.48 0.14 225);
   --sidebar-accent-foreground: oklch(0.99 0 0);
-  --sidebar-border: oklch(0.4 0.15 295);
-  --sidebar-ring: oklch(0.7 0.18 295);
+  --sidebar-border: oklch(0.48 0.11 228);
+  --sidebar-ring: oklch(0.72 0.12 220);
 }
 
 @layer base {
@@ -102,17 +100,17 @@
   justify-content: space-between;
   gap: 16pt;
   padding-bottom: 10pt;
-  border-bottom: 2pt solid #6D28D9;
+  border-bottom: 2pt solid #007bb8;
   margin-bottom: 14pt;
 }
 .report-brand { display: flex; align-items: center; gap: 10pt; }
 .report-brand-mark {
   width: 32pt; height: 32pt; border-radius: 6pt;
-  background: linear-gradient(135deg, #6D28D9, #7C3AED);
+  background: linear-gradient(135deg, #006c9f, #00a3d7);
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 14pt;
 }
-.report-brand-text .name { font-weight: 700; font-size: 12pt; color: #6D28D9; line-height: 1; }
+.report-brand-text .name { font-weight: 700; font-size: 12pt; color: #006c9f; line-height: 1; }
 .report-brand-text .sub  { font-size: 8.5pt; color: #555; margin-top: 2pt; }
 .report-meta { font-size: 8.5pt; color: #444; text-align: right; line-height: 1.5; }
 .report-meta b { color: #111; }
@@ -139,7 +137,7 @@
   table-layout: fixed;
 }
 .report-table thead th {
-  background: #6D28D9;
+  background: #007bb8;
   color: #fff;
   font-weight: 600;
   text-align: left;
@@ -158,7 +156,7 @@
   overflow-wrap: anywhere;
   color: #222;
 }
-.report-table tbody tr:nth-child(even) td { background: #f6f3fb; }
+.report-table tbody tr:nth-child(even) td { background: #f0f9fc; }
 
 .status-pill {
   display: inline-block;
@@ -168,7 +166,7 @@
   font-weight: 600;
   text-transform: capitalize;
 }
-.status-planejado  { background: #ede9fe; color: #5b21b6; }
+.status-planejado  { background: #e2f5fb; color: #006c9f; }
 .status-realizado  { background: #dcfce7; color: #166534; }
 .status-cancelado  { background: #fee2e2; color: #991b1b; }
 
@@ -220,9 +218,8 @@
   @page {
     size: A4;
     margin: 14mm 12mm 16mm 12mm;
-    @bottom-left  { content: "Planeja — Planejamento de Aulas"; font-family: "Inter", sans-serif; font-size: 8pt; color: #777; }
+    @bottom-left  { content: "SGE — Sistema de Gerenciamento Escolar"; font-family: "Inter", sans-serif; font-size: 8pt; color: #777; }
     @bottom-center{ content: "Página " counter(page) " de " counter(pages);     font-family: "Inter", sans-serif; font-size: 8pt; color: #777; }
     @bottom-right { content: ""; }
   }
 }
-

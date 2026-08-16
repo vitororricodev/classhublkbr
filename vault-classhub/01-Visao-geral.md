@@ -4,7 +4,11 @@ tags: [classhub, produto]
 
 # Visão geral
 
-O ClassHub L.K. é uma aplicação interna de planejamento acadêmico. Centraliza o cadastro de docentes, turmas, componentes e horários; a agenda de aulas; o uso do laboratório; relatórios; feriados; atividades complementares; usuários; e cópia de segurança dos dados.
+O SGE (Sistema de Gerenciamento Escolar) é uma aplicação interna de planejamento acadêmico. Centraliza o cadastro de docentes, turmas, componentes e horários; a agenda de aulas; o uso do laboratório; relatórios; feriados; atividades complementares; usuários; e cópia de segurança dos dados.
+
+## Identidade visual
+
+Em 16/08/2026, a interface passou a usar a identidade da escola: azul institucional como cor principal, azul-ciano nos destaques e dourado em estados de ênfase. O nome visível do produto é **SGE — Sistema de Gerenciamento Escolar**. Chaves técnicas legadas, como sessão e nomes de backup, foram preservadas para não invalidar acessos ou arquivos existentes.
 
 ## Perfis
 
@@ -29,4 +33,3 @@ O ClassHub L.K. é uma aplicação interna de planejamento acadêmico. Centraliz
 - **Atividade complementar (AC)** ocupa um horário do docente apenas no relatório de docente; não bloqueia a agenda normal de aulas.
 
 Veja também: [[06-Regras-e-fluxos]] e [[03-Rotas-e-telas]].
-

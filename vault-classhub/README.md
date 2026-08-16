@@ -2,9 +2,9 @@
 tags: [classhub, indice, documentacao]
 ---
 
-# Vault ClassHub
+# Vault SGE
 
-Documentação técnica e funcional do ClassHub L.K., produzida a partir do código e das migrations presentes neste repositório em 15/08/2026. Os links usam a sintaxe do Obsidian; abra esta pasta como um vault para navegar por eles.
+Documentação técnica e funcional do SGE (Sistema de Gerenciamento Escolar), produzida a partir do código e das migrations presentes neste repositório em 15/08/2026. Os links usam a sintaxe do Obsidian; abra esta pasta como um vault para navegar por eles.
 
 ## Mapa
 
