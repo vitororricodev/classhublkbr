@@ -24,7 +24,7 @@ flowchart LR
 
 - Uma solicitação contém docente, turma, componente, data, horário, conteúdo e demanda por projetor/som.
 - Toda solicitação pendente aparece em amarelo na grade semanal para todos os usuários, com o rótulo **Solicitado**. A grade não identifica quem solicitou; a lista de solicitações do docente permanece individual.
-- A aprovação é feita no cliente em duas operações separadas: inserir em `laboratorio_agendamentos` e atualizar a solicitação. Não há transação/trigger que una as operações.
+- A aprovação e a rejeição usam RPCs transacionais: a aprovação cria o agendamento e muda o estado da solicitação em uma única operação, evitando estados parciais e dupla decisão concorrente.
 - A agenda do laboratório é independente de `planejamentos`, pois uma aula normal pode usar o laboratório no próprio horário.
 - A migration atual deliberadamente permite múltiplos agendamentos no mesmo horário de laboratório; a interface sinaliza visualmente a sobreposição.
 
@@ -36,4 +36,4 @@ flowchart LR
 
 ## Backup
 
-O backup exporta somente `docentes`, `componentes_curriculares`, `turmas`, `horarios_padrao`, `feriados` e `planejamentos`. A restauração apaga essas tabelas em ordem inversa e reinsere os registros em lotes de 500. Não inclui usuários, laboratório, solicitações, categorias/AC, anexos do Storage nem configurações externas.
+O backup v2 exporta docentes, componentes, turmas, horários, feriados, categorias de AC, planejamentos, agendamentos e solicitações de laboratório e atividades complementares. A restauração apaga essas tabelas em ordem inversa e reinsere os registros em lotes de 500. Não inclui usuários, anexos do Storage nem configurações externas.

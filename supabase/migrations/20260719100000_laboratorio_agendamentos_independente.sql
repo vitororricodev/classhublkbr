@@ -19,10 +19,8 @@ create table if not exists public.laboratorio_agendamentos (
   created_at timestamptz not null default now()
 );
 
--- Único conflito real: duas reservas no mesmo horário físico do laboratório.
-create unique index if not exists uniq_lab_agendamento_horario_data
-  on public.laboratorio_agendamentos (data, horario_id)
-  where status <> 'cancelado';
+-- Não cria unicidade por data/horário. A regra vigente (formalizada na
+-- migration 20260719140000) permite revezamentos legítimos no laboratório.
 
 create index if not exists idx_lab_agendamentos_data on public.laboratorio_agendamentos(data);
 create index if not exists idx_lab_agendamentos_turma on public.laboratorio_agendamentos(turma_id);

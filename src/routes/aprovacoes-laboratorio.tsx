@@ -52,16 +52,12 @@ function AprovacoesLaboratorioPage() {
 
   const aprovar = useMutation({
     mutationFn: async (s: SolicitacaoLaboratorioFull) => {
-      const { error: insErr } = await supabase.from("laboratorio_agendamentos").insert({
-        data: s.data, horario_id: s.horario_id, turma_id: s.turma_id, docente_id: s.docente_id, componente_id: s.componente_id,
-        observacao: s.conteudo, status: "agendado", usar_projetor: s.usar_projetor, usar_equipamento_som: s.usar_equipamento_som,
-        criado_por: user?.id ?? null,
+      if (!user?.id) throw new Error("Sessão inválida. Entre novamente.");
+      const { error } = await supabase.rpc("aprovar_solicitacao_laboratorio", {
+        p_solicitacao_id: s.id,
+        p_decidido_por: user.id,
       });
-      if (insErr) throw insErr;
-      const { error: updErr } = await supabase.from("solicitacoes_laboratorio")
-        .update({ status: "aprovado", decidido_por: user?.id ?? null, decidido_em: new Date().toISOString() })
-        .eq("id", s.id);
-      if (updErr) throw updErr;
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Aprovado! Já criei o agendamento no laboratório.");
@@ -74,9 +70,12 @@ function AprovacoesLaboratorioPage() {
   const rejeitar = useMutation({
     mutationFn: async () => {
       if (!rejeitando) return;
-      const { error } = await supabase.from("solicitacoes_laboratorio")
-        .update({ status: "rejeitado", motivo_rejeicao: motivo || null, decidido_por: user?.id ?? null, decidido_em: new Date().toISOString() })
-        .eq("id", rejeitando.id);
+      if (!user?.id) throw new Error("Sessão inválida. Entre novamente.");
+      const { error } = await supabase.rpc("rejeitar_solicitacao_laboratorio", {
+        p_solicitacao_id: rejeitando.id,
+        p_decidido_por: user.id,
+        p_motivo_rejeicao: motivo || null,
+      });
       if (error) throw error;
     },
     onSuccess: () => {

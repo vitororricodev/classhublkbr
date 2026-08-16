@@ -109,10 +109,13 @@ function UsersPage() {
 
   const toggleM = useMutation({
     mutationFn: async (u: Usuario) => {
-      const { error } = await supabase
-        .from("usuarios")
-        .update({ ativo: !u.ativo })
-        .eq("id", u.id);
+      const { error } = await supabase.rpc("atualizar_usuario", {
+        p_id: u.id,
+        p_nome: u.nome,
+        p_tipo: u.tipo,
+        p_ativo: !u.ativo,
+        p_docente_id: u.docente_id,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -124,7 +127,7 @@ function UsersPage() {
 
   const removeM = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("usuarios").delete().eq("id", id);
+      const { error } = await supabase.rpc("excluir_usuario", { p_id: id });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -435,14 +438,13 @@ function EditUserDialog({
             e.preventDefault();
             setLoading(true);
             try {
-              const { error } = await supabase
-                .from("usuarios")
-                .update({
-                  nome: nome.trim(),
-                  tipo,
-                  docente_id: tipo === "usuario" && docenteId !== "none" ? docenteId : null,
-                })
-                .eq("id", user.id);
+              const { error } = await supabase.rpc("atualizar_usuario", {
+                p_id: user.id,
+                p_nome: nome.trim(),
+                p_tipo: tipo,
+                p_ativo: user.ativo,
+                p_docente_id: tipo === "usuario" && docenteId !== "none" ? docenteId : null,
+              });
               if (error) throw error;
               toast.success("Usuário atualizado.");
               onSaved();

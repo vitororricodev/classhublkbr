@@ -568,6 +568,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      aprovar_solicitacao_laboratorio: {
+        Args: {
+          p_decidido_por: string
+          p_solicitacao_id: string
+        }
+        Returns: undefined
+      }
       atualizar_usuario: {
         Args: {
           p_ativo: boolean
@@ -616,6 +623,14 @@ export type Database = {
       }
       resetar_senha_usuario: {
         Args: { p_id: string; p_nova: string }
+        Returns: undefined
+      }
+      rejeitar_solicitacao_laboratorio: {
+        Args: {
+          p_decidido_por: string
+          p_motivo_rejeicao?: string | null
+          p_solicitacao_id: string
+        }
         Returns: undefined
       }
     }

@@ -8,7 +8,11 @@ export const BACKUP_TABLES = [
   "turmas",
   "horarios_padrao",
   "feriados",
+  "categorias_ac",
   "planejamentos",
+  "laboratorio_agendamentos",
+  "solicitacoes_laboratorio",
+  "atividades_complementares",
 ] as const;
 
 export type BackupTable = (typeof BACKUP_TABLES)[number];
@@ -27,7 +31,7 @@ export async function createBackup(): Promise<BackupFile> {
     database[table] = (data ?? []) as Record<string, unknown>[];
   }
   return {
-    version: "1.0",
+    version: "2.0",
     createdAt: new Date().toISOString(),
     database,
   };

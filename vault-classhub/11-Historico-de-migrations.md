@@ -20,15 +20,15 @@ As migrations são incrementais. Aplique-as em ordem pelo prefixo de data/hora e
 | `20260718120000_*` | Adiciona `usa_laboratorio` a componentes. |
 | `20260718130000_*` | Recria a unicidade de docente/data/horário para planejamentos. |
 | `20260718140000_*` | Corrige RPCs para `senha`, adiciona vínculo `usuarios.docente_id` e escopo docente. |
-| `20260719100000_*` | Primeira versão de `laboratorio_agendamentos`, inicialmente com unicidade por slot. |
+| `20260719100000_*` | Estrutura inicial de `laboratorio_agendamentos`; a aplicação da migration preserva históricos já sobrepostos, pois a regra vigente permite múltiplos usos no mesmo slot. |
 | `20260719120000_*` | Revisa a tabela de laboratório e popula históricos de componentes que usam laboratório. |
 | `20260719140000_*` | Remove a unicidade do laboratório e permite múltiplos registros no slot. |
 | `20260720120000_*` | Adiciona intervalo nos horários, categorias e atividades complementares. |
 | `20260721120000_*` | Adiciona recursos do laboratório e solicitações de laboratório. |
+| `20260816000000_*` | Centraliza aprovação/rejeição de solicitações do laboratório em RPCs transacionais. |
 
 ## Observações de manutenção
 
 - Há decisões substituídas ao longo do tempo (principalmente em autenticação e conflitos de laboratório); o estado final resulta da sequência completa.
 - `owner_id` aparece em uma migration, mas não está em `src/lib/db.ts` nem no tipo gerado atual. Antes de depender dele, confirme o banco remoto.
 - A migration de escopo docente é relevante para o comportamento de telas que filtram `criado_por`; revise-a junto com [[07-Autenticacao-e-seguranca]] em qualquer alteração de perfil.
-

@@ -32,10 +32,11 @@ Em `src/lib/db.ts`, `PLAN_SELECT`, `LAB_SELECT`, `SOLIC_SELECT` e `AC_SELECT` ex
 | `atualizar_usuario` | id, nome, tipo, ativo, docente opcional | Edição administrativa. |
 | `resetar_senha_usuario` | id, nova senha | Força redefinição; marca primeiro login. |
 | `excluir_usuario` | id | Exclui, preservando ao menos um admin ativo. |
+| `aprovar_solicitacao_laboratorio` | solicitação, administrador | Cria reserva e aprova o pedido atomicamente. |
+| `rejeitar_solicitacao_laboratorio` | solicitação, administrador, motivo opcional | Rejeita apenas solicitação ainda pendente. |
 | `alterar_senha_usuario` | usuário, senha atual, nova senha | Tela de mudança de senha. |
 | `listar_usuarios`, `login_usuario` | conforme migration | Existem no banco esperado, mas a interface atual usa acesso direto a `usuarios` no login/listagem. |
 
 ## Arquivos
 
 `PlanejamentoForm` usa `storage.from("anexos").upload(path, file)`, obtém URL pública com `getPublicUrl(path)` e remove objeto com `remove([key])`. O caminho segue o prefixo de planejamento/arquivo; veja o componente para detalhes de nomeação.
-
