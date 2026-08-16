@@ -80,13 +80,14 @@ function SolicitarLaboratorioPage() {
   });
 
   const { data: pendentesSemana = [] } = useQuery({
-    queryKey: ["solicitacoes_laboratorio", "pendentes-semana", scopedDocenteId, weekStart, weekEnd],
-    enabled: !!scopedDocenteId,
+    // A disponibilidade precisa ser igual para todos: um pedido pendente já
+    // sinaliza que o horário está em análise, independentemente de quem pediu.
+    queryKey: ["solicitacoes_laboratorio", "pendentes-semana", weekStart, weekEnd],
     queryFn: async () => {
-      const { data, error } = await supabase.from("solicitacoes_laboratorio").select(SOLIC_SELECT)
-        .eq("docente_id", scopedDocenteId!).eq("status", "pendente").gte("data", weekStart).lte("data", weekEnd);
+      const { data, error } = await supabase.from("solicitacoes_laboratorio").select("id, data, horario_id")
+        .eq("status", "pendente").gte("data", weekStart).lte("data", weekEnd);
       if (error) throw error;
-      return (data ?? []) as unknown as SolicitacaoLaboratorioFull[];
+      return data ?? [];
     },
   });
 
@@ -123,13 +124,16 @@ function SolicitarLaboratorioPage() {
   }, [ocupados]);
 
   const mapaPendente = useMemo(() => {
-    const m = new Map<string, SolicitacaoLaboratorioFull>();
-    for (const s of pendentesSemana) m.set(`${s.data}__${s.horario_id}`, s);
+    const m = new Map<string, number>();
+    for (const s of pendentesSemana) {
+      const key = `${s.data}__${s.horario_id}`;
+      m.set(key, (m.get(key) ?? 0) + 1);
+    }
     return m;
   }, [pendentesSemana]);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
@@ -171,7 +175,7 @@ function SolicitarLaboratorioPage() {
 
       <Card className="p-4">
         <div className="text-sm text-muted-foreground mb-3">
-          {loadingOcupacao ? "Carregando disponibilidade..." : "Verde = livre (clique para solicitar) · Vermelho = intervalo · Cinza = já ocupado · Amarelo = seu pedido está pendente"}
+          {loadingOcupacao ? "Carregando disponibilidade..." : "Verde = livre (clique para solicitar) · Vermelho = intervalo · Cinza = já ocupado · Amarelo = solicitação pendente"}
         </div>
         {horarios.length === 0 ? (
           <div className="text-sm text-muted-foreground">Nenhum horário cadastrado ainda.</div>
@@ -203,7 +207,7 @@ function SolicitarLaboratorioPage() {
                         return <td key={dt} className="p-2 text-center align-top bg-red-50 text-xs text-red-700/70">Intervalo</td>;
                       }
                       const ocupantes = mapaOcupado.get(`${dt}__${h.id}`) ?? [];
-                      const pendente = mapaPendente.get(`${dt}__${h.id}`);
+                      const pendentes = mapaPendente.get(`${dt}__${h.id}`) ?? 0;
                       const ocupado = ocupantes.length > 0;
 
                       if (ocupado) {
@@ -221,12 +225,12 @@ function SolicitarLaboratorioPage() {
                         );
                       }
 
-                      if (pendente) {
+                      if (pendentes > 0) {
                         return (
                           <td key={dt} className="p-2 text-center align-top bg-amber-50 min-w-[150px]">
                             <div className="text-[11px] text-amber-800 space-y-1">
-                              <div>Seu pedido está pendente</div>
-                              <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 text-[10px]">Aguardando aprovação</Badge>
+                              <div>{pendentes === 1 ? "Solicitação pendente" : `${pendentes} solicitações pendentes`}</div>
+                              <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 text-[10px]">Solicitado</Badge>
                             </div>
                           </td>
                         );

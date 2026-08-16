@@ -90,7 +90,7 @@ function LaboratorioPage() {
 
   if (!isAdmin) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Card className="p-6">
           <h1 className="text-lg font-semibold mb-1">Acesso restrito</h1>
           <p className="text-sm text-muted-foreground">
@@ -103,7 +103,7 @@ function LaboratorioPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">

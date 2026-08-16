@@ -62,7 +62,7 @@ function CategoriasACPage() {
 
   if (!isAdmin) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Card className="p-6">
           <h1 className="text-lg font-semibold mb-1">Acesso restrito</h1>
           <p className="text-sm text-muted-foreground">Somente administradores gerenciam categorias de AC.</p>
@@ -72,7 +72,7 @@ function CategoriasACPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Categorias de AC</h1>

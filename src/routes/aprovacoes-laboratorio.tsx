@@ -128,7 +128,7 @@ function AprovacoesLaboratorioPage() {
   );
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold flex items-center gap-2">
           <ClipboardCheck className="h-6 w-6 text-primary" />Aprovações do Laboratório

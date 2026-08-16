@@ -34,7 +34,7 @@ function fmtDateTime(d: Date) {
 function RelatoriosPage() {
   const { isAdmin } = useAuth();
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Relatórios</h1>
         <p className="text-sm text-muted-foreground">Filtre e exporte relatórios de aulas em PDF.</p>
