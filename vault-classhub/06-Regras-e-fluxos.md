@@ -34,6 +34,14 @@ flowchart LR
 - `eh_intervalo` em `horarios_padrao` faz relatórios destacarem o recreio em vez de tratá-lo como vaga.
 - ACs não interferem na agenda normal: sua unicidade própria é docente/data/horário e seu lançamento ocorre pelo relatório de docente.
 
+## Mural escolar
+
+- A Dashboard é o mural do SGE: mostra uma publicação em destaque, avisos recentes e os próximos eventos.
+- Uma publicação só é exibida quando está ativa e entre `inicio_exibicao` e `fim_exibicao` (quando definido). Publicações fixadas têm prioridade.
+- Eventos exigem uma data e são listados na coluna de próximos eventos enquanto essa data não passou.
+- Administradores fazem o CRUD em `/mural`; demais usuários possuem visualização.
+- Três ícones sem texto, no canto inferior direito, testam consultas de banco, agenda e usuários. Verde significa resposta bem-sucedida, vermelho significa erro e cinza significa que a consulta ainda está em andamento.
+
 ## Backup
 
 O backup v2 exporta docentes, componentes, turmas, horários, feriados, categorias de AC, planejamentos, agendamentos e solicitações de laboratório e atividades complementares. A restauração apaga essas tabelas em ordem inversa e reinsere os registros em lotes de 500. Não inclui usuários, anexos do Storage nem configurações externas.

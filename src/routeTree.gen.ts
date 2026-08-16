@@ -13,6 +13,7 @@ import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as TurmasRouteImport } from './routes/turmas'
 import { Route as SolicitarLaboratorioRouteImport } from './routes/solicitar-laboratorio'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as MuralRouteImport } from './routes/mural'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LaboratoriosRouteImport } from './routes/laboratorios'
 import { Route as LaboratorioRouteImport } from './routes/laboratorio'
@@ -45,6 +46,11 @@ const SolicitarLaboratorioRoute = SolicitarLaboratorioRouteImport.update({
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MuralRoute = MuralRouteImport.update({
+  id: '/mural',
+  path: '/mural',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/laboratorio': typeof LaboratorioRoute
   '/laboratorios': typeof LaboratoriosRoute
   '/login': typeof LoginRoute
+  '/mural': typeof MuralRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
   '/turmas': typeof TurmasRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/laboratorio': typeof LaboratorioRoute
   '/laboratorios': typeof LaboratoriosRoute
   '/login': typeof LoginRoute
+  '/mural': typeof MuralRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
   '/turmas': typeof TurmasRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/laboratorio': typeof LaboratorioRoute
   '/laboratorios': typeof LaboratoriosRoute
   '/login': typeof LoginRoute
+  '/mural': typeof MuralRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
   '/turmas': typeof TurmasRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/laboratorio'
     | '/laboratorios'
     | '/login'
+    | '/mural'
     | '/relatorios'
     | '/solicitar-laboratorio'
     | '/turmas'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/laboratorio'
     | '/laboratorios'
     | '/login'
+    | '/mural'
     | '/relatorios'
     | '/solicitar-laboratorio'
     | '/turmas'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/laboratorio'
     | '/laboratorios'
     | '/login'
+    | '/mural'
     | '/relatorios'
     | '/solicitar-laboratorio'
     | '/turmas'
@@ -245,6 +257,7 @@ export interface RootRouteChildren {
   LaboratorioRoute: typeof LaboratorioRoute
   LaboratoriosRoute: typeof LaboratoriosRoute
   LoginRoute: typeof LoginRoute
+  MuralRoute: typeof MuralRoute
   RelatoriosRoute: typeof RelatoriosRoute
   SolicitarLaboratorioRoute: typeof SolicitarLaboratorioRoute
   TurmasRoute: typeof TurmasRoute
@@ -279,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorios'
       fullPath: '/relatorios'
       preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mural': {
+      id: '/mural'
+      path: '/mural'
+      fullPath: '/mural'
+      preLoaderRoute: typeof MuralRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -389,6 +409,7 @@ const rootRouteChildren: RootRouteChildren = {
   LaboratorioRoute: LaboratorioRoute,
   LaboratoriosRoute: LaboratoriosRoute,
   LoginRoute: LoginRoute,
+  MuralRoute: MuralRoute,
   RelatoriosRoute: RelatoriosRoute,
   SolicitarLaboratorioRoute: SolicitarLaboratorioRoute,
   TurmasRoute: TurmasRoute,

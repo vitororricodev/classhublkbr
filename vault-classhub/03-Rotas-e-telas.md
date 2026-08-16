@@ -8,7 +8,8 @@ tags: [classhub, rotas, ui]
 |---|---|---|---|
 | `/login` | Login | Pública | Valida usuário/senha na tabela `usuarios`. |
 | `/alterar-senha` | Senha | Usuário autenticado | Troca senha e remove o estado de primeiro acesso. |
-| `/` | Dashboard | Autenticado | Contadores de aulas, docentes e estados das aulas. |
+| `/` | Mural escolar | Autenticado | Avisos, destaques, próximos eventos e três ícones discretos de saúde das consultas. |
+| `/mural` | Gerenciar mural | Admin | CRUD de avisos, destaques e eventos publicados na Dashboard. |
 | `/agendamento` | Agenda | Autenticado | Calendário mensal de planejamentos, filtros, edição e exclusão. |
 | `/laboratorio` | Laboratório | Admin | Agenda independente e CRUD de uso do laboratório. |
 | `/solicitar-laboratorio` | Solicitar laboratório | Autenticado | Docente registra solicitação e acompanha as próprias solicitações. |

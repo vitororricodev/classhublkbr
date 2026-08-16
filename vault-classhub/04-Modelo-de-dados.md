@@ -17,6 +17,7 @@ tags: [classhub, banco, supabase]
 | `solicitacoes_laboratorio` | dados de aula, recursos, `status`, motivo e auditoria de decisão | Fluxo pendente/aprovado/rejeitado. |
 | `categorias_ac` | `nome`, `ativo` | Catálogo de AC. |
 | `atividades_complementares` | docente, data, horário, categoria, observação, criador | Uma AC por docente/data/horário. |
+| `mural_publicacoes` | título, conteúdo, tipo, evento, período de exibição, fixação e status | Alimenta o mural escolar; eventos exigem data. |
 | `feriados` | `nome`, `data`, `tipo`, `ativo` | Feriados municipais/nacionais cadastrados. |
 | `usuarios` | `usuario`, `nome`, `senha`, `tipo`, `ativo`, `primeiro_login`, `docente_id` | Perfis `admin` ou `usuario`; vínculo opcional ao docente. |
 
@@ -46,4 +47,3 @@ erDiagram
 ## Storage
 
 O bucket público `anexos` armazena arquivos dos planejamentos. A URL pública vai em `planejamentos.anexo_url`; o arquivo não é uma FK e pode permanecer órfão se a aula for excluída sem remoção do objeto.
-

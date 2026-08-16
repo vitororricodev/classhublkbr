@@ -20,6 +20,7 @@ import {
   ChevronDown,
   DatabaseBackup,
   Menu,
+  Megaphone,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ const configGroup: NavGroup = {
     { to: "/horarios", label: "Horários", icon: Clock },
     { to: "/feriados", label: "Feriados", icon: CalendarOff },
     { to: "/categorias-ac", label: "Categorias de AC", icon: ClipboardList, adminOnly: true },
+    { to: "/mural", label: "Gerenciar mural", icon: Megaphone, adminOnly: true },
     { to: "/usuarios", label: "Usuários", icon: UserCog, adminOnly: true },
     { to: "/configuracoes", label: "Backup e Restauração", icon: DatabaseBackup, adminOnly: true },
   ],
