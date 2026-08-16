@@ -72,3 +72,17 @@ flowchart TD
 - Administradores conseguem gerir e aprovar os dois ambientes; responsáveis são vinculados na tela de Usuários e recebem acesso somente aos ambientes marcados.
 - O responsável de um laboratório não consegue visualizar nem decidir solicitações do outro, pela interface ou pela RPC.
 - Backup, restauração e relatório incluem os dois ambientes.
+
+## Quadro de Atividades Complementares recebido
+
+O arquivo externo `QUADRO DE AC.docx`, recebido em 16/08/2026, define uma escala semanal recorrente, ainda sem período letivo/datas para gerar lançamentos:
+
+| Área | Dia | Turno informado | Docentes |
+|---|---|---|---|
+| Exatas e Ciências da Natureza | Quarta-feira | 13h50–17h05 | Eduarda, Cláudio, Henrique, Laiane, Leonardo, Lícia, Maíra, Neidiane e Pedro. |
+| Linguagens | Quinta-feira | 08h15–11h30 | Flávia, Gabriel, Joedson, Leandro, Letícia, Mariane e Thiago. |
+| Linguagens | Quinta-feira | 13h30–17h50 | Aline, Anna Beatriz e Maria Jeocastra. |
+| Humanas | Sexta-feira | Manhã, sem horário preenchido no arquivo | Larissa de Jesus e Raíssa. |
+| Humanas | Sexta-feira | 13h30–17h50 | Ariane, Fernanda e Larissa da Purificação. |
+
+Os docentes correspondem aos cadastros ativos, mas a agenda padrão atual termina às 17h05. Antes de inserir ACs por data, deve ser definido o período letivo e como tratar o bloco até 17h50 e os dois registros de Humanas sem faixa de horário.

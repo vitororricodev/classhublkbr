@@ -17,14 +17,14 @@ function LaboratoriosHubPage() {
   const { data: laboratorios = [] } = useLaboratorioAtual();
   return <div className="p-4 sm:p-6 lg:p-8 space-y-6">
     <div><h1 className="text-2xl font-semibold">Laboratórios</h1><p className="text-sm text-muted-foreground">Escolha o ambiente que deseja reservar.</p></div>
-    <div className="grid gap-4 md:grid-cols-2 max-w-4xl">
+    <div className="grid gap-6 md:grid-cols-2 max-w-6xl">
       {labs.map((lab) => {
         const Icon = lab.icon;
         const laboratorio = laboratorios.find((item) => item.slug === lab.slug);
         const podeGerir = isAdmin || (!!laboratorio && user?.laboratorio_ids.includes(laboratorio.id));
-        return <Card key={lab.slug} className="p-6 flex flex-col gap-4">
-          <div className="h-11 w-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><Icon className="h-6 w-6" /></div>
-          <div><h2 className="font-semibold">{lab.nome}</h2><p className="mt-1 text-sm text-muted-foreground">{lab.descricao}</p></div>
+        return <Card key={lab.slug} className="min-h-80 p-8 flex flex-col gap-6">
+          <div className="h-14 w-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Icon className="h-7 w-7" /></div>
+          <div><h2 className="text-xl font-semibold">{lab.nome}</h2><p className="mt-2 text-base text-muted-foreground">{lab.descricao}</p></div>
           <div className="mt-auto flex flex-wrap gap-2">
             <Button asChild><Link to="/solicitar-laboratorio" search={{ lab: lab.slug } as never}><CalendarDays className="mr-2 h-4 w-4" />Solicitar horário</Link></Button>
             {podeGerir && <Button asChild variant="outline"><Link to="/laboratorio" search={{ lab: lab.slug } as never}><Settings className="mr-2 h-4 w-4" />Gerenciar agenda</Link></Button>}
