@@ -14,6 +14,9 @@ import { toast } from "sonner";
 import { SOLIC_SELECT } from "@/lib/db";
 import type { SolicitacaoLaboratorioFull } from "@/lib/db";
 import { useAuth } from "@/lib/auth-context";
+import { useLaboratorioAtual } from "@/lib/laboratorios";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
 
 export const Route = createFileRoute("/aprovacoes-laboratorio")({ component: AprovacoesLaboratorioPage });
 
@@ -29,22 +32,25 @@ const statusBadge: Record<string, ReactNode> = {
 function AprovacoesLaboratorioPage() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { laboratorio } = useLaboratorioAtual();
   const [rejeitando, setRejeitando] = useState<SolicitacaoLaboratorioFull | null>(null);
   const [motivo, setMotivo] = useState("");
 
   const { data: pendentes = [], isLoading: loadingPend } = useQuery({
-    queryKey: ["solicitacoes_laboratorio", "pendentes"],
+    queryKey: ["solicitacoes_laboratorio", "pendentes", laboratorio?.id],
+    enabled: !!laboratorio,
     queryFn: async () => {
-      const { data, error } = await supabase.from("solicitacoes_laboratorio").select(SOLIC_SELECT).eq("status", "pendente").order("created_at");
+      const { data, error } = await sb.from("solicitacoes_laboratorio").select(SOLIC_SELECT).eq("laboratorio_id", laboratorio!.id).eq("status", "pendente").order("created_at");
       if (error) throw error;
       return (data ?? []) as unknown as SolicitacaoLaboratorioFull[];
     },
   });
 
   const { data: historico = [], isLoading: loadingHist } = useQuery({
-    queryKey: ["solicitacoes_laboratorio", "historico"],
+    queryKey: ["solicitacoes_laboratorio", "historico", laboratorio?.id],
+    enabled: !!laboratorio,
     queryFn: async () => {
-      const { data, error } = await supabase.from("solicitacoes_laboratorio").select(SOLIC_SELECT).neq("status", "pendente").order("decidido_em", { ascending: false }).limit(50);
+      const { data, error } = await sb.from("solicitacoes_laboratorio").select(SOLIC_SELECT).eq("laboratorio_id", laboratorio!.id).neq("status", "pendente").order("decidido_em", { ascending: false }).limit(50);
       if (error) throw error;
       return (data ?? []) as unknown as SolicitacaoLaboratorioFull[];
     },
@@ -130,7 +136,7 @@ function AprovacoesLaboratorioPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <ClipboardCheck className="h-6 w-6 text-primary" />Aprovações do Laboratório
+          <ClipboardCheck className="h-6 w-6 text-primary" />Aprovações — {laboratorio?.nome ?? "Laboratório"}
         </h1>
         <p className="text-sm text-muted-foreground">Aprove ou rejeite as solicitações enviadas pelos docentes.</p>
       </div>

@@ -14,6 +14,7 @@ import { Route as TurmasRouteImport } from './routes/turmas'
 import { Route as SolicitarLaboratorioRouteImport } from './routes/solicitar-laboratorio'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LaboratoriosRouteImport } from './routes/laboratorios'
 import { Route as LaboratorioRouteImport } from './routes/laboratorio'
 import { Route as HorariosRouteImport } from './routes/horarios'
 import { Route as FeriadosRouteImport } from './routes/feriados'
@@ -49,6 +50,11 @@ const RelatoriosRoute = RelatoriosRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LaboratoriosRoute = LaboratoriosRouteImport.update({
+  id: '/laboratorios',
+  path: '/laboratorios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LaboratorioRoute = LaboratorioRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/laboratorios': typeof LaboratoriosRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/laboratorios': typeof LaboratoriosRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/feriados': typeof FeriadosRoute
   '/horarios': typeof HorariosRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/laboratorios': typeof LaboratoriosRoute
   '/login': typeof LoginRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitar-laboratorio': typeof SolicitarLaboratorioRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/feriados'
     | '/horarios'
     | '/laboratorio'
+    | '/laboratorios'
     | '/login'
     | '/relatorios'
     | '/solicitar-laboratorio'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/feriados'
     | '/horarios'
     | '/laboratorio'
+    | '/laboratorios'
     | '/login'
     | '/relatorios'
     | '/solicitar-laboratorio'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/feriados'
     | '/horarios'
     | '/laboratorio'
+    | '/laboratorios'
     | '/login'
     | '/relatorios'
     | '/solicitar-laboratorio'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   FeriadosRoute: typeof FeriadosRoute
   HorariosRoute: typeof HorariosRoute
   LaboratorioRoute: typeof LaboratorioRoute
+  LaboratoriosRoute: typeof LaboratoriosRoute
   LoginRoute: typeof LoginRoute
   RelatoriosRoute: typeof RelatoriosRoute
   SolicitarLaboratorioRoute: typeof SolicitarLaboratorioRoute
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/laboratorios': {
+      id: '/laboratorios'
+      path: '/laboratorios'
+      fullPath: '/laboratorios'
+      preLoaderRoute: typeof LaboratoriosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/laboratorio': {
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeriadosRoute: FeriadosRoute,
   HorariosRoute: HorariosRoute,
   LaboratorioRoute: LaboratorioRoute,
+  LaboratoriosRoute: LaboratoriosRoute,
   LoginRoute: LoginRoute,
   RelatoriosRoute: RelatoriosRoute,
   SolicitarLaboratorioRoute: SolicitarLaboratorioRoute,

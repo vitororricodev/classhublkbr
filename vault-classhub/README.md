@@ -19,6 +19,7 @@ Documentação técnica e funcional do ClassHub L.K., produzida a partir do cód
 - [[09-Componentes-e-codigo]] — organização do frontend e arquivos relevantes.
 - [[10-Qualidade-e-dividas-tecnicas]] — inconsistências verificadas e recomendações.
 - [[11-Historico-de-migrations]] — evolução do esquema e ordem dos scripts.
+- [[12-Expansao-laboratorio-multidisciplinar]] — plano técnico para o segundo laboratório.
 
 ## Fonte de verdade
 

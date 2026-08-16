@@ -14,6 +14,9 @@ import { toast } from "sonner";
 import { LAB_SELECT } from "@/lib/db";
 import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, StatusLab, Turma } from "@/lib/db";
 import { useAuth } from "@/lib/auth-context";
+import { useLaboratorioAtual } from "@/lib/laboratorios";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
 
 export const Route = createFileRoute("/laboratorio")({ component: LaboratorioPage });
 
@@ -28,6 +31,7 @@ const statusLabel: Record<StatusLab, string> = { agendado: "Agendado", realizado
 
 function LaboratorioPage() {
   const { isAdmin } = useAuth();
+  const { laboratorio } = useLaboratorioAtual();
   const [weekStart, setWeekStart] = useState(() => startOfWeekISO(new Date()));
   const weekEnd = useMemo(() => addDaysISO(weekStart, 6), [weekStart]);
 
@@ -36,7 +40,7 @@ function LaboratorioPage() {
 
   const { data: horarios = [] } = useQuery({
     queryKey: ["horarios", "ativos", "ordenados"],
-    enabled: isAdmin,
+    enabled: isAdmin && !!laboratorio,
     queryFn: async () => {
       const { data, error } = await supabase.from("horarios_padrao").select("*").eq("ativo", true).order("ordem");
       if (error) throw error;
@@ -45,12 +49,13 @@ function LaboratorioPage() {
   });
 
   const { data: aulas = [], isLoading } = useQuery({
-    queryKey: ["laboratorio_agendamentos", weekStart, weekEnd],
-    enabled: isAdmin,
+    queryKey: ["laboratorio_agendamentos", laboratorio?.id, weekStart, weekEnd],
+    enabled: isAdmin && !!laboratorio,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("laboratorio_agendamentos")
         .select(LAB_SELECT)
+        .eq("laboratorio_id", laboratorio!.id)
         .gte("data", weekStart).lte("data", weekEnd)
         .neq("status", "cancelado");
       if (error) throw error;
@@ -107,7 +112,7 @@ function LaboratorioPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <MonitorSmartphone className="h-6 w-6 text-primary" />Laboratório de Informática
+            <MonitorSmartphone className="h-6 w-6 text-primary" />{laboratorio?.nome ?? "Laboratório"}
           </h1>
           <p className="text-sm text-muted-foreground">
             Controle, agendamento e histórico do laboratório — independente da agenda normal de aulas.
@@ -206,6 +211,7 @@ function LaboratorioPage() {
           data={formData.data}
           horarioId={formData.horarioId}
           editing={formData.editing}
+          laboratorioId={laboratorio?.id ?? ""}
         />
       )}
     </div>
@@ -236,9 +242,9 @@ function ExcluirBotao({ id }: { id: string }) {
 }
 
 function LaboratorioAgendamentoForm({
-  open, onClose, data, horarioId, editing,
+  open, onClose, data, horarioId, editing, laboratorioId,
 }: {
-  open: boolean; onClose: () => void; data: string; horarioId: string; editing: LaboratorioAgendamentoFull | null;
+  open: boolean; onClose: () => void; data: string; horarioId: string; editing: LaboratorioAgendamentoFull | null; laboratorioId: string;
 }) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -281,7 +287,7 @@ function LaboratorioAgendamentoForm({
     mutationFn: async () => {
       if (!turmaId) throw new Error("Selecione a turma.");
       const payload = {
-        data, horario_id: horarioId, turma_id: turmaId,
+        data, horario_id: horarioId, turma_id: turmaId, laboratorio_id: laboratorioId,
         docente_id: docenteId === "none" ? null : docenteId,
         componente_id: componenteId === "none" ? null : componenteId,
         observacao: observacao || null,
@@ -293,24 +299,25 @@ function LaboratorioAgendamentoForm({
       // Aviso não-bloqueante: só avisa se já existir outro agendamento no
       // mesmo horário/dia — não impede de salvar, é uma checagem só pra
       // ajudar a organizar (ex: revezamento de professores no lab).
-      const { data: outros, error: chkErr } = await supabase
+      const { data: outros, error: chkErr } = await sb
         .from("laboratorio_agendamentos")
         .select("id")
         .eq("data", data)
         .eq("horario_id", horarioId)
+        .eq("laboratorio_id", laboratorioId)
         .neq("status", "cancelado");
       if (!chkErr) {
-        const conflito = (outros ?? []).some((o) => o.id !== editing?.id);
+        const conflito = (outros ?? []).some((o: { id: string }) => o.id !== editing?.id);
         if (conflito) {
           toast.warning("Já existe outro agendamento neste horário — confira se não é duplicado.");
         }
       }
 
       if (editing) {
-        const { error } = await supabase.from("laboratorio_agendamentos").update(payload).eq("id", editing.id);
+        const { error } = await sb.from("laboratorio_agendamentos").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("laboratorio_agendamentos").insert({ ...payload, criado_por: user?.id ?? null });
+        const { error } = await sb.from("laboratorio_agendamentos").insert({ ...payload, criado_por: user?.id ?? null });
         if (error) throw error;
       }
     },

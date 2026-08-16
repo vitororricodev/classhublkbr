@@ -38,8 +38,8 @@ const agendaGroup: NavGroup = {
   icon: CalendarDays,
   items: [
     { to: "/agendamento", label: "Agendamento", icon: CalendarDays },
-    { to: "/laboratorio", label: "Laboratório", icon: MonitorSmartphone, adminOnly: true },
-    { to: "/solicitar-laboratorio", label: "Solicitar Laboratório", icon: Send },
+    { to: "/laboratorios", label: "Laboratórios", icon: MonitorSmartphone },
+    { to: "/laboratorio", label: "Gerenciar Laboratórios", icon: Settings, adminOnly: true },
     { to: "/aprovacoes-laboratorio", label: "Aprovações do Lab", icon: ClipboardCheck, adminOnly: true, badgeKey: "labPendentes" },
   ],
 };

@@ -17,6 +17,10 @@ import { toast } from "sonner";
 import { LAB_SELECT, SOLIC_SELECT } from "@/lib/db";
 import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, SolicitacaoLaboratorioFull, Turma } from "@/lib/db";
 import { useAuth } from "@/lib/auth-context";
+import { useLaboratorioAtual } from "@/lib/laboratorios";
+// Schema gerado será renovado após a migration de laboratórios.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
 
 export const Route = createFileRoute("/solicitar-laboratorio")({ component: SolicitarLaboratorioPage });
 
@@ -52,6 +56,7 @@ const statusBadge: Record<string, ReactNode> = {
 
 function SolicitarLaboratorioPage() {
   const { user, isAdmin } = useAuth();
+  const { laboratorio } = useLaboratorioAtual();
   const [docenteIdAdmin, setDocenteIdAdmin] = useState<string>("");
   const scopedDocenteId = isAdmin ? (docenteIdAdmin || null) : (user?.docente_id ?? null);
 
@@ -70,9 +75,10 @@ function SolicitarLaboratorioPage() {
   });
 
   const { data: ocupados = [], isLoading: loadingOcupacao } = useQuery({
-    queryKey: ["laboratorio_agendamentos", "grade-solicitacao", weekStart, weekEnd],
+    queryKey: ["laboratorio_agendamentos", "grade-solicitacao", laboratorio?.id, weekStart, weekEnd],
+    enabled: !!laboratorio,
     queryFn: async () => {
-      const { data, error } = await supabase.from("laboratorio_agendamentos").select(LAB_SELECT)
+      const { data, error } = await sb.from("laboratorio_agendamentos").select(LAB_SELECT).eq("laboratorio_id", laboratorio!.id)
         .gte("data", weekStart).lte("data", weekEnd).neq("status", "cancelado");
       if (error) throw error;
       return (data ?? []) as unknown as LaboratorioAgendamentoFull[];
@@ -82,9 +88,10 @@ function SolicitarLaboratorioPage() {
   const { data: pendentesSemana = [] } = useQuery({
     // A disponibilidade precisa ser igual para todos: um pedido pendente já
     // sinaliza que o horário está em análise, independentemente de quem pediu.
-    queryKey: ["solicitacoes_laboratorio", "pendentes-semana", weekStart, weekEnd],
+    queryKey: ["solicitacoes_laboratorio", "pendentes-semana", laboratorio?.id, weekStart, weekEnd],
+    enabled: !!laboratorio,
     queryFn: async () => {
-      const { data, error } = await supabase.from("solicitacoes_laboratorio").select("id, data, horario_id")
+      const { data, error } = await sb.from("solicitacoes_laboratorio").select("id, data, horario_id").eq("laboratorio_id", laboratorio!.id)
         .eq("status", "pendente").gte("data", weekStart).lte("data", weekEnd);
       if (error) throw error;
       return data ?? [];
@@ -137,7 +144,7 @@ function SolicitarLaboratorioPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <MonitorSmartphone className="h-6 w-6 text-primary" />Solicitar Laboratório
+            <MonitorSmartphone className="h-6 w-6 text-primary" />Solicitar {laboratorio?.nome ?? "Laboratório"}
             <AjudaPopover />
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -282,7 +289,7 @@ function SolicitarLaboratorioPage() {
         </Card>
       )}
 
-      {pedidoAberto && scopedDocenteId && (
+      {pedidoAberto && scopedDocenteId && laboratorio && (
         <PedidoLaboratorioDialog
           open={!!pedidoAberto}
           onClose={() => setPedidoAberto(null)}
@@ -290,6 +297,7 @@ function SolicitarLaboratorioPage() {
           data={pedidoAberto.data}
           horarioId={pedidoAberto.horarioId}
           horarioLabel={horarios.find((h) => h.id === pedidoAberto.horarioId)?.label ?? ""}
+          laboratorioId={laboratorio.id}
         />
       )}
     </div>
@@ -297,9 +305,9 @@ function SolicitarLaboratorioPage() {
 }
 
 function PedidoLaboratorioDialog({
-  open, onClose, docenteId, data, horarioId, horarioLabel,
+  open, onClose, docenteId, data, horarioId, horarioLabel, laboratorioId,
 }: {
-  open: boolean; onClose: () => void; docenteId: string; data: string; horarioId: string; horarioLabel: string;
+  open: boolean; onClose: () => void; docenteId: string; data: string; horarioId: string; horarioLabel: string; laboratorioId: string;
 }) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -322,8 +330,8 @@ function PedidoLaboratorioDialog({
     mutationFn: async () => {
       if (!componenteId) throw new Error("Selecione o componente.");
       if (!turmaId) throw new Error("Selecione a turma.");
-      const { error } = await supabase.from("solicitacoes_laboratorio").insert({
-        docente_id: docenteId, data, horario_id: horarioId, componente_id: componenteId, turma_id: turmaId,
+      const { error } = await sb.from("solicitacoes_laboratorio").insert({
+        docente_id: docenteId, data, horario_id: horarioId, componente_id: componenteId, turma_id: turmaId, laboratorio_id: laboratorioId,
         conteudo: conteudo || null, usar_projetor: usarProjetor, usar_equipamento_som: usarSom,
         status: "pendente", criado_por: user?.id ?? null,
       });
