@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MonitorSmartphone, FlaskConical, CalendarDays, Settings } from "lucide-react";
+import { MonitorSmartphone, FlaskConical, CalendarPlus, Settings, ClipboardCheck, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
@@ -25,10 +25,23 @@ function LaboratoriosHubPage() {
         return <Card key={lab.slug} className="min-h-80 p-8 flex flex-col gap-6">
           <div className="h-14 w-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Icon className="h-7 w-7" /></div>
           <div><h2 className="text-xl font-semibold">{lab.nome}</h2><p className="mt-2 text-base text-muted-foreground">{lab.descricao}</p></div>
-          <div className="mt-auto flex flex-wrap gap-2">
-            <Button asChild><Link to="/solicitar-laboratorio" search={{ lab: lab.slug } as never}><CalendarDays className="mr-2 h-4 w-4" />Solicitar horário</Link></Button>
-            {podeGerir && <Button asChild variant="outline"><Link to="/laboratorio" search={{ lab: lab.slug } as never}><Settings className="mr-2 h-4 w-4" />Gerenciar agenda</Link></Button>}
-            {podeGerir && <Button asChild variant="ghost"><Link to="/aprovacoes-laboratorio" search={{ lab: lab.slug } as never}>Aprovações</Link></Button>}
+          <div className="mt-auto space-y-3">
+            <Button asChild size="lg" className="group h-12 w-full justify-between px-4 text-base shadow-md shadow-primary/20">
+              <Link to="/solicitar-laboratorio" search={{ lab: lab.slug } as never}>
+                <span className="flex items-center gap-2"><CalendarPlus className="h-5 w-5" />Solicitar horário</span>
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+            {podeGerir && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button asChild variant="outline" className="h-11 justify-start border-primary/25 bg-primary/5 px-4 text-primary hover:bg-primary/10 hover:text-primary">
+                  <Link to="/laboratorio" search={{ lab: lab.slug } as never}><Settings className="h-4 w-4" />Gerenciar agenda</Link>
+                </Button>
+                <Button asChild variant="outline" className="h-11 justify-start border-primary/25 bg-primary/5 px-4 text-primary hover:bg-primary/10 hover:text-primary">
+                  <Link to="/aprovacoes-laboratorio" search={{ lab: lab.slug } as never}><ClipboardCheck className="h-4 w-4" />Aprovações</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </Card>;
       })}
