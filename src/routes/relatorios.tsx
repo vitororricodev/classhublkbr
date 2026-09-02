@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -755,12 +755,23 @@ function LancarACDialog({
 // Dias da semana em que a escola funciona (1=Segunda ... 6=Sábado). Domingo (0) é sempre ignorado.
 const DIAS_LETIVOS = [1, 2, 3, 4, 5, 6];
 
-type Ocupacao = { turma: Turma | null; docente: Docente | null; componente: Componente | null };
+type Ocupacao = { turma: Turma | null; docente: Docente | null; componente: Componente | null; tipo_atividade: string | null; alunos_participantes: string | null; recursos_utilizados: string | null; habilidades: string | null; objeto_conhecimento: string | null };
 
 function RelatorioLaboratorio() {
   const { user } = useAuth();
   const [periodo, setPeriodo] = useState({ inicio: startOfWeekISO(), fim: endOfWeekISO() });
   const [formato, setFormato] = useState<FormatoRelatorio>("tabela");
+  const [laboratorioId, setLaboratorioId] = useState("");
+  // Os tipos locais ainda não contêm laboratorios; serão regenerados após a migration.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { data: laboratorios = [] } = useQuery({ queryKey: ["laboratorios", "relatorio"], queryFn: async () => {
+    const { data, error } = await sb.from("laboratorios").select("id, nome, slug").eq("ativo", true).order("nome");
+    if (error) throw error;
+    return (data ?? []) as { id: string; nome: string; slug: string }[];
+  }});
+  useEffect(() => { if (!laboratorioId && laboratorios[0]) setLaboratorioId(laboratorios[0].id); }, [laboratorioId, laboratorios]);
+  const laboratorio = laboratorios.find((item) => item.id === laboratorioId);
 
   const { data: horarios = [] } = useQuery({
     queryKey: ["horarios", "ativos", "ordenados"],
@@ -772,16 +783,18 @@ function RelatorioLaboratorio() {
   });
 
   const { data: ocupacoes = [], isLoading } = useQuery({
-    queryKey: ["laboratorio_agendamentos", "disponibilidade", periodo],
+    queryKey: ["laboratorio_agendamentos", "disponibilidade", laboratorioId, periodo],
+    enabled: !!laboratorioId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("laboratorio_agendamentos")
-        .select(`data, horario_id, turmas:turma_id(*), docentes:docente_id(*), componentes_curriculares:componente_id(*)`)
+        .select(`data, horario_id, tipo_atividade, alunos_participantes, recursos_utilizados, habilidades, objeto_conhecimento, turmas:turma_id(*), docentes:docente_id(*), componentes_curriculares:componente_id(*)`)
         .gte("data", periodo.inicio)
         .lte("data", periodo.fim)
+        .eq("laboratorio_id", laboratorioId)
         .neq("status", "cancelado");
       if (error) throw error;
-      return (data ?? []) as unknown as { data: string; horario_id: string; turmas: Turma | null; docentes: Docente | null; componentes_curriculares: Componente | null }[];
+      return (data ?? []) as unknown as ({ data: string; horario_id: string; turmas: Turma | null; docentes: Docente | null; componentes_curriculares: Componente | null } & Omit<Ocupacao, "turma" | "docente" | "componente">)[];
     },
   });
 
@@ -804,7 +817,7 @@ function RelatorioLaboratorio() {
     for (const o of ocupacoes) {
       const key = `${o.data}__${o.horario_id}`;
       const arr = m.get(key) ?? [];
-      arr.push({ turma: o.turmas, docente: o.docentes, componente: o.componentes_curriculares });
+      arr.push({ turma: o.turmas, docente: o.docentes, componente: o.componentes_curriculares, tipo_atividade: o.tipo_atividade, alunos_participantes: o.alunos_participantes, recursos_utilizados: o.recursos_utilizados, habilidades: o.habilidades, objeto_conhecimento: o.objeto_conhecimento });
       m.set(key, arr);
     }
     return m;
@@ -846,7 +859,7 @@ function RelatorioLaboratorio() {
     doc.setTextColor(26, 26, 26);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text("Disponibilidade do Laboratório de Informática", pageWidth / 2, 86, { align: "center" });
+    doc.text(`Disponibilidade — ${laboratorio?.nome ?? "Laboratório"}`, pageWidth / 2, 86, { align: "center" });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -911,7 +924,14 @@ function RelatorioLaboratorio() {
             `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`,
             `${h.label}${h.hora_inicio ? ` (${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""})` : ""}`,
             { content: statusTxt, styles: { textColor: ocs.length > 1 ? [180, 130, 0] : ocs.length === 1 ? [185, 28, 28] : [21, 128, 61], fontStyle: "bold" } },
-            ocs.length > 0 ? ocs.map((oc) => `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}`).join(" | ") : "—",
+            ocs.length > 0 ? ocs.map((oc) => [
+              `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}`,
+              oc.tipo_atividade === "oficina_pedagogica" ? "Oficina pedagógica" : oc.tipo_atividade === "aula_pratica" ? "Aula prática" : "",
+              oc.alunos_participantes ? `Participantes: ${oc.alunos_participantes}` : "",
+              oc.recursos_utilizados ? `Recursos: ${oc.recursos_utilizados}` : "",
+              oc.habilidades ? `Habilidades: ${oc.habilidades}` : "",
+              oc.objeto_conhecimento ? `Objeto: ${oc.objeto_conhecimento}` : "",
+            ].filter(Boolean).join("\n")).join("\n\n") : "—",
           ]);
         }
       }
@@ -940,14 +960,14 @@ function RelatorioLaboratorio() {
       });
     }
 
-    doc.save(`disponibilidade-laboratorio-${periodo.inicio}-a-${periodo.fim}.pdf`);
+    doc.save(`disponibilidade-${laboratorio?.slug ?? "laboratorio"}-${periodo.inicio}-a-${periodo.fim}.pdf`);
   };
 
   return (
     <div className="space-y-6 pt-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground max-w-xl">
-          Mostra, para cada horário padrão, se o laboratório está livre ou ocupado em cada data do período —
+          Mostra, para cada horário padrão, se o laboratório selecionado está livre ou ocupado em cada data do período —
           use para agendar o uso do laboratório com os professores.
         </p>
         <Button onClick={handleExportPDF} disabled={datas.length === 0 || horarios.length === 0}>
@@ -957,6 +977,7 @@ function RelatorioLaboratorio() {
 
       <Card className="p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="space-y-1"><Label>Laboratório</Label><Select value={laboratorioId} onValueChange={setLaboratorioId}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent>{laboratorios.map((lab) => <SelectItem key={lab.id} value={lab.id}>{lab.nome}</SelectItem>)}</SelectContent></Select></div>
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={periodo.inicio} onChange={(e) => setPeriodo({ ...periodo, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={periodo.fim} onChange={(e) => setPeriodo({ ...periodo, fim: e.target.value })} /></div>
           <div className="space-y-1">

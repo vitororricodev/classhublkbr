@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ChevronLeft, ChevronRight, MonitorSmartphone, Plus, Pencil, Trash2, AlertTriangle, Projector, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { LAB_SELECT } from "@/lib/db";
-import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, StatusLab, Turma } from "@/lib/db";
+import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, StatusLab, TipoAtividadeLabCS, Turma } from "@/lib/db";
 import { useAuth } from "@/lib/auth-context";
 import { useLaboratorioAtual } from "@/lib/laboratorios";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -176,6 +176,7 @@ function LaboratorioPage() {
                                 <div className="text-xs font-medium">{a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}</div>
                                 {a.docentes && <div className="text-[11px] text-muted-foreground">{a.docentes.nome}</div>}
                                 {a.componentes_curriculares && <div className="text-[11px] text-muted-foreground">{a.componentes_curriculares.nome}</div>}
+                                {a.tipo_atividade && <div className="text-[11px] font-medium text-primary">{a.tipo_atividade === "oficina_pedagogica" ? "Oficina pedagógica" : "Aula prática"}</div>}
                                 {a.observacao && <div className="text-[11px] text-muted-foreground italic">{a.observacao}</div>}
                                 {(a.usar_projetor || a.usar_equipamento_som) && (
                                   <div className="flex gap-1">
@@ -212,6 +213,7 @@ function LaboratorioPage() {
           horarioId={formData.horarioId}
           editing={formData.editing}
           laboratorioId={laboratorio?.id ?? ""}
+          isLabCS={laboratorio?.slug === "multidisciplinar"}
         />
       )}
     </div>
@@ -242,9 +244,9 @@ function ExcluirBotao({ id }: { id: string }) {
 }
 
 function LaboratorioAgendamentoForm({
-  open, onClose, data, horarioId, editing, laboratorioId,
+  open, onClose, data, horarioId, editing, laboratorioId, isLabCS,
 }: {
-  open: boolean; onClose: () => void; data: string; horarioId: string; editing: LaboratorioAgendamentoFull | null; laboratorioId: string;
+  open: boolean; onClose: () => void; data: string; horarioId: string; editing: LaboratorioAgendamentoFull | null; laboratorioId: string; isLabCS: boolean;
 }) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -255,6 +257,11 @@ function LaboratorioAgendamentoForm({
   const [usarProjetor, setUsarProjetor] = useState(false);
   const [usarSom, setUsarSom] = useState(false);
   const [status, setStatus] = useState<StatusLab>("agendado");
+  const [tipoAtividade, setTipoAtividade] = useState<TipoAtividadeLabCS | "">("");
+  const [alunosParticipantes, setAlunosParticipantes] = useState("");
+  const [recursosUtilizados, setRecursosUtilizados] = useState("");
+  const [habilidades, setHabilidades] = useState("");
+  const [objetoConhecimento, setObjetoConhecimento] = useState("");
 
   useEffect(() => {
     if (editing) {
@@ -265,8 +272,14 @@ function LaboratorioAgendamentoForm({
       setUsarProjetor(editing.usar_projetor);
       setUsarSom(editing.usar_equipamento_som);
       setStatus(editing.status);
+      setTipoAtividade(editing.tipo_atividade ?? "");
+      setAlunosParticipantes(editing.alunos_participantes ?? "");
+      setRecursosUtilizados(editing.recursos_utilizados ?? "");
+      setHabilidades(editing.habilidades ?? "");
+      setObjetoConhecimento(editing.objeto_conhecimento ?? "");
     } else {
       setTurmaId(""); setDocenteId("none"); setComponenteId("none"); setObservacao(""); setUsarProjetor(false); setUsarSom(false); setStatus("agendado");
+      setTipoAtividade(""); setAlunosParticipantes(""); setRecursosUtilizados(""); setHabilidades(""); setObjetoConhecimento("");
     }
   }, [editing, open]);
 
@@ -286,6 +299,11 @@ function LaboratorioAgendamentoForm({
   const save = useMutation({
     mutationFn: async () => {
       if (!turmaId) throw new Error("Selecione a turma.");
+      if (isLabCS) {
+        if (!tipoAtividade) throw new Error("Selecione o tipo de atividade do LabCS.");
+        if (tipoAtividade === "oficina_pedagogica" && !alunosParticipantes.trim()) throw new Error("Informe os alunos participantes da oficina.");
+        if (!recursosUtilizados.trim() || !habilidades.trim() || !objetoConhecimento.trim()) throw new Error("Preencha recursos, habilidades e objeto do conhecimento.");
+      }
       const payload = {
         data, horario_id: horarioId, turma_id: turmaId, laboratorio_id: laboratorioId,
         docente_id: docenteId === "none" ? null : docenteId,
@@ -294,6 +312,7 @@ function LaboratorioAgendamentoForm({
         usar_projetor: usarProjetor,
         usar_equipamento_som: usarSom,
         status,
+        ...(isLabCS ? { tipo_atividade: tipoAtividade, alunos_participantes: tipoAtividade === "oficina_pedagogica" ? alunosParticipantes.trim() : null, recursos_utilizados: recursosUtilizados.trim(), habilidades: habilidades.trim(), objeto_conhecimento: objetoConhecimento.trim() } : {}),
       };
 
       // Aviso não-bloqueante: só avisa se já existir outro agendamento no
@@ -331,7 +350,7 @@ function LaboratorioAgendamentoForm({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{editing ? "Editar agendamento do laboratório" : "Agendar laboratório"}</DialogTitle>
         </DialogHeader>
@@ -370,6 +389,13 @@ function LaboratorioAgendamentoForm({
             <Label>O que vai ser feito</Label>
             <Textarea rows={3} value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: Assistir vídeo sobre a Segunda Guerra Mundial" />
           </div>
+          {isLabCS && <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <div className="space-y-2"><Label>Tipo de atividade</Label><Select value={tipoAtividade} onValueChange={(v) => setTipoAtividade(v as TipoAtividadeLabCS)}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent><SelectItem value="aula_pratica">Aula prática</SelectItem><SelectItem value="oficina_pedagogica">Oficina pedagógica</SelectItem></SelectContent></Select></div>
+            {tipoAtividade === "oficina_pedagogica" && <div className="space-y-2"><Label>Alunos participantes</Label><Textarea rows={3} value={alunosParticipantes} onChange={(e) => setAlunosParticipantes(e.target.value)} placeholder="Informe os alunos que participarão da oficina" /></div>}
+            <div className="space-y-2"><Label>Recursos utilizados e quantidade</Label><Textarea rows={3} value={recursosUtilizados} onChange={(e) => setRecursosUtilizados(e.target.value)} placeholder="Ex.: 15 tablets; 2 kits de robótica" /></div>
+            <div className="space-y-2"><Label>Habilidades</Label><Textarea rows={3} value={habilidades} onChange={(e) => setHabilidades(e.target.value)} placeholder="Habilidades que serão desenvolvidas" /></div>
+            <div className="space-y-2"><Label>Objeto do conhecimento</Label><Textarea rows={3} value={objetoConhecimento} onChange={(e) => setObjetoConhecimento(e.target.value)} placeholder="Objeto do conhecimento trabalhado" /></div>
+          </div>}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2 border rounded-md px-3 py-2">
               <Switch checked={usarProjetor} onCheckedChange={setUsarProjetor} />

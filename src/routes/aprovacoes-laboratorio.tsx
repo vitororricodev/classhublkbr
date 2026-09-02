@@ -106,6 +106,13 @@ function AprovacoesLaboratorioPage() {
             {fmtDate(s.data)} · {s.horarios_padrao?.label} · {s.componentes_curriculares?.nome} · {s.turmas ? `${s.turmas.serie} ${s.turmas.nome}` : "—"}
           </div>
           {s.conteudo && <div className="text-sm mt-1">{s.conteudo}</div>}
+          {s.tipo_atividade && <div className="mt-2 space-y-1 rounded-md bg-primary/5 p-2 text-xs">
+            <div><b>Tipo:</b> {s.tipo_atividade === "oficina_pedagogica" ? "Oficina pedagógica" : "Aula prática"}</div>
+            {s.alunos_participantes && <div><b>Participantes:</b> {s.alunos_participantes}</div>}
+            {s.recursos_utilizados && <div><b>Recursos:</b> {s.recursos_utilizados}</div>}
+            {s.habilidades && <div><b>Habilidades:</b> {s.habilidades}</div>}
+            {s.objeto_conhecimento && <div><b>Objeto do conhecimento:</b> {s.objeto_conhecimento}</div>}
+          </div>}
           <div className="flex gap-2 mt-2">
             {s.usar_projetor && <Badge variant="outline" className="gap-1"><Projector className="h-3 w-3" />Projetor</Badge>}
             {s.usar_equipamento_som && <Badge variant="outline" className="gap-1"><Volume2 className="h-3 w-3" />Som</Badge>}

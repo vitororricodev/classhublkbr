@@ -36,6 +36,7 @@ export const PLAN_SELECT = `
 ` as const;
 
 export type StatusLab = "agendado" | "realizado" | "cancelado";
+export type TipoAtividadeLabCS = "aula_pratica" | "oficina_pedagogica";
 export type LaboratorioAgendamento = {
   id: string;
   data: string;
@@ -49,6 +50,11 @@ export type LaboratorioAgendamento = {
   usar_equipamento_som: boolean;
   criado_por: string | null;
   created_at: string;
+  tipo_atividade: TipoAtividadeLabCS | null;
+  alunos_participantes: string | null;
+  recursos_utilizados: string | null;
+  habilidades: string | null;
+  objeto_conhecimento: string | null;
 };
 
 export type LaboratorioAgendamentoFull = LaboratorioAgendamento & {
@@ -83,6 +89,11 @@ export type SolicitacaoLaboratorio = {
   decidido_em: string | null;
   criado_por: string | null;
   created_at: string;
+  tipo_atividade: TipoAtividadeLabCS | null;
+  alunos_participantes: string | null;
+  recursos_utilizados: string | null;
+  habilidades: string | null;
+  objeto_conhecimento: string | null;
 };
 
 export type SolicitacaoLaboratorioFull = SolicitacaoLaboratorio & {

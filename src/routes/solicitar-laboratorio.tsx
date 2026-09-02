@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { HelpCircle, MonitorSmartphone, Send, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { LAB_SELECT, SOLIC_SELECT } from "@/lib/db";
-import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, SolicitacaoLaboratorioFull, Turma } from "@/lib/db";
+import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, SolicitacaoLaboratorioFull, TipoAtividadeLabCS, Turma } from "@/lib/db";
 import { useAuth } from "@/lib/auth-context";
 import { useLaboratorioAtual } from "@/lib/laboratorios";
 // Schema gerado será renovado após a migration de laboratórios.
@@ -298,6 +298,7 @@ function SolicitarLaboratorioPage() {
           horarioId={pedidoAberto.horarioId}
           horarioLabel={horarios.find((h) => h.id === pedidoAberto.horarioId)?.label ?? ""}
           laboratorioId={laboratorio.id}
+          isLabCS={laboratorio.slug === "multidisciplinar"}
         />
       )}
     </div>
@@ -305,9 +306,9 @@ function SolicitarLaboratorioPage() {
 }
 
 function PedidoLaboratorioDialog({
-  open, onClose, docenteId, data, horarioId, horarioLabel, laboratorioId,
+  open, onClose, docenteId, data, horarioId, horarioLabel, laboratorioId, isLabCS,
 }: {
-  open: boolean; onClose: () => void; docenteId: string; data: string; horarioId: string; horarioLabel: string; laboratorioId: string;
+  open: boolean; onClose: () => void; docenteId: string; data: string; horarioId: string; horarioLabel: string; laboratorioId: string; isLabCS: boolean;
 }) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -316,6 +317,11 @@ function PedidoLaboratorioDialog({
   const [conteudo, setConteudo] = useState("");
   const [usarProjetor, setUsarProjetor] = useState(false);
   const [usarSom, setUsarSom] = useState(false);
+  const [tipoAtividade, setTipoAtividade] = useState<TipoAtividadeLabCS | "">("");
+  const [alunosParticipantes, setAlunosParticipantes] = useState("");
+  const [recursosUtilizados, setRecursosUtilizados] = useState("");
+  const [habilidades, setHabilidades] = useState("");
+  const [objetoConhecimento, setObjetoConhecimento] = useState("");
 
   const { data: componentes = [] } = useQuery({
     queryKey: ["componentes", "ativos"],
@@ -330,10 +336,16 @@ function PedidoLaboratorioDialog({
     mutationFn: async () => {
       if (!componenteId) throw new Error("Selecione o componente.");
       if (!turmaId) throw new Error("Selecione a turma.");
+      if (isLabCS) {
+        if (!tipoAtividade) throw new Error("Selecione o tipo de atividade do LabCS.");
+        if (tipoAtividade === "oficina_pedagogica" && !alunosParticipantes.trim()) throw new Error("Informe os alunos participantes da oficina.");
+        if (!recursosUtilizados.trim() || !habilidades.trim() || !objetoConhecimento.trim()) throw new Error("Preencha recursos, habilidades e objeto do conhecimento.");
+      }
       const { error } = await sb.from("solicitacoes_laboratorio").insert({
         docente_id: docenteId, data, horario_id: horarioId, componente_id: componenteId, turma_id: turmaId, laboratorio_id: laboratorioId,
         conteudo: conteudo || null, usar_projetor: usarProjetor, usar_equipamento_som: usarSom,
         status: "pendente", criado_por: user?.id ?? null,
+        ...(isLabCS ? { tipo_atividade: tipoAtividade, alunos_participantes: tipoAtividade === "oficina_pedagogica" ? alunosParticipantes.trim() : null, recursos_utilizados: recursosUtilizados.trim(), habilidades: habilidades.trim(), objeto_conhecimento: objetoConhecimento.trim() } : {}),
       });
       if (error) throw error;
     },
@@ -347,7 +359,7 @@ function PedidoLaboratorioDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Solicitar Laboratório</DialogTitle>
         </DialogHeader>
@@ -373,6 +385,13 @@ function PedidoLaboratorioDialog({
             <Label>Conteúdo (alinhado ao planejamento aprovado)</Label>
             <Textarea rows={3} value={conteudo} onChange={(e) => setConteudo(e.target.value)} placeholder="O que será trabalhado nesta aula" />
           </div>
+          {isLabCS && <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <div className="space-y-2"><Label>Tipo de atividade</Label><Select value={tipoAtividade} onValueChange={(v) => setTipoAtividade(v as TipoAtividadeLabCS)}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent><SelectItem value="aula_pratica">Aula prática</SelectItem><SelectItem value="oficina_pedagogica">Oficina pedagógica</SelectItem></SelectContent></Select></div>
+            {tipoAtividade === "oficina_pedagogica" && <div className="space-y-2"><Label>Alunos participantes</Label><Textarea rows={3} value={alunosParticipantes} onChange={(e) => setAlunosParticipantes(e.target.value)} placeholder="Informe os alunos que participarão da oficina" /></div>}
+            <div className="space-y-2"><Label>Recursos utilizados e quantidade</Label><Textarea rows={3} value={recursosUtilizados} onChange={(e) => setRecursosUtilizados(e.target.value)} placeholder="Ex.: 15 tablets; 2 kits de robótica" /></div>
+            <div className="space-y-2"><Label>Habilidades</Label><Textarea rows={3} value={habilidades} onChange={(e) => setHabilidades(e.target.value)} placeholder="Habilidades que serão desenvolvidas" /></div>
+            <div className="space-y-2"><Label>Objeto do conhecimento</Label><Textarea rows={3} value={objetoConhecimento} onChange={(e) => setObjetoConhecimento(e.target.value)} placeholder="Objeto do conhecimento trabalhado" /></div>
+          </div>}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2 border rounded-md px-3 py-2">
               <Switch checked={usarProjetor} onCheckedChange={setUsarProjetor} />
