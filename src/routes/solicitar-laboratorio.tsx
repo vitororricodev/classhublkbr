@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -61,6 +61,7 @@ function SolicitarLaboratorioPage() {
   const scopedDocenteId = isAdmin ? (docenteIdAdmin || null) : (user?.docente_id ?? null);
 
   const [weekStart, setWeekStart] = useState(() => startOfWeekISO(new Date()));
+  const [diaMobile, setDiaMobile] = useState("");
   const weekEnd = useMemo(() => addDaysISO(weekStart, 6), [weekStart]);
   const [pedidoAberto, setPedidoAberto] = useState<{ data: string; horarioId: string } | null>(null);
 
@@ -118,6 +119,7 @@ function SolicitarLaboratorioPage() {
     }
     return out;
   }, [weekStart]);
+  useEffect(() => { if (!datas.includes(diaMobile)) setDiaMobile(datas[0] ?? ""); }, [datas, diaMobile]);
 
   const mapaOcupado = useMemo(() => {
     const m = new Map<string, LaboratorioAgendamentoFull[]>();
@@ -141,7 +143,7 @@ function SolicitarLaboratorioPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <MonitorSmartphone className="h-6 w-6 text-primary" />Solicitar {laboratorio?.nome ?? "Laboratório"}
@@ -151,10 +153,13 @@ function SolicitarLaboratorioPage() {
             Clique em um horário livre da semana para enviar o pedido. A coordenação fará a aprovação depois.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setWeekStart(addDaysISO(weekStart, -7))}><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="outline" onClick={() => setWeekStart(startOfWeekISO(new Date()))}>Semana atual</Button>
-          <Button variant="outline" size="icon" onClick={() => setWeekStart(addDaysISO(weekStart, 7))}><ChevronRight className="h-4 w-4" /></Button>
+        <div className="w-full space-y-2 sm:w-auto">
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            <Button variant="outline" size="icon" aria-label="Semana anterior" onClick={() => setWeekStart(addDaysISO(weekStart, -7))}><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => setWeekStart(startOfWeekISO(new Date()))}>Semana atual</Button>
+            <Button variant="outline" size="icon" aria-label="Próxima semana" onClick={() => setWeekStart(addDaysISO(weekStart, 7))}><ChevronRight className="h-4 w-4" /></Button>
+          </div>
+          <div className="rounded-lg border bg-muted/40 px-3 py-2 text-sm sm:text-right"><span className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">Semana selecionada</span><span className="font-semibold">{fmtDate(weekStart)} a {fmtDate(weekEnd)}</span></div>
         </div>
       </div>
 
@@ -178,16 +183,14 @@ function SolicitarLaboratorioPage() {
         </Card>
       )}
 
-      <div className="text-sm text-muted-foreground">Semana de {fmtDate(weekStart)} a {fmtDate(weekEnd)}</div>
-
       <Card className="p-4">
-        <div className="text-sm text-muted-foreground mb-3">
-          {loadingOcupacao ? "Carregando disponibilidade..." : "Verde = livre (clique para solicitar) · Vermelho = intervalo · Cinza = já ocupado · Amarelo = solicitação pendente"}
-        </div>
+        <div className="mb-4"><h2 className="font-medium">Disponibilidade</h2><p className="mt-1 text-sm text-muted-foreground">Escolha um horário disponível para enviar sua solicitação.</p></div>
+        {!loadingOcupacao && <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4"><div className="rounded-lg border border-green-100 bg-green-50 p-3"><p className="text-sm font-medium text-green-800">Disponível</p><p className="mt-1 text-xs text-green-700">Pode solicitar</p></div><div className="rounded-lg border bg-muted/50 p-3"><p className="text-sm font-medium">Ocupado</p><p className="mt-1 text-xs text-muted-foreground">Já reservado</p></div><div className="rounded-lg border border-amber-100 bg-amber-50 p-3"><p className="text-sm font-medium text-amber-800">Em análise</p><p className="mt-1 text-xs text-amber-700">Pedido pendente</p></div><div className="rounded-lg border border-red-100 bg-red-50 p-3"><p className="text-sm font-medium text-red-800">Intervalo</p><p className="mt-1 text-xs text-red-700">Sem agendamento</p></div></div>}
         {horarios.length === 0 ? (
           <div className="text-sm text-muted-foreground">Nenhum horário cadastrado ainda.</div>
         ) : (
-          <div className="overflow-auto max-h-[620px] border rounded-md">
+          <>
+          <div className="hidden max-h-[620px] overflow-auto rounded-md border md:block">
             <table className="w-full text-sm border-collapse">
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
@@ -260,6 +263,22 @@ function SolicitarLaboratorioPage() {
               </tbody>
             </table>
           </div>
+          <div className="space-y-4 md:hidden">
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {datas.map((dt) => {
+                const ativo = dt === diaMobile;
+                return <Button key={dt} type="button" variant={ativo ? "default" : "outline"} className="h-auto min-w-[4.75rem] shrink-0 flex-col gap-0.5 px-3 py-2" onClick={() => setDiaMobile(dt)}><span className="capitalize text-xs">{new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</span><span className="text-base leading-none">{new Date(dt + "T00:00:00").getDate()}</span></Button>;
+              })}
+            </div>
+            {diaMobile && <section className="overflow-hidden rounded-xl border bg-card"><div className="border-b bg-muted/50 px-4 py-3"><p className="text-sm font-semibold capitalize">{new Date(diaMobile + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long" })}</p><p className="text-xs text-muted-foreground">{fmtDate(diaMobile)}</p></div><div className="divide-y">{horarios.map((h) => {
+              if (h.eh_intervalo) return <div key={h.id} className="bg-red-50 px-4 py-3 text-sm text-red-800"><span className="font-semibold">{h.label}</span><span className="ml-2">Intervalo</span></div>;
+              const ocupantes = mapaOcupado.get(`${diaMobile}__${h.id}`) ?? [];
+              const pendentes = mapaPendente.get(`${diaMobile}__${h.id}`) ?? 0;
+              const ocupado = ocupantes.length > 0;
+              return <article key={h.id} className="space-y-3 p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{h.label}</p><p className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}</p></div>{ocupado ? <Badge variant="secondary">Ocupado</Badge> : pendentes > 0 ? <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Em análise</Badge> : <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Disponível</Badge>}</div>{ocupado ? <div className="rounded-lg bg-muted/60 p-3 text-sm">{ocupantes.map((a) => <p key={a.id}>{a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "Turma não informada"}{a.docentes?.nome ? ` · ${a.docentes.nome}` : ""}</p>)}</div> : pendentes > 0 ? <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{pendentes === 1 ? "Há uma solicitação em análise neste horário." : `Há ${pendentes} solicitações em análise neste horário.`}</p> : <Button className="w-full" variant="outline" disabled={!scopedDocenteId} onClick={() => setPedidoAberto({ data: diaMobile, horarioId: h.id })}><Plus className="mr-1 h-4 w-4" />Solicitar este horário</Button>}</article>;
+            })}</div></section>}
+          </div>
+          </>
         )}
       </Card>
 
