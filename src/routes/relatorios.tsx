@@ -93,6 +93,7 @@ function RelatoriosPage() {
 
 function RelatorioGeral() {
   const { user, isAdmin } = useAuth();
+  const [diaMobile, setDiaMobile] = useState("");
   const [filtros, setFiltros] = useState(() =>
     isAdmin
       ? { inicio: firstOfMonth(), fim: todayISO(), docente: "all", componente: "all", turma: "all", status: "all" }
@@ -130,6 +131,16 @@ function RelatorioGeral() {
     realizado: sorted.filter((item) => item.status === "realizado").length,
     cancelado: sorted.filter((item) => item.status === "cancelado").length,
   }), [sorted]);
+  const diasMobile = useMemo(() => {
+    if (!filtros.inicio || !filtros.fim || filtros.inicio > filtros.fim) return [];
+    const dias: string[] = [];
+    const cursor = new Date(filtros.inicio + "T00:00:00");
+    const fim = new Date(filtros.fim + "T00:00:00");
+    while (cursor <= fim) { dias.push(cursor.toISOString().slice(0, 10)); cursor.setDate(cursor.getDate() + 1); }
+    return dias;
+  }, [filtros.inicio, filtros.fim]);
+  useEffect(() => { if (!diasMobile.includes(diaMobile)) setDiaMobile(diasMobile[0] ?? ""); }, [diasMobile, diaMobile]);
+  const planejamentosDoDia = useMemo(() => sorted.filter((item) => item.data === diaMobile), [sorted, diaMobile]);
 
   const docenteLabel = filtros.docente === "all" ? "Todos" : docentes.find((d) => d.id === filtros.docente)?.nome ?? "—";
   const componenteLabel = filtros.componente === "all" ? "Todos" : componentes.find((d) => d.id === filtros.componente)?.nome ?? "—";
@@ -150,7 +161,7 @@ function RelatorioGeral() {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("C", marginX + 14, 48, { align: "center" });
+    doc.text("S", marginX + 14, 48, { align: "center" });
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
@@ -301,14 +312,18 @@ function RelatorioGeral() {
               </div>
             )}
           </div>
-          <div className="space-y-3 p-4 md:hidden">
-            {sorted.slice(0, 50).map((r) => (
+          <div className="border-t md:hidden">
+            <MobileDaySelector datas={diasMobile} value={diaMobile} onChange={setDiaMobile} />
+            <div className="space-y-3 px-4 pb-4 sm:px-5">
+            {planejamentosDoDia.slice(0, 50).map((r) => (
               <article key={r.id} className="rounded-xl border bg-card p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{fmtDate(r.data)} · {r.horarios_padrao?.label ?? "Horário não informado"}</p><p className="mt-1 text-sm text-muted-foreground">{r.docentes?.nome ?? "Docente não informado"}</p></div><Badge variant={r.status === "realizado" ? "default" : r.status === "cancelado" ? "destructive" : "secondary"} className="capitalize">{r.status}</Badge></div>
                 <dl className="mt-4 space-y-2 text-sm"><div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Componente e turma</dt><dd className="mt-0.5">{r.componentes_curriculares?.nome ?? "—"}{r.turmas ? ` · ${r.turmas.serie} ${r.turmas.nome}` : ""}</dd></div><div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Conteúdo</dt><dd className="mt-0.5 whitespace-pre-wrap">{r.conteudo || "Não informado"}</dd></div></dl>
               </article>
             ))}
-            {sorted.length > 50 && <p className="pt-1 text-center text-xs text-muted-foreground">Pré-visualização de 50 de {sorted.length} registros. Exporte em PDF para ver todos.</p>}
+            {planejamentosDoDia.length === 0 && <p className="rounded-xl border border-dashed p-5 text-center text-sm text-muted-foreground">Nenhum planejamento neste dia.</p>}
+            {planejamentosDoDia.length > 50 && <p className="pt-1 text-center text-xs text-muted-foreground">Pré-visualização de 50 de {planejamentosDoDia.length} registros deste dia. Exporte em PDF para ver todos.</p>}
+            </div>
           </div>
           </>
         )}
@@ -437,7 +452,7 @@ function RelatorioDocente() {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("C", marginX + 14, 48, { align: "center" });
+    doc.text("S", marginX + 14, 48, { align: "center" });
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
@@ -918,7 +933,7 @@ function RelatorioLaboratorio() {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("C", marginX + 14, 48, { align: "center" });
+    doc.text("S", marginX + 14, 48, { align: "center" });
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
