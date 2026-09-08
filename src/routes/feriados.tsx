@@ -48,7 +48,7 @@ function FeriadosPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Feriados</h1>
           <p className="text-sm text-muted-foreground">Cadastre feriados municipais. Os feriados nacionais fixos já estão incluídos automaticamente.</p>

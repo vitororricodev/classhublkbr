@@ -82,14 +82,14 @@ function AgendamentoPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Agendamento</h1>
           <p className="text-sm text-muted-foreground">Calendário de planejamentos.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}><ChevronLeft className="h-4 w-4" /></Button>
-          <div className="px-4 py-1.5 rounded-md bg-secondary font-medium min-w-44 text-center">{MES_LABEL[cursor.getMonth()]} {cursor.getFullYear()}</div>
+          <div className="min-w-36 flex-1 rounded-md bg-secondary px-3 py-1.5 text-center font-medium sm:min-w-44 sm:flex-none">{MES_LABEL[cursor.getMonth()]} {cursor.getFullYear()}</div>
           <Button variant="outline" size="icon" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}><ChevronRight className="h-4 w-4" /></Button>
           <Button variant="outline" onClick={() => setCursor(startOfMonth(new Date()))}>Hoje</Button>
           <Button onClick={() => setReplicarOpen(true)}><Copy className="h-4 w-4 mr-1" />Replicar Aulas</Button>
@@ -98,7 +98,7 @@ function AgendamentoPage() {
       </div>
 
       <Card className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {isAdmin && <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />}
           <FiltroSelect label="Componente" value={filtros.componente} onChange={(v) => setFiltros({ ...filtros, componente: v })} options={[{ value: "all", label: "Todos" }, ...componentes.map((d) => ({ value: d.id, label: d.nome }))]} />
           <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} — ${d.nome}` }))]} />
@@ -114,11 +114,11 @@ function AgendamentoPage() {
       </Card>
 
 
-      <Card className="overflow-hidden">
-        <div className="grid grid-cols-7 bg-secondary text-xs font-medium">
+      <Card className="overflow-x-auto">
+        <div className="grid min-w-[42rem] grid-cols-7 bg-secondary text-xs font-medium">
           {DOW.map((d) => <div key={d} className="px-2 py-2 text-center border-b">{d}</div>)}
         </div>
-        <div className="grid grid-cols-7">
+        <div className="grid min-w-[42rem] grid-cols-7">
           {grid.map((d, i) => {
             const iso = fmtISO(d);
             const inMonth = d.getMonth() === cursor.getMonth();
