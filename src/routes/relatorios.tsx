@@ -243,7 +243,7 @@ function RelatorioGeral() {
       <ReportSectionIntro icon={CalendarDays} eyebrow="Planejamento" title="Aulas planejadas" description="Acompanhe o que foi previsto, realizado ou cancelado por período, docente, turma e componente." />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-4">
           <ReportMetric label="Registros" value={sorted.length} />
           <ReportMetric label="Planejados" value={statusCounts.planejado} tone="amber" />
           <ReportMetric label="Realizados" value={statusCounts.realizado} tone="emerald" />
@@ -619,7 +619,7 @@ function RelatorioDocente() {
           <div className="border-b bg-muted/30 p-4 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium">{nomeDocente ?? "Docente"}</h3><div className="mt-1 text-sm text-muted-foreground">
               {(isLoading || isLoadingAC) ? "Carregando..." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)}.`}
-            </div></div><div className="grid grid-cols-2 gap-2 sm:grid-cols-3"><ReportMetric label="Aulas" value={aulas.length} /><ReportMetric label="ACs" value={acs.length} tone="violet" /><ReportMetric label="Dias letivos" value={datas.length} tone="emerald" /></div></div>
+            </div></div><div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-3"><ReportMetric label="Aulas" value={aulas.length} /><ReportMetric label="ACs" value={acs.length} tone="violet" /><ReportMetric label="Dias letivos" value={datas.length} tone="emerald" /></div></div>
           </div>
 
           {!isLoading && !isLoadingAC && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
@@ -1064,7 +1064,7 @@ function RelatorioLaboratorio() {
     <div className="space-y-6 pt-4">
       <ReportSectionIntro icon={FlaskConical} eyebrow="Ambientes" title="Uso dos laboratórios" description="Visualize a ocupação por horário, acompanhe conflitos e exporte uma grade pronta para organização da equipe." />
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-4">
           <ReportMetric label="Horários" value={totalSlots} />
           <ReportMetric label="Livres" value={Math.max(totalSlots - slotsOcupados, 0)} tone="emerald" />
           <ReportMetric label="Ocupados" value={slotsOcupados} tone="amber" />
