@@ -1,5 +1,5 @@
 ---
-tags: [classhub, laboratorio, labcs, planejamento]
+tags: [sge, laboratorio, labcs, planejamento]
 status: implementado
 created: 2026-09-02
 ---

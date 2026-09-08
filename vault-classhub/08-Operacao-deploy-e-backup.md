@@ -1,5 +1,5 @@
 ---
-tags: [classhub, operacao, deploy]
+tags: [sge, operacao, deploy]
 ---
 
 # Operação, deploy e backup
@@ -42,4 +42,3 @@ O README também menciona aliases antigos (`VITE_SUPABASE_ANON_KEY`, `SUPABASE_U
 ## Backup e recuperação
 
 Use a tela **Backup e Restauração** apenas com cópia confiável do ambiente e com todos os usuários avisados. A operação substitui dados, não tem rollback automático e possui cobertura limitada — veja [[06-Regras-e-fluxos]]. Mantenha uma cópia externa do JSON e uma exportação dos objetos do bucket `anexos`.
-

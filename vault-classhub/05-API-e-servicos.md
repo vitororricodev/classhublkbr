@@ -1,5 +1,5 @@
 ---
-tags: [classhub, api, supabase]
+tags: [sge, api, supabase]
 ---
 
 # API e métodos

@@ -1,5 +1,5 @@
 ---
-tags: [classhub, arquitetura]
+tags: [sge, arquitetura]
 ---
 
 # Arquitetura e stack

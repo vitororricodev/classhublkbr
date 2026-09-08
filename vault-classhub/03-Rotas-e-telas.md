@@ -1,5 +1,5 @@
 ---
-tags: [classhub, rotas, ui]
+tags: [sge, rotas, ui]
 ---
 
 # Rotas e telas

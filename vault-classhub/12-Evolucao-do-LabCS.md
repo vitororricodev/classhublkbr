@@ -1,13 +1,13 @@
 ---
-tags: [classhub, proposta, laboratorio]
+tags: [sge, proposta, laboratorio]
 status: implementado
 ---
 
-# Expansão: Laboratório Multidisciplinar
+# Evolução do LabCS
 
 ## Objetivo
 
-Adicionar o **Laboratório Multidisciplinar** com o mesmo ciclo do Laboratório de Informática: consulta de disponibilidade, solicitação pelo docente, aprovação/rejeição e gestão administrativa. A escolha do ambiente acontece antes da agenda, por dois cards.
+Este documento registra a decisão que originou o **LabCS, Laboratório de Conexões e Saberes**. O ambiente segue o mesmo ciclo do Laboratório de Informática: consulta de disponibilidade, solicitação pelo docente, aprovação/rejeição e gestão administrativa. A escolha do ambiente acontece antes da agenda, por dois cards.
 
 ## Decisão de arquitetura
 
@@ -16,7 +16,7 @@ Os ambientes serão configuráveis por dados, não por cópias de telas/tabelas.
 | Slug | Nome | Comportamento inicial |
 |---|---|---|
 | `informatica` | Laboratório de Informática | Recebe os registros históricos já existentes. |
-| `multidisciplinar` | Laboratório Multidisciplinar | Agenda vazia; não recebe preenchimento automático por componentes de Computação. |
+| `multidisciplinar` | LabCS, Laboratório de Conexões e Saberes | Agenda vazia; não recebe preenchimento automático por componentes de Computação. |
 
 `laboratorio_agendamentos` e `solicitacoes_laboratorio` passarão a ter `laboratorio_id`. Assim, data e horário só bloqueiam/alertam dentro do mesmo laboratório.
 
@@ -28,7 +28,7 @@ Além de administrador e docente, haverá a permissão de **responsável de labo
 |---|---|
 | Administrador | Todos os laboratórios. |
 | Responsável do Laboratório de Informática | Somente solicitações e agenda de Informática. |
-| Responsável do Laboratório Multidisciplinar | Somente solicitações e agenda Multidisciplinar. |
+| Responsável do LabCS | Somente solicitações e agenda do LabCS. |
 | Docente | Próprias solicitações e disponibilidade pública, sem decidir pedidos. |
 
 A tela de aprovação será filtrada na origem pela associação do usuário. A RPC de aprovação/rejeição também receberá o `laboratorio_id` e validará a permissão no banco; esconder um card no frontend não será a única barreira.
@@ -39,7 +39,7 @@ A tela de aprovação será filtrada na origem pela associação do usuário. A 
 flowchart TD
   A[Agendar Laboratório] --> B{Escolha o ambiente}
   B --> I[Card: Laboratório de Informática]
-  B --> M[Card: Laboratório Multidisciplinar]
+  B --> M[Card: LabCS]
   I --> S[Agenda e solicitação filtradas]
   M --> S
   S --> P[Solicitação pendente]

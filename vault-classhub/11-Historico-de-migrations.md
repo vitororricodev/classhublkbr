@@ -1,5 +1,5 @@
 ---
-tags: [classhub, banco, migrations]
+tags: [sge, banco, migrations]
 ---
 
 # Histórico de migrations

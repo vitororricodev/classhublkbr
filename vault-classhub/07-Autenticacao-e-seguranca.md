@@ -1,5 +1,5 @@
 ---
-tags: [classhub, seguranca, autenticacao]
+tags: [sge, seguranca, autenticacao]
 ---
 
 # Autenticação e segurança
@@ -33,4 +33,3 @@ O bucket `anexos` também é público e suas políticas permitem leitura, inser�
 5. Tornar anexos privados ou usar URLs assinadas; validar tipo/tamanho de upload.
 
 Essas observações descrevem a implementação encontrada e não alteram o comportamento atual.
-

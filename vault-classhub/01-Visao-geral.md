@@ -1,5 +1,5 @@
 ---
-tags: [classhub, produto]
+tags: [sge, produto]
 ---
 
 # Visão geral

@@ -1,5 +1,5 @@
 ---
-tags: [classhub, relatorios, pdf, labcs]
+tags: [sge, relatorios, pdf, labcs]
 status: implementado
 created: 2026-09-08
 ---

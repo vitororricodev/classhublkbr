@@ -1,5 +1,5 @@
 ---
-tags: [classhub, banco, supabase]
+tags: [sge, banco, supabase]
 ---
 
 # Modelo de dados

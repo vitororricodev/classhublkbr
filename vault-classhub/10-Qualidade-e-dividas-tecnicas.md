@@ -1,5 +1,5 @@
 ---
-tags: [classhub, qualidade, divida-tecnica]
+tags: [sge, qualidade, divida-tecnica]
 ---
 
 # Qualidade e dívidas técnicas
@@ -32,4 +32,3 @@ tags: [classhub, qualidade, divida-tecnica]
 - [ ] Políticas RLS e Storage foram revisadas por perfil.
 - [ ] Backup foi testado em ambiente isolado.
 - [ ] Fluxo de aprovação foi testado para erros de inserção e concorrência.
-

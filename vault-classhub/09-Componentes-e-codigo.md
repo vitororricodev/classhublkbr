@@ -1,5 +1,5 @@
 ---
-tags: [classhub, frontend, codigo]
+tags: [sge, frontend, codigo]
 ---
 
 # Componentes e código

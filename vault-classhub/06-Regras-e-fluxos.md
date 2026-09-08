@@ -1,5 +1,5 @@
 ---
-tags: [classhub, regras, fluxos]
+tags: [sge, regras, fluxos]
 ---
 
 # Regras de negócio e fluxos
