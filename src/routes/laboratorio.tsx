@@ -35,6 +35,7 @@ function LaboratorioPage() {
   const { laboratorio } = useLaboratorioAtual();
   const podeGerir = !!laboratorio && (isAdmin || user?.laboratorio_ids.includes(laboratorio.id));
   const [weekStart, setWeekStart] = useState(() => startOfWeekISO(new Date()));
+  const [diaMobile, setDiaMobile] = useState("");
   const weekEnd = useMemo(() => addDaysISO(weekStart, 6), [weekStart]);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -74,6 +75,7 @@ function LaboratorioPage() {
     }
     return out;
   }, [weekStart]);
+  useEffect(() => { if (!datas.includes(diaMobile)) setDiaMobile(datas[0] ?? ""); }, [datas, diaMobile]);
 
   const mapa = useMemo(() => {
     const m = new Map<string, LaboratorioAgendamentoFull[]>();
@@ -110,7 +112,7 @@ function LaboratorioPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <MonitorSmartphone className="h-6 w-6 text-primary" />{laboratorio?.nome ?? "Laboratório"}
@@ -119,15 +121,14 @@ function LaboratorioPage() {
             Controle, agendamento e histórico do laboratório — independente da agenda normal de aulas.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setWeekStart(addDaysISO(weekStart, -7))}><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="outline" onClick={() => setWeekStart(startOfWeekISO(new Date()))}>Semana atual</Button>
-          <Button variant="outline" size="icon" onClick={() => setWeekStart(addDaysISO(weekStart, 7))}><ChevronRight className="h-4 w-4" /></Button>
+        <div className="w-full space-y-2 sm:w-auto">
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            <Button variant="outline" size="icon" aria-label="Semana anterior" onClick={() => setWeekStart(addDaysISO(weekStart, -7))}><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => setWeekStart(startOfWeekISO(new Date()))}>Semana atual</Button>
+            <Button variant="outline" size="icon" aria-label="Próxima semana" onClick={() => setWeekStart(addDaysISO(weekStart, 7))}><ChevronRight className="h-4 w-4" /></Button>
+          </div>
+          <div className="rounded-lg border bg-muted/40 px-3 py-2 text-sm sm:text-right"><span className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">Semana selecionada</span><span className="font-semibold">{fmtDate(weekStart)} a {fmtDate(weekEnd)}</span></div>
         </div>
-      </div>
-
-      <div className="text-sm text-muted-foreground">
-        Semana de {fmtDate(weekStart)} a {fmtDate(weekEnd)}
       </div>
 
       <Card className="p-4">
@@ -205,16 +206,21 @@ function LaboratorioPage() {
             </table>
           </div>
           <div className="space-y-5 md:hidden">
-            {datas.map((dt) => (
-              <section key={dt} className="overflow-hidden rounded-xl border bg-card">
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {datas.map((dt) => {
+                const ativo = dt === diaMobile;
+                return <Button key={dt} type="button" variant={ativo ? "default" : "outline"} className="h-auto min-w-[4.75rem] shrink-0 flex-col gap-0.5 px-3 py-2" onClick={() => setDiaMobile(dt)}><span className="capitalize text-xs">{new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</span><span className="text-base leading-none">{new Date(dt + "T00:00:00").getDate()}</span></Button>;
+              })}
+            </div>
+            {diaMobile && <section className="overflow-hidden rounded-xl border bg-card">
                 <div className="border-b bg-muted/50 px-4 py-3">
-                  <p className="text-sm font-semibold capitalize">{new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long" })}</p>
-                  <p className="text-xs text-muted-foreground">{fmtDate(dt)}</p>
+                  <p className="text-sm font-semibold capitalize">{new Date(diaMobile + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long" })}</p>
+                  <p className="text-xs text-muted-foreground">{fmtDate(diaMobile)}</p>
                 </div>
                 <div className="divide-y">
                   {horarios.map((h) => {
                     if (h.eh_intervalo) return <div key={h.id} className="bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{h.label}<span className="ml-2 text-xs font-normal">Intervalo</span></div>;
-                    const lista = mapa.get(`${dt}__${h.id}`) ?? [];
+                    const lista = mapa.get(`${diaMobile}__${h.id}`) ?? [];
                     return (
                       <div key={h.id} className="space-y-3 p-4">
                         <div className="flex items-start justify-between gap-3"><div><p className="font-medium">{h.label}</p><p className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}</p></div>{lista.length > 1 && <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800">Revisar: {lista.length}</Badge>}</div>
@@ -227,13 +233,13 @@ function LaboratorioPage() {
                             <div className="mt-3 flex gap-2"><Button size="sm" variant="outline" onClick={() => abrirEdicao(a)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><ExcluirBotao id={a.id} /></div>
                           </div>
                         ))}
-                        <Button size="sm" variant={lista.length === 0 ? "outline" : "ghost"} className="w-full" onClick={() => abrirNova(dt, h.id)}><Plus className="mr-1 h-4 w-4" />{lista.length === 0 ? "Agendar neste horário" : "Adicionar outro"}</Button>
+                        <Button size="sm" variant={lista.length === 0 ? "outline" : "ghost"} className="w-full" onClick={() => abrirNova(diaMobile, h.id)}><Plus className="mr-1 h-4 w-4" />{lista.length === 0 ? "Agendar neste horário" : "Adicionar outro"}</Button>
                       </div>
                     );
                   })}
                 </div>
               </section>
-            ))}
+            }
           </div>
           </>
         )}
