@@ -135,7 +135,7 @@ export function AppSidebar() {
 
   const navigation = (onNavigate?: () => void) => (
     <>
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="sidebar-scroll flex-1 space-y-1 overflow-y-auto px-3 py-2.5">
         <NavLink it={dashboardItem} active={path === dashboardItem.to} onNavigate={onNavigate} />
         <NavGroupSection group={agendaGroup} path={path} isAdmin={isAdmin} badges={badges} onNavigate={onNavigate} />
         <NavLink it={relatoriosItem} active={path === relatoriosItem.to} onNavigate={onNavigate} />

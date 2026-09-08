@@ -28,6 +28,7 @@ tags: [classhub, frontend, codigo]
 - Objetos de formulário costumam ser mantidos com `useState`; não há camada de validação Zod centralizada apesar da dependência estar instalada.
 - A UI reutilizável fica em `src/components/ui/`, baseada em shadcn/Radix; normalmente não contém regra de negócio.
 - Textos visíveis devem preferir frases curtas, ponto, dois-pontos ou separador médio (`·`) em vez de travessões. O traço de ausência de dado e o intervalo entre horários são exceções funcionais.
+- A barra de navegação lateral rola internamente em telas baixas; usa a classe `sidebar-scroll` para manter o controle visual discreto e coerente com o fundo escuro.
 
 ## Estilos
 
