@@ -26,4 +26,4 @@ tags: [classhub, rotas, ui]
 
 ## Casca da aplicação
 
-`__root.tsx` envolve as páginas com `AuthProvider`, protege rotas pelo `AuthGate`, apresenta sidebar para telas autenticadas e páginas próprias para 404/erro. Em telas menores que 768 px, a sidebar dá lugar a um cabeçalho compacto e menu lateral deslizante. A navegação oculta itens administrativos, mas isso é apenas uma restrição visual; a proteção de dados deve existir no banco. Veja [[07-Autenticacao-e-seguranca]].
+`__root.tsx` envolve as páginas com `AuthProvider`, protege rotas pelo `AuthGate`, apresenta sidebar para telas autenticadas e páginas próprias para 404/erro. Em telas de desktop, a casca ocupa a altura da viewport: o menu lateral permanece fixo e somente o conteúdo principal recebe rolagem vertical. Em telas menores que 768 px, a sidebar dá lugar a um cabeçalho compacto e menu lateral deslizante. A navegação oculta itens administrativos, mas isso é apenas uma restrição visual; a proteção de dados deve existir no banco. Veja [[07-Autenticacao-e-seguranca]].
