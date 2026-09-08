@@ -63,7 +63,7 @@ function FeriadosPage() {
         <div className="flex flex-wrap gap-2">
           {FERIADOS_NACIONAIS_FIXOS.map((f) => (
             <span key={f.mmdd} className="text-xs px-2 py-1 rounded border bg-secondary">
-              {f.mmdd.replace("-", "/")} — {f.nome}
+              {f.mmdd.replace("-", "/")}: {f.nome}
             </span>
           ))}
         </div>

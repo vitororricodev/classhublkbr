@@ -101,7 +101,7 @@ function AgendamentoPage() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {isAdmin && <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />}
           <FiltroSelect label="Componente" value={filtros.componente} onChange={(v) => setFiltros({ ...filtros, componente: v })} options={[{ value: "all", label: "Todos" }, ...componentes.map((d) => ({ value: d.id, label: d.nome }))]} />
-          <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} — ${d.nome}` }))]} />
+          <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} · ${d.nome}` }))]} />
           <FiltroSelect label="Status" value={filtros.status} onChange={(v) => setFiltros({ ...filtros, status: v })} options={[
             { value: "all", label: "Todos" }, { value: "planejado", label: "Planejado" }, { value: "realizado", label: "Realizado" }, { value: "cancelado", label: "Cancelado" }
           ]} />
@@ -270,7 +270,7 @@ function DiaModal({ date, onClose, horarios, turmas }: { date: string | null; on
                   className="w-full text-left rounded-md border p-3 hover:bg-accent/40 transition-colors flex items-center justify-between"
                 >
                   <div>
-                    <div className="text-sm font-medium">{t.serie} — {t.nome}</div>
+                    <div className="text-sm font-medium">{t.serie} · {t.nome}</div>
                     <div className="text-xs text-muted-foreground">{countPorTurma[t.id] ? `${countPorTurma[t.id]} aula(s) agendada(s)` : "Sem aulas neste dia"}</div>
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
@@ -283,7 +283,7 @@ function DiaModal({ date, onClose, horarios, turmas }: { date: string | null; on
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs text-muted-foreground">Turma selecionada</div>
-                <div className="text-sm font-medium">{turmaSel?.serie} — {turmaSel?.nome}</div>
+                <div className="text-sm font-medium">{turmaSel?.serie} · {turmaSel?.nome}</div>
               </div>
               <Button size="sm" variant="ghost" onClick={() => setSelectedTurma(null)}>
                 <ChevronLeft className="h-4 w-4 mr-1" />Trocar turma

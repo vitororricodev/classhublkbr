@@ -148,7 +148,7 @@ function SolicitarLaboratorioPage() {
             <AjudaPopover />
           </h1>
           <p className="text-sm text-muted-foreground">
-            Clique num horário livre da semana para enviar o pedido — a coordenação aprova depois.
+            Clique em um horário livre da semana para enviar o pedido. A coordenação fará a aprovação depois.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -379,7 +379,7 @@ function PedidoLaboratorioDialog({
             <Label>Turma</Label>
             <Select value={turmaId} onValueChange={setTurmaId}>
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} — {t.nome}</SelectItem>)}</SelectContent>
+              <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} · {t.nome}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="space-y-2">

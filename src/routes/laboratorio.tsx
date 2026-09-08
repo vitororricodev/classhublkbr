@@ -118,7 +118,7 @@ function LaboratorioPage() {
             <MonitorSmartphone className="h-6 w-6 text-primary" />{laboratorio?.nome ?? "Laboratório"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Controle, agendamento e histórico do laboratório — independente da agenda normal de aulas.
+            Controle, agendamento e histórico do laboratório. Funciona de forma independente da agenda normal de aulas.
           </p>
         </div>
         <div className="w-full space-y-2 sm:w-auto">
@@ -368,7 +368,7 @@ function LaboratorioAgendamentoForm({
       if (!chkErr) {
         const conflito = (outros ?? []).some((o: { id: string }) => o.id !== editing?.id);
         if (conflito) {
-          toast.warning("Já existe outro agendamento neste horário — confira se não é duplicado.");
+          toast.warning("Já existe outro agendamento neste horário. Confira se não é duplicado.");
         }
       }
 
@@ -395,7 +395,7 @@ function LaboratorioAgendamentoForm({
           <DialogTitle>{editing ? "Editar agendamento do laboratório" : "Agendar laboratório"}</DialogTitle>
         </DialogHeader>
         <div className="mx-5 shrink-0 text-xs text-muted-foreground sm:mx-6">
-          {fmtDate(data)} · este agendamento não depende da agenda normal de aulas — a turma e o docente podem ter outra aula no mesmo horário sem problema.
+          {fmtDate(data)} · Este agendamento não depende da agenda normal de aulas. A turma e o docente podem ter outra aula no mesmo horário sem problema.
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
         <div className="space-y-4">
@@ -403,7 +403,7 @@ function LaboratorioAgendamentoForm({
             <Label>Turma</Label>
             <Select value={turmaId} onValueChange={setTurmaId}>
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} — {t.nome}</SelectItem>)}</SelectContent>
+              <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} · {t.nome}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="space-y-2">

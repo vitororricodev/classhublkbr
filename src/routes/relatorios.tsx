@@ -144,7 +144,7 @@ function RelatorioGeral() {
 
   const docenteLabel = filtros.docente === "all" ? "Todos" : docentes.find((d) => d.id === filtros.docente)?.nome ?? "—";
   const componenteLabel = filtros.componente === "all" ? "Todos" : componentes.find((d) => d.id === filtros.componente)?.nome ?? "—";
-  const turmaLabel = filtros.turma === "all" ? "Todas" : (() => { const t = turmas.find((d) => d.id === filtros.turma); return t ? `${t.serie} — ${t.nome}` : "—"; })();
+  const turmaLabel = filtros.turma === "all" ? "Todas" : (() => { const t = turmas.find((d) => d.id === filtros.turma); return t ? `${t.serie} · ${t.nome}` : "—"; })();
   const statusLabel = filtros.status === "all" ? "Todos" : filtros.status;
 
   const geradoEm = fmtDateTime(new Date());
@@ -229,7 +229,7 @@ function RelatorioGeral() {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(119, 119, 119);
-        doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+        doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
         doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
         doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
       },
@@ -261,7 +261,7 @@ function RelatorioGeral() {
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={filtros.fim} onChange={(e) => setFiltros({ ...filtros, fim: e.target.value })} /></div>
           {isAdmin && <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />}
           <FiltroSelect label="Componente" value={filtros.componente} onChange={(v) => setFiltros({ ...filtros, componente: v })} options={[{ value: "all", label: "Todos" }, ...componentes.map((d) => ({ value: d.id, label: d.nome }))]} />
-          <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} — ${d.nome}` }))]} />
+          <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} · ${d.nome}` }))]} />
           <FiltroSelect label="Status" value={filtros.status} onChange={(v) => setFiltros({ ...filtros, status: v })} options={[
             { value: "all", label: "Todos" }, { value: "planejado", label: "Planejado" }, { value: "realizado", label: "Realizado" }, { value: "cancelado", label: "Cancelado" }
           ]} />
@@ -475,7 +475,7 @@ function RelatorioDocente() {
     doc.setTextColor(26, 26, 26);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text(`Grade de Aulas — ${nomeDocente}`, pageWidth / 2, 86, { align: "center" });
+    doc.text(`Grade de aulas: ${nomeDocente}`, pageWidth / 2, 86, { align: "center" });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -492,7 +492,7 @@ function RelatorioDocente() {
           if (h.eh_intervalo) return { content: "Intervalo", styles: { fillColor: [254, 226, 226], textColor: [153, 27, 27] } };
           const a = mapaAulas.get(`${dt}__${h.id}`);
           const ac = mapaAC.get(`${dt}__${h.id}`);
-          if (ac) return { content: `AC — ${ac.categorias_ac?.nome ?? "—"}`, styles: { fillColor: [226, 245, 251], textColor: [0, 108, 159], fontStyle: "bold" } };
+          if (ac) return { content: `AC: ${ac.categorias_ac?.nome ?? "—"}`, styles: { fillColor: [226, 245, 251], textColor: [0, 108, 159], fontStyle: "bold" } };
           if (!a) return "—";
           return `${a.componentes_curriculares?.nome ?? "—"}\n${a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}`;
         }),
@@ -514,7 +514,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -546,7 +546,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -655,7 +655,7 @@ function RelatorioDocente() {
                           <td key={dt} className="p-2 text-center align-top">
                             {ac ? (
                               <div className="rounded-md border px-2 py-1 space-y-0.5 bg-violet-50 border-violet-200">
-                                <div className="text-xs font-medium text-violet-800">AC — {ac.categorias_ac?.nome ?? "—"}</div>
+                                <div className="text-xs font-medium text-violet-800">AC: {ac.categorias_ac?.nome ?? "—"}</div>
                                 {ac.observacao && <div className="text-[11px] text-violet-700/80">{ac.observacao}</div>}
                                 {isAdmin && (
                                   <div className="flex gap-1 justify-center pt-1">
@@ -824,7 +824,7 @@ function LancarACDialog({
             <Select value={categoriaId} onValueChange={setCategoriaId}>
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
               <SelectContent>
-                {categorias.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Nenhuma categoria cadastrada — crie em "Categorias de AC".</div>}
+                {categorias.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Nenhuma categoria cadastrada. Crie uma em "Categorias de AC".</div>}
                 {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -956,7 +956,7 @@ function RelatorioLaboratorio() {
     doc.setTextColor(26, 26, 26);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text(`Disponibilidade — ${laboratorio?.nome ?? "Laboratório"}`, pageWidth / 2, 86, { align: "center" });
+    doc.text(`Disponibilidade: ${laboratorio?.nome ?? "Laboratório"}`, pageWidth / 2, 86, { align: "center" });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -997,7 +997,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -1050,7 +1050,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },

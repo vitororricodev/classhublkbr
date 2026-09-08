@@ -148,7 +148,7 @@ function AprovacoesLaboratorioPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <ClipboardCheck className="h-6 w-6 text-primary" />Aprovações — {laboratorio?.nome ?? "Laboratório"}
+          <ClipboardCheck className="h-6 w-6 text-primary" />Aprovações: {laboratorio?.nome ?? "Laboratório"}
         </h1>
         <p className="text-sm text-muted-foreground">Aprove ou rejeite as solicitações enviadas pelos docentes.</p>
       </div>

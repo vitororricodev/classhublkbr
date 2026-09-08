@@ -218,7 +218,7 @@
   @page {
     size: A4;
     margin: 14mm 12mm 16mm 12mm;
-    @bottom-left  { content: "SGE — Sistema de Gerenciamento Escolar"; font-family: "Inter", sans-serif; font-size: 8pt; color: #777; }
+    @bottom-left  { content: "SGE | Sistema de Gerenciamento Escolar"; font-family: "Inter", sans-serif; font-size: 8pt; color: #777; }
     @bottom-center{ content: "Página " counter(page) " de " counter(pages);     font-family: "Inter", sans-serif; font-size: 8pt; color: #777; }
     @bottom-right { content: ""; }
   }

@@ -216,7 +216,7 @@ export function ReplicarAulasDialog({ open, onClose }: Props) {
                 <Label>Turma</Label>
                 <Select value={turmaId} onValueChange={setTurmaId} disabled={loading}>
                   <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                  <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} — {t.nome}</SelectItem>)}</SelectContent>
+                  <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} · {t.nome}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">

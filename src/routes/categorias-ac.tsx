@@ -57,7 +57,7 @@ function CategoriasACPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Excluído"); qc.invalidateQueries({ queryKey: ["categorias_ac"] }); },
-    onError: (e: Error) => toast.error("Não foi possível excluir — pode haver AC já lançadas com esta categoria."),
+    onError: (e: Error) => toast.error("Não foi possível excluir. Pode haver AC já lançadas com esta categoria."),
   });
 
   if (!isAdmin) {

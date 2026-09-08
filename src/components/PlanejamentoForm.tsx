@@ -171,7 +171,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turm
           <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900 text-sm">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
             <div>
-              <strong>Atenção:</strong> esta data é feriado {feriado.tipo} — {feriado.nome}.
+              <strong>Atenção:</strong> esta data é feriado {feriado.tipo}: {feriado.nome}.
               <div className="text-xs opacity-80">O lançamento não será bloqueado.</div>
             </div>
           </div>
@@ -198,7 +198,7 @@ export function PlanejamentoForm({ open, onClose, data, horarioId, editing, turm
             <Label>Turma</Label>
             <Select value={turmaId} onValueChange={setTurmaId} disabled={!!lockTurma && !editing}>
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} — {t.nome}</SelectItem>)}</SelectContent>
+              <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} · {t.nome}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
