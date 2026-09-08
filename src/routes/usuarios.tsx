@@ -592,7 +592,7 @@ function ResetPasswordDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Redefinir senha — {user.usuario}</DialogTitle>
+          <DialogTitle>Redefinir senha: {user.usuario}</DialogTitle>
         </DialogHeader>
         <form
           className="space-y-4"

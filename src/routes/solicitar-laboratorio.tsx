@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { HelpCircle, MonitorSmartphone, Send, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { LAB_SELECT, SOLIC_SELECT } from "@/lib/db";
-import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, SolicitacaoLaboratorioFull, Turma } from "@/lib/db";
+import type { Componente, Docente, Horario, LaboratorioAgendamentoFull, SolicitacaoLaboratorioFull, TipoAtividadeLabCS, Turma } from "@/lib/db";
 import { useAuth } from "@/lib/auth-context";
 import { useLaboratorioAtual } from "@/lib/laboratorios";
 // Schema gerado será renovado após a migration de laboratórios.
@@ -61,6 +61,7 @@ function SolicitarLaboratorioPage() {
   const scopedDocenteId = isAdmin ? (docenteIdAdmin || null) : (user?.docente_id ?? null);
 
   const [weekStart, setWeekStart] = useState(() => startOfWeekISO(new Date()));
+  const [diaMobile, setDiaMobile] = useState("");
   const weekEnd = useMemo(() => addDaysISO(weekStart, 6), [weekStart]);
   const [pedidoAberto, setPedidoAberto] = useState<{ data: string; horarioId: string } | null>(null);
 
@@ -118,6 +119,7 @@ function SolicitarLaboratorioPage() {
     }
     return out;
   }, [weekStart]);
+  useEffect(() => { if (!datas.includes(diaMobile)) setDiaMobile(datas[0] ?? ""); }, [datas, diaMobile]);
 
   const mapaOcupado = useMemo(() => {
     const m = new Map<string, LaboratorioAgendamentoFull[]>();
@@ -141,20 +143,23 @@ function SolicitarLaboratorioPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <MonitorSmartphone className="h-6 w-6 text-primary" />Solicitar {laboratorio?.nome ?? "Laboratório"}
             <AjudaPopover />
           </h1>
           <p className="text-sm text-muted-foreground">
-            Clique num horário livre da semana para enviar o pedido — a coordenação aprova depois.
+            Clique em um horário livre da semana para enviar o pedido. A coordenação fará a aprovação depois.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setWeekStart(addDaysISO(weekStart, -7))}><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="outline" onClick={() => setWeekStart(startOfWeekISO(new Date()))}>Semana atual</Button>
-          <Button variant="outline" size="icon" onClick={() => setWeekStart(addDaysISO(weekStart, 7))}><ChevronRight className="h-4 w-4" /></Button>
+        <div className="w-full space-y-2 sm:w-auto">
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            <Button variant="outline" size="icon" aria-label="Semana anterior" onClick={() => setWeekStart(addDaysISO(weekStart, -7))}><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => setWeekStart(startOfWeekISO(new Date()))}>Semana atual</Button>
+            <Button variant="outline" size="icon" aria-label="Próxima semana" onClick={() => setWeekStart(addDaysISO(weekStart, 7))}><ChevronRight className="h-4 w-4" /></Button>
+          </div>
+          <div className="rounded-lg border bg-muted/40 px-3 py-2 text-sm sm:text-right"><span className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">Semana selecionada</span><span className="font-semibold">{fmtDate(weekStart)} a {fmtDate(weekEnd)}</span></div>
         </div>
       </div>
 
@@ -178,16 +183,14 @@ function SolicitarLaboratorioPage() {
         </Card>
       )}
 
-      <div className="text-sm text-muted-foreground">Semana de {fmtDate(weekStart)} a {fmtDate(weekEnd)}</div>
-
       <Card className="p-4">
-        <div className="text-sm text-muted-foreground mb-3">
-          {loadingOcupacao ? "Carregando disponibilidade..." : "Verde = livre (clique para solicitar) · Vermelho = intervalo · Cinza = já ocupado · Amarelo = solicitação pendente"}
-        </div>
+        <div className="mb-4"><h2 className="font-medium">Disponibilidade</h2><p className="mt-1 text-sm text-muted-foreground">Escolha um horário disponível para enviar sua solicitação.</p></div>
+        {!loadingOcupacao && <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4"><div className="rounded-lg border border-green-100 bg-green-50 p-3"><p className="text-sm font-medium text-green-800">Disponível</p><p className="mt-1 text-xs text-green-700">Pode solicitar</p></div><div className="rounded-lg border bg-muted/50 p-3"><p className="text-sm font-medium">Ocupado</p><p className="mt-1 text-xs text-muted-foreground">Já reservado</p></div><div className="rounded-lg border border-amber-100 bg-amber-50 p-3"><p className="text-sm font-medium text-amber-800">Em análise</p><p className="mt-1 text-xs text-amber-700">Pedido pendente</p></div><div className="rounded-lg border border-red-100 bg-red-50 p-3"><p className="text-sm font-medium text-red-800">Intervalo</p><p className="mt-1 text-xs text-red-700">Sem agendamento</p></div></div>}
         {horarios.length === 0 ? (
           <div className="text-sm text-muted-foreground">Nenhum horário cadastrado ainda.</div>
         ) : (
-          <div className="overflow-auto max-h-[620px] border rounded-md">
+          <>
+          <div className="hidden max-h-[620px] overflow-auto rounded-md border md:block">
             <table className="w-full text-sm border-collapse">
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
@@ -260,6 +263,22 @@ function SolicitarLaboratorioPage() {
               </tbody>
             </table>
           </div>
+          <div className="space-y-4 md:hidden">
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {datas.map((dt) => {
+                const ativo = dt === diaMobile;
+                return <Button key={dt} type="button" variant={ativo ? "default" : "outline"} className="h-auto min-w-[4.75rem] shrink-0 flex-col gap-0.5 px-3 py-2" onClick={() => setDiaMobile(dt)}><span className="capitalize text-xs">{new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</span><span className="text-base leading-none">{new Date(dt + "T00:00:00").getDate()}</span></Button>;
+              })}
+            </div>
+            {diaMobile && <section className="overflow-hidden rounded-xl border bg-card"><div className="border-b bg-muted/50 px-4 py-3"><p className="text-sm font-semibold capitalize">{new Date(diaMobile + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long" })}</p><p className="text-xs text-muted-foreground">{fmtDate(diaMobile)}</p></div><div className="divide-y">{horarios.map((h) => {
+              if (h.eh_intervalo) return <div key={h.id} className="bg-red-50 px-4 py-3 text-sm text-red-800"><span className="font-semibold">{h.label}</span><span className="ml-2">Intervalo</span></div>;
+              const ocupantes = mapaOcupado.get(`${diaMobile}__${h.id}`) ?? [];
+              const pendentes = mapaPendente.get(`${diaMobile}__${h.id}`) ?? 0;
+              const ocupado = ocupantes.length > 0;
+              return <article key={h.id} className="space-y-3 p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{h.label}</p><p className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}</p></div>{ocupado ? <Badge variant="secondary">Ocupado</Badge> : pendentes > 0 ? <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Em análise</Badge> : <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Disponível</Badge>}</div>{ocupado ? <div className="rounded-lg bg-muted/60 p-3 text-sm">{ocupantes.map((a) => <p key={a.id}>{a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "Turma não informada"}{a.docentes?.nome ? ` · ${a.docentes.nome}` : ""}</p>)}</div> : pendentes > 0 ? <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{pendentes === 1 ? "Há uma solicitação em análise neste horário." : `Há ${pendentes} solicitações em análise neste horário.`}</p> : <Button className="w-full" variant="outline" disabled={!scopedDocenteId} onClick={() => setPedidoAberto({ data: diaMobile, horarioId: h.id })}><Plus className="mr-1 h-4 w-4" />Solicitar este horário</Button>}</article>;
+            })}</div></section>}
+          </div>
+          </>
         )}
       </Card>
 
@@ -298,6 +317,7 @@ function SolicitarLaboratorioPage() {
           horarioId={pedidoAberto.horarioId}
           horarioLabel={horarios.find((h) => h.id === pedidoAberto.horarioId)?.label ?? ""}
           laboratorioId={laboratorio.id}
+          isLabCS={laboratorio.slug === "multidisciplinar"}
         />
       )}
     </div>
@@ -305,9 +325,9 @@ function SolicitarLaboratorioPage() {
 }
 
 function PedidoLaboratorioDialog({
-  open, onClose, docenteId, data, horarioId, horarioLabel, laboratorioId,
+  open, onClose, docenteId, data, horarioId, horarioLabel, laboratorioId, isLabCS,
 }: {
-  open: boolean; onClose: () => void; docenteId: string; data: string; horarioId: string; horarioLabel: string; laboratorioId: string;
+  open: boolean; onClose: () => void; docenteId: string; data: string; horarioId: string; horarioLabel: string; laboratorioId: string; isLabCS: boolean;
 }) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -316,6 +336,11 @@ function PedidoLaboratorioDialog({
   const [conteudo, setConteudo] = useState("");
   const [usarProjetor, setUsarProjetor] = useState(false);
   const [usarSom, setUsarSom] = useState(false);
+  const [tipoAtividade, setTipoAtividade] = useState<TipoAtividadeLabCS | "">("");
+  const [alunosParticipantes, setAlunosParticipantes] = useState("");
+  const [recursosUtilizados, setRecursosUtilizados] = useState("");
+  const [habilidades, setHabilidades] = useState("");
+  const [objetoConhecimento, setObjetoConhecimento] = useState("");
 
   const { data: componentes = [] } = useQuery({
     queryKey: ["componentes", "ativos"],
@@ -330,10 +355,16 @@ function PedidoLaboratorioDialog({
     mutationFn: async () => {
       if (!componenteId) throw new Error("Selecione o componente.");
       if (!turmaId) throw new Error("Selecione a turma.");
+      if (isLabCS) {
+        if (!tipoAtividade) throw new Error("Selecione o tipo de atividade do LabCS.");
+        if (tipoAtividade === "oficina_pedagogica" && !alunosParticipantes.trim()) throw new Error("Informe os alunos participantes da oficina.");
+        if (!recursosUtilizados.trim() || !habilidades.trim() || !objetoConhecimento.trim()) throw new Error("Preencha recursos, habilidades e objeto do conhecimento.");
+      }
       const { error } = await sb.from("solicitacoes_laboratorio").insert({
         docente_id: docenteId, data, horario_id: horarioId, componente_id: componenteId, turma_id: turmaId, laboratorio_id: laboratorioId,
         conteudo: conteudo || null, usar_projetor: usarProjetor, usar_equipamento_som: usarSom,
         status: "pendente", criado_por: user?.id ?? null,
+        ...(isLabCS ? { tipo_atividade: tipoAtividade, alunos_participantes: tipoAtividade === "oficina_pedagogica" ? alunosParticipantes.trim() : null, recursos_utilizados: recursosUtilizados.trim(), habilidades: habilidades.trim(), objeto_conhecimento: objetoConhecimento.trim() } : {}),
       });
       if (error) throw error;
     },
@@ -347,14 +378,15 @@ function PedidoLaboratorioDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] max-w-2xl flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 px-5 pb-3 pt-5 sm:px-6 sm:pt-6">
           <DialogTitle>Solicitar Laboratório</DialogTitle>
         </DialogHeader>
-        <div className="text-sm bg-secondary rounded-md px-3 py-2">
+        <div className="mx-5 shrink-0 rounded-md bg-secondary px-3 py-2 text-sm sm:mx-6">
           <b>{fmtDate(data)}</b> · <b>{horarioLabel}</b>
         </div>
-        <div className="space-y-4 py-2">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>Componente</Label>
             <Select value={componenteId} onValueChange={setComponenteId}>
@@ -366,14 +398,21 @@ function PedidoLaboratorioDialog({
             <Label>Turma</Label>
             <Select value={turmaId} onValueChange={setTurmaId}>
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} — {t.nome}</SelectItem>)}</SelectContent>
+              <SelectContent>{turmas.map((t) => <SelectItem key={t.id} value={t.id}>{t.serie} · {t.nome}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label>Conteúdo (alinhado ao planejamento aprovado)</Label>
             <Textarea rows={3} value={conteudo} onChange={(e) => setConteudo(e.target.value)} placeholder="O que será trabalhado nesta aula" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          {isLabCS && <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-4">
+            <div className="space-y-2"><Label>Tipo de atividade</Label><Select value={tipoAtividade} onValueChange={(v) => setTipoAtividade(v as TipoAtividadeLabCS)}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent><SelectItem value="aula_pratica">Aula prática</SelectItem><SelectItem value="oficina_pedagogica">Oficina pedagógica</SelectItem></SelectContent></Select></div>
+            {tipoAtividade === "oficina_pedagogica" && <div className="space-y-2"><Label>Alunos participantes</Label><Textarea rows={3} value={alunosParticipantes} onChange={(e) => setAlunosParticipantes(e.target.value)} placeholder="Informe os alunos que participarão da oficina" /></div>}
+            <div className="space-y-2"><Label>Recursos utilizados e quantidade</Label><Textarea rows={3} value={recursosUtilizados} onChange={(e) => setRecursosUtilizados(e.target.value)} placeholder="Ex.: 15 tablets; 2 kits de robótica" /></div>
+            <div className="space-y-2"><Label>Habilidades</Label><Textarea rows={3} value={habilidades} onChange={(e) => setHabilidades(e.target.value)} placeholder="Habilidades que serão desenvolvidas" /></div>
+            <div className="space-y-2"><Label>Objeto do conhecimento</Label><Textarea rows={3} value={objetoConhecimento} onChange={(e) => setObjetoConhecimento(e.target.value)} placeholder="Objeto do conhecimento trabalhado" /></div>
+          </div>}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-2 border rounded-md px-3 py-2">
               <Switch checked={usarProjetor} onCheckedChange={setUsarProjetor} />
               <Label className="cursor-pointer" onClick={() => setUsarProjetor(!usarProjetor)}>Usar projetor</Label>
@@ -389,7 +428,8 @@ function PedidoLaboratorioDialog({
             </p>
           )}
         </div>
-        <DialogFooter>
+        </div>
+        <DialogFooter className="shrink-0 border-t bg-background px-5 py-4 sm:px-6">
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button onClick={() => enviar.mutate()} disabled={enviar.isPending}>
             <Send className="h-4 w-4 mr-2" />{enviar.isPending ? "Enviando..." : "Enviar solicitação"}

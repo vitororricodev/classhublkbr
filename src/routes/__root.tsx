@@ -95,9 +95,9 @@ function AuthGate() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-background md:flex">
+    <div className="min-h-screen w-full bg-background md:flex md:h-svh md:overflow-hidden">
       <AppSidebar />
-      <main className="flex-1 min-w-0 print-area">
+      <main className="min-w-0 flex-1 print-area md:h-svh md:overflow-y-auto">
         <Outlet />
       </main>
     </div>

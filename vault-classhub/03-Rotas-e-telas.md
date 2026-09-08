@@ -14,7 +14,7 @@ tags: [classhub, rotas, ui]
 | `/laboratorio` | Laboratório | Admin | Agenda independente e CRUD de uso do laboratório. |
 | `/solicitar-laboratorio` | Solicitar laboratório | Autenticado | Docente registra solicitação e acompanha as próprias solicitações. |
 | `/aprovacoes-laboratorio` | Aprovações | Admin | Aprova/rejeita solicitações; aprovar cria agendamento. |
-| `/relatorios` | Relatórios | Autenticado | Relatório geral, por docente/AC e de laboratório, com impressão. |
+| `/relatorios` | Central de relatórios | Autenticado | Consulta de planejamentos, grade docente com ACs e uso dos laboratórios, com filtros, indicadores e exportação em PDF. |
 | `/docentes` | Docentes | Autenticado | CRUD e ativação. |
 | `/componentes` | Componentes | Autenticado | CRUD, ativação e marcação de uso do laboratório. |
 | `/turmas` | Turmas | Autenticado | CRUD e ativação. |
@@ -26,4 +26,10 @@ tags: [classhub, rotas, ui]
 
 ## Casca da aplicação
 
-`__root.tsx` envolve as páginas com `AuthProvider`, protege rotas pelo `AuthGate`, apresenta sidebar para telas autenticadas e páginas próprias para 404/erro. Em telas menores que 768 px, a sidebar dá lugar a um cabeçalho compacto e menu lateral deslizante. A navegação oculta itens administrativos, mas isso é apenas uma restrição visual; a proteção de dados deve existir no banco. Veja [[07-Autenticacao-e-seguranca]].
+`__root.tsx` envolve as páginas com `AuthProvider`, protege rotas pelo `AuthGate`, apresenta sidebar para telas autenticadas e páginas próprias para 404/erro. Em telas de desktop, a casca ocupa a altura da viewport: o menu lateral permanece fixo e somente o conteúdo principal recebe rolagem vertical. Em telas menores que 768 px, a sidebar dá lugar a um cabeçalho compacto e menu lateral deslizante. A navegação oculta itens administrativos, mas isso é apenas uma restrição visual; a proteção de dados deve existir no banco. Veja [[07-Autenticacao-e-seguranca]].
+
+## Responsividade mobile-first
+
+As telas começam em uma coluna, com espaçamento reduzido e ações que podem quebrar em mais de uma linha. Grades de formulário só passam a duas ou mais colunas a partir de `sm`/`lg`. Conteúdos que precisam manter largura mínima para leitura, como o calendário mensal, usam rolagem horizontal no próprio componente; a página e o menu não são alargados por eles. Nas áreas operacionais de maior densidade, a interface troca a grade por cartões no celular: a agenda administrativa do laboratório é agrupada por dia e horário. Nos três relatórios, o celular usa um seletor de dia e exibe somente os cartões do dia escolhido — planejamentos, aulas/ACs do docente ou ocupações do ambiente.
+
+Na agenda administrativa e na solicitação de laboratório, o período semanal fica visível junto aos controles de semana anterior, semana atual e próxima semana. No celular, os dias da semana são um seletor horizontal; somente os horários e agendamentos do dia escolhido são carregados na tela. A solicitação mostra os estados **Disponível**, **Ocupado**, **Em análise** e **Intervalo** em cartões explicativos, substituindo a legenda provisória baseada somente em cores.

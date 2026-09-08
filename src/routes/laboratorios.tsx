@@ -9,7 +9,7 @@ export const Route = createFileRoute("/laboratorios")({ component: LaboratoriosH
 
 const labs = [
   { slug: "informatica", nome: "Laboratório de Informática", descricao: "Computadores, projetor e recursos digitais.", icon: MonitorSmartphone },
-  { slug: "multidisciplinar", nome: "Laboratório Multidisciplinar", descricao: "Ambiente flexível para atividades de diferentes componentes.", icon: FlaskConical },
+  { slug: "multidisciplinar", nome: "LabCS - Laboratório de Conexões e Saberes", descricao: "Ambiente flexível para atividades de diferentes componentes.", icon: FlaskConical },
 ] as const;
 
 function LaboratoriosHubPage() {
@@ -24,7 +24,7 @@ function LaboratoriosHubPage() {
         const podeGerir = isAdmin || (!!laboratorio && user?.laboratorio_ids.includes(laboratorio.id));
         return <Card key={lab.slug} className="min-h-80 p-8 flex flex-col gap-6">
           <div className="h-14 w-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Icon className="h-7 w-7" /></div>
-          <div><h2 className="text-xl font-semibold">{lab.nome}</h2><p className="mt-2 text-base text-muted-foreground">{lab.descricao}</p></div>
+          <div><h2 className="text-xl font-semibold">{laboratorio?.nome ?? lab.nome}</h2><p className="mt-2 text-base text-muted-foreground">{lab.descricao}</p></div>
           <div className="mt-auto space-y-3">
             <Button asChild size="lg" className="group h-12 w-full justify-between px-4 text-base shadow-md shadow-primary/20">
               <Link to="/solicitar-laboratorio" search={{ lab: lab.slug } as never}>

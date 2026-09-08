@@ -143,7 +143,7 @@ export function ExcluirAulasMassaDialog({
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <Label>Data inicial *</Label>
               <Input type="date" value={filtros.inicio} onChange={(e) => setFiltros({ ...filtros, inicio: e.target.value })} />
@@ -157,7 +157,7 @@ export function ExcluirAulasMassaDialog({
             <FiltroSelect label="Componente" value={filtros.componente} onChange={(v) => setFiltros({ ...filtros, componente: v })}
               options={[{ value: "all", label: "Todos" }, ...componentes.map((c) => ({ value: c.id, label: c.nome }))]} />
             <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })}
-              options={[{ value: "all", label: "Todas" }, ...turmas.map((t) => ({ value: t.id, label: `${t.serie} — ${t.nome}` }))]} />
+              options={[{ value: "all", label: "Todas" }, ...turmas.map((t) => ({ value: t.id, label: `${t.serie} · ${t.nome}` }))]} />
             <FiltroSelect label="Horário" value={filtros.horario} onChange={(v) => setFiltros({ ...filtros, horario: v })}
               options={[{ value: "all", label: "Todos" }, ...horarios.map((h) => ({ value: h.id, label: h.label }))]} />
           </div>

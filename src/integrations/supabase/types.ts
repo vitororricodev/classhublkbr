@@ -28,6 +28,11 @@ export type Database = {
           usar_equipamento_som: boolean
           criado_por: string | null
           created_at: string
+          tipo_atividade: string | null
+          alunos_participantes: string | null
+          recursos_utilizados: string | null
+          habilidades: string | null
+          objeto_conhecimento: string | null
         }
         Insert: {
           id?: string
@@ -42,6 +47,11 @@ export type Database = {
           usar_equipamento_som?: boolean
           criado_por?: string | null
           created_at?: string
+          tipo_atividade?: string | null
+          alunos_participantes?: string | null
+          recursos_utilizados?: string | null
+          habilidades?: string | null
+          objeto_conhecimento?: string | null
         }
         Update: {
           id?: string
@@ -56,6 +66,11 @@ export type Database = {
           usar_equipamento_som?: boolean
           criado_por?: string | null
           created_at?: string
+          tipo_atividade?: string | null
+          alunos_participantes?: string | null
+          recursos_utilizados?: string | null
+          habilidades?: string | null
+          objeto_conhecimento?: string | null
         }
         Relationships: [
           {
@@ -105,6 +120,11 @@ export type Database = {
           decidido_em: string | null
           criado_por: string | null
           created_at: string
+          tipo_atividade: string | null
+          alunos_participantes: string | null
+          recursos_utilizados: string | null
+          habilidades: string | null
+          objeto_conhecimento: string | null
         }
         Insert: {
           id?: string
@@ -122,6 +142,11 @@ export type Database = {
           decidido_em?: string | null
           criado_por?: string | null
           created_at?: string
+          tipo_atividade?: string | null
+          alunos_participantes?: string | null
+          recursos_utilizados?: string | null
+          habilidades?: string | null
+          objeto_conhecimento?: string | null
         }
         Update: {
           id?: string
@@ -139,6 +164,11 @@ export type Database = {
           decidido_em?: string | null
           criado_por?: string | null
           created_at?: string
+          tipo_atividade?: string | null
+          alunos_participantes?: string | null
+          recursos_utilizados?: string | null
+          habilidades?: string | null
+          objeto_conhecimento?: string | null
         }
         Relationships: [
           {

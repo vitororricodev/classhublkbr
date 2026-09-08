@@ -177,7 +177,7 @@ export function AppSidebar() {
           {navigation(() => setMobileOpen(false))}
         </SheetContent>
       </Sheet>
-      <aside className="no-print hidden min-h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
+      <aside className="no-print hidden h-svh w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="border-b border-sidebar-border px-6 py-6">
           <div className="text-lg font-semibold tracking-tight">SGE</div>
           <div className="mt-0.5 text-xs opacity-70">Sistema de Gerenciamento Escolar</div>

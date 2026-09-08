@@ -57,7 +57,7 @@ function CategoriasACPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Excluído"); qc.invalidateQueries({ queryKey: ["categorias_ac"] }); },
-    onError: (e: Error) => toast.error("Não foi possível excluir — pode haver AC já lançadas com esta categoria."),
+    onError: (e: Error) => toast.error("Não foi possível excluir. Pode haver AC já lançadas com esta categoria."),
   });
 
   if (!isAdmin) {
@@ -73,7 +73,7 @@ function CategoriasACPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Categorias de AC</h1>
           <p className="text-sm text-muted-foreground">Categorias de Atividade Complementar (ex: Humanas, Exatas, Linguagens).</p>

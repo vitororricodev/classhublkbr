@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { FileDown, Plus, Pencil, Trash2 } from "lucide-react";
+import { BarChart3, CalendarDays, FileDown, FlaskConical, GraduationCap, LayoutGrid, ListFilter, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -31,20 +31,51 @@ function fmtDateTime(d: Date) {
   return d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
 
+function ReportMetric({ label, value, tone = "sky" }: { label: string; value: number | string; tone?: "sky" | "emerald" | "amber" | "violet" }) {
+  const tones = {
+    sky: "border-sky-100 bg-sky-50 text-sky-800",
+    emerald: "border-emerald-100 bg-emerald-50 text-emerald-800",
+    amber: "border-amber-100 bg-amber-50 text-amber-800",
+    violet: "border-violet-100 bg-violet-50 text-violet-800",
+  };
+  return <div className={`rounded-xl border px-3 py-2.5 ${tones[tone]}`}><p className="text-xs font-medium opacity-75">{label}</p><p className="mt-0.5 text-xl font-semibold tabular-nums">{value}</p></div>;
+}
+
+function ReportSectionIntro({ icon: Icon, eyebrow, title, description }: { icon: typeof BarChart3; eyebrow: string; title: string; description: string }) {
+  return <div className="flex gap-3 rounded-xl border bg-card p-4 shadow-sm">
+    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><Icon className="size-5" /></div>
+    <div><p className="text-xs font-semibold uppercase tracking-wide text-sky-700">{eyebrow}</p><h2 className="mt-0.5 font-semibold">{title}</h2><p className="mt-1 text-sm text-muted-foreground">{description}</p></div>
+  </div>;
+}
+
+function MobileDaySelector({ datas, value, onChange }: { datas: string[]; value: string; onChange: (value: string) => void }) {
+  if (datas.length === 0) return null;
+  return <div className="flex gap-2 overflow-x-auto px-4 pb-3 pt-4 sm:px-5">{datas.map((data) => {
+    const ativo = data === value;
+    return <Button key={data} type="button" variant={ativo ? "default" : "outline"} className="h-auto min-w-[4.75rem] shrink-0 flex-col gap-0.5 px-3 py-2" onClick={() => onChange(data)}><span className="capitalize text-xs">{new Date(data + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</span><span className="text-base leading-none">{new Date(data + "T00:00:00").getDate()}</span></Button>;
+  })}</div>;
+}
+
 function RelatoriosPage() {
   const { isAdmin } = useAuth();
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Relatórios</h1>
-        <p className="text-sm text-muted-foreground">Filtre e exporte relatórios de aulas em PDF.</p>
+      <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 via-background to-cyan-50 p-5 sm:p-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">SGE · Sistema de Gerenciamento Escolar</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Central de relatórios</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Consulte planejamentos, acompanhe as grades docentes e organize a utilização dos ambientes em um só lugar.</p>
+          </div>
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-sm"><BarChart3 className="size-6" /></div>
+        </div>
       </div>
 
       <Tabs defaultValue={isAdmin ? "geral" : "docente"}>
-        <TabsList>
-          <TabsTrigger value="geral">Relatório Geral</TabsTrigger>
-          <TabsTrigger value="docente">Grade do Docente</TabsTrigger>
-          <TabsTrigger value="laboratorio">Disponibilidade do Laboratório</TabsTrigger>
+        <TabsList className="grid h-auto w-full grid-cols-1 gap-1 rounded-xl bg-muted/70 p-1 sm:grid-cols-3">
+          <TabsTrigger value="geral" className="justify-start gap-2 rounded-lg px-3 py-2.5 sm:justify-center"><ListFilter className="size-4" />Planejamentos</TabsTrigger>
+          <TabsTrigger value="docente" className="justify-start gap-2 rounded-lg px-3 py-2.5 sm:justify-center"><GraduationCap className="size-4" />Grade docente</TabsTrigger>
+          <TabsTrigger value="laboratorio" className="justify-start gap-2 rounded-lg px-3 py-2.5 sm:justify-center"><FlaskConical className="size-4" />Ambientes</TabsTrigger>
         </TabsList>
         <TabsContent value="geral">
           <RelatorioGeral />
@@ -62,6 +93,7 @@ function RelatoriosPage() {
 
 function RelatorioGeral() {
   const { user, isAdmin } = useAuth();
+  const [diaMobile, setDiaMobile] = useState("");
   const [filtros, setFiltros] = useState(() =>
     isAdmin
       ? { inicio: firstOfMonth(), fim: todayISO(), docente: "all", componente: "all", turma: "all", status: "all" }
@@ -94,10 +126,25 @@ function RelatorioGeral() {
     if (a.data !== b.data) return a.data.localeCompare(b.data);
     return (a.horarios_padrao?.ordem ?? 0) - (b.horarios_padrao?.ordem ?? 0);
   }), [rows]);
+  const statusCounts = useMemo(() => ({
+    planejado: sorted.filter((item) => item.status === "planejado").length,
+    realizado: sorted.filter((item) => item.status === "realizado").length,
+    cancelado: sorted.filter((item) => item.status === "cancelado").length,
+  }), [sorted]);
+  const diasMobile = useMemo(() => {
+    if (!filtros.inicio || !filtros.fim || filtros.inicio > filtros.fim) return [];
+    const dias: string[] = [];
+    const cursor = new Date(filtros.inicio + "T00:00:00");
+    const fim = new Date(filtros.fim + "T00:00:00");
+    while (cursor <= fim) { dias.push(cursor.toISOString().slice(0, 10)); cursor.setDate(cursor.getDate() + 1); }
+    return dias;
+  }, [filtros.inicio, filtros.fim]);
+  useEffect(() => { if (!diasMobile.includes(diaMobile)) setDiaMobile(diasMobile[0] ?? ""); }, [diasMobile, diaMobile]);
+  const planejamentosDoDia = useMemo(() => sorted.filter((item) => item.data === diaMobile), [sorted, diaMobile]);
 
   const docenteLabel = filtros.docente === "all" ? "Todos" : docentes.find((d) => d.id === filtros.docente)?.nome ?? "—";
   const componenteLabel = filtros.componente === "all" ? "Todos" : componentes.find((d) => d.id === filtros.componente)?.nome ?? "—";
-  const turmaLabel = filtros.turma === "all" ? "Todas" : (() => { const t = turmas.find((d) => d.id === filtros.turma); return t ? `${t.serie} — ${t.nome}` : "—"; })();
+  const turmaLabel = filtros.turma === "all" ? "Todas" : (() => { const t = turmas.find((d) => d.id === filtros.turma); return t ? `${t.serie} · ${t.nome}` : "—"; })();
   const statusLabel = filtros.status === "all" ? "Todos" : filtros.status;
 
   const geradoEm = fmtDateTime(new Date());
@@ -182,7 +229,7 @@ function RelatorioGeral() {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(119, 119, 119);
-        doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+        doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
         doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
         doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
       },
@@ -193,19 +240,28 @@ function RelatorioGeral() {
 
   return (
     <div className="space-y-6 pt-4">
-      <div className="flex items-center justify-end">
+      <ReportSectionIntro icon={CalendarDays} eyebrow="Planejamento" title="Aulas planejadas" description="Acompanhe o que foi previsto, realizado ou cancelado por período, docente, turma e componente." />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-4">
+          <ReportMetric label="Registros" value={sorted.length} />
+          <ReportMetric label="Planejados" value={statusCounts.planejado} tone="amber" />
+          <ReportMetric label="Realizados" value={statusCounts.realizado} tone="emerald" />
+          <ReportMetric label="Cancelados" value={statusCounts.cancelado} tone="violet" />
+        </div>
         <Button onClick={handleExportPDF} disabled={sorted.length === 0}>
           <FileDown className="h-4 w-4 mr-2" />Exportar PDF
         </Button>
       </div>
 
-      <Card className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <Card className="border-sky-100 p-4 sm:p-5">
+        <div className="mb-4"><h3 className="font-medium">Refinar consulta</h3><p className="mt-1 text-sm text-muted-foreground">Os resultados e o PDF são atualizados conforme os filtros abaixo.</p></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={filtros.inicio} onChange={(e) => setFiltros({ ...filtros, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={filtros.fim} onChange={(e) => setFiltros({ ...filtros, fim: e.target.value })} /></div>
           {isAdmin && <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />}
           <FiltroSelect label="Componente" value={filtros.componente} onChange={(v) => setFiltros({ ...filtros, componente: v })} options={[{ value: "all", label: "Todos" }, ...componentes.map((d) => ({ value: d.id, label: d.nome }))]} />
-          <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} — ${d.nome}` }))]} />
+          <FiltroSelect label="Turma" value={filtros.turma} onChange={(v) => setFiltros({ ...filtros, turma: v })} options={[{ value: "all", label: "Todas" }, ...turmas.map((d) => ({ value: d.id, label: `${d.serie} · ${d.nome}` }))]} />
           <FiltroSelect label="Status" value={filtros.status} onChange={(v) => setFiltros({ ...filtros, status: v })} options={[
             { value: "all", label: "Todos" }, { value: "planejado", label: "Planejado" }, { value: "realizado", label: "Realizado" }, { value: "cancelado", label: "Cancelado" }
           ]} />
@@ -217,12 +273,13 @@ function RelatorioGeral() {
         )}
       </Card>
 
-      <Card className="p-4">
-        <div className="text-sm text-muted-foreground mb-3">
+      <Card className="overflow-hidden p-0">
+        <div className="border-b bg-muted/30 p-4 sm:p-5"><h3 className="font-medium">Pré-visualização</h3><div className="mt-1 text-sm text-muted-foreground">
           {isLoading ? "Carregando..." : `${sorted.length} registro(s) encontrado(s) no período de ${fmtDate(filtros.inicio)} a ${fmtDate(filtros.fim)}.`}
-        </div>
+        </div></div>
         {!isLoading && sorted.length > 0 && (
-          <div className="overflow-auto max-h-[480px] border rounded-md">
+          <>
+          <div className="hidden max-h-[480px] overflow-auto md:block">
             <table className="w-full text-sm">
               <thead className="bg-muted sticky top-0">
                 <tr>
@@ -255,7 +312,22 @@ function RelatorioGeral() {
               </div>
             )}
           </div>
+          <div className="border-t md:hidden">
+            <MobileDaySelector datas={diasMobile} value={diaMobile} onChange={setDiaMobile} />
+            <div className="space-y-3 px-4 pb-4 sm:px-5">
+            {planejamentosDoDia.slice(0, 50).map((r) => (
+              <article key={r.id} className="rounded-xl border bg-card p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{fmtDate(r.data)} · {r.horarios_padrao?.label ?? "Horário não informado"}</p><p className="mt-1 text-sm text-muted-foreground">{r.docentes?.nome ?? "Docente não informado"}</p></div><Badge variant={r.status === "realizado" ? "default" : r.status === "cancelado" ? "destructive" : "secondary"} className="capitalize">{r.status}</Badge></div>
+                <dl className="mt-4 space-y-2 text-sm"><div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Componente e turma</dt><dd className="mt-0.5">{r.componentes_curriculares?.nome ?? "—"}{r.turmas ? ` · ${r.turmas.serie} ${r.turmas.nome}` : ""}</dd></div><div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Conteúdo</dt><dd className="mt-0.5 whitespace-pre-wrap">{r.conteudo || "Não informado"}</dd></div></dl>
+              </article>
+            ))}
+            {planejamentosDoDia.length === 0 && <p className="rounded-xl border border-dashed p-5 text-center text-sm text-muted-foreground">Nenhum planejamento neste dia.</p>}
+            {planejamentosDoDia.length > 50 && <p className="pt-1 text-center text-xs text-muted-foreground">Pré-visualização de 50 de {planejamentosDoDia.length} registros deste dia. Exporte em PDF para ver todos.</p>}
+            </div>
+          </div>
+          </>
         )}
+        {!isLoading && sorted.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">Nenhum planejamento encontrado para os filtros selecionados.</div>}
       </Card>
     </div>
   );
@@ -268,6 +340,7 @@ function RelatorioDocente() {
   const [docenteId, setDocenteId] = useState<string>("");
   const [periodo, setPeriodo] = useState({ inicio: startOfWeekISO(), fim: endOfWeekISO() });
   const [formato, setFormato] = useState<FormatoRelatorio>("tabela");
+  const [diaMobile, setDiaMobile] = useState("");
 
   const { data: docentesLista = [] } = useQuery({
     queryKey: ["docentes", "ativos", "select-relatorio"],
@@ -351,6 +424,7 @@ function RelatorioDocente() {
     }
     return out;
   }, [periodo]);
+  useEffect(() => { if (!datas.includes(diaMobile)) setDiaMobile(datas[0] ?? ""); }, [datas, diaMobile]);
 
   const mapaAulas = useMemo(() => {
     const m = new Map<string, PlanejamentoFull>();
@@ -401,7 +475,7 @@ function RelatorioDocente() {
     doc.setTextColor(26, 26, 26);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text(`Grade de Aulas — ${nomeDocente}`, pageWidth / 2, 86, { align: "center" });
+    doc.text(`Grade de aulas: ${nomeDocente}`, pageWidth / 2, 86, { align: "center" });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -418,7 +492,7 @@ function RelatorioDocente() {
           if (h.eh_intervalo) return { content: "Intervalo", styles: { fillColor: [254, 226, 226], textColor: [153, 27, 27] } };
           const a = mapaAulas.get(`${dt}__${h.id}`);
           const ac = mapaAC.get(`${dt}__${h.id}`);
-          if (ac) return { content: `AC — ${ac.categorias_ac?.nome ?? "—"}`, styles: { fillColor: [226, 245, 251], textColor: [0, 108, 159], fontStyle: "bold" } };
+          if (ac) return { content: `AC: ${ac.categorias_ac?.nome ?? "—"}`, styles: { fillColor: [226, 245, 251], textColor: [0, 108, 159], fontStyle: "bold" } };
           if (!a) return "—";
           return `${a.componentes_curriculares?.nome ?? "—"}\n${a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}`;
         }),
@@ -440,7 +514,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -472,7 +546,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -484,10 +558,11 @@ function RelatorioDocente() {
 
   return (
     <div className="space-y-6 pt-4">
+      <ReportSectionIntro icon={LayoutGrid} eyebrow="Docentes" title="Grade e atividades complementares" description="Consulte a rotina de cada docente em formato de grade ou lista, com aulas e atividades complementares no mesmo relatório." />
       <div className="flex items-center justify-between flex-wrap gap-2">
         <p className="text-sm text-muted-foreground max-w-xl">
           {isAdmin
-            ? "Escolha um docente e um período para gerar a grade de aulas dele — útil para imprimir ou entregar a professores com menos familiaridade com o sistema."
+            ? "Selecione um docente e um período para preparar a consulta ou exportar a grade."
             : "Sua grade de aulas no período selecionado."}
         </p>
         <div className="flex gap-2">
@@ -502,8 +577,9 @@ function RelatorioDocente() {
         </div>
       </div>
 
-      <Card className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <Card className="border-sky-100 p-4 sm:p-5">
+        <div className="mb-4"><h3 className="font-medium">Configurar relatório</h3><p className="mt-1 text-sm text-muted-foreground">Defina o docente, o período e o formato de visualização.</p></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {isAdmin && (
             <div className="space-y-1 col-span-2 md:col-span-1">
               <Label>Docente</Label>
@@ -539,13 +615,15 @@ function RelatorioDocente() {
       </Card>
 
       {scopedDocenteId && (
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-3">
-            {(isLoading || isLoadingAC) ? "Carregando..." : `${nomeDocente ?? "Docente"} · período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${aulas.length} aula(s) · ${acs.length} AC(s).`}
+        <Card className="overflow-hidden p-0">
+          <div className="border-b bg-muted/30 p-4 sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium">{nomeDocente ?? "Docente"}</h3><div className="mt-1 text-sm text-muted-foreground">
+              {(isLoading || isLoadingAC) ? "Carregando..." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)}.`}
+            </div></div><div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-3"><ReportMetric label="Aulas" value={aulas.length} /><ReportMetric label="ACs" value={acs.length} tone="violet" /><ReportMetric label="Dias letivos" value={datas.length} tone="emerald" /></div></div>
           </div>
 
           {!isLoading && !isLoadingAC && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
-            <div className="overflow-auto max-h-[560px] border rounded-md">
+            <div className="hidden max-h-[560px] overflow-auto rounded-md border md:block">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
@@ -577,7 +655,7 @@ function RelatorioDocente() {
                           <td key={dt} className="p-2 text-center align-top">
                             {ac ? (
                               <div className="rounded-md border px-2 py-1 space-y-0.5 bg-violet-50 border-violet-200">
-                                <div className="text-xs font-medium text-violet-800">AC — {ac.categorias_ac?.nome ?? "—"}</div>
+                                <div className="text-xs font-medium text-violet-800">AC: {ac.categorias_ac?.nome ?? "—"}</div>
                                 {ac.observacao && <div className="text-[11px] text-violet-700/80">{ac.observacao}</div>}
                                 {isAdmin && (
                                   <div className="flex gap-1 justify-center pt-1">
@@ -605,7 +683,7 @@ function RelatorioDocente() {
           )}
 
           {!isLoading && !isLoadingAC && formato === "lista" && (
-            <div className="overflow-auto max-h-[480px] border rounded-md">
+            <div className="hidden max-h-[480px] overflow-auto rounded-md border md:block">
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
@@ -646,6 +724,19 @@ function RelatorioDocente() {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+          {!isLoading && !isLoadingAC && datas.length > 0 && horarios.length > 0 && (
+            <div className="border-t md:hidden">
+              <MobileDaySelector datas={datas} value={diaMobile} onChange={setDiaMobile} />
+              <div className="space-y-3 px-4 pb-4 sm:px-5">
+                {horarios.map((h) => {
+                  if (h.eh_intervalo) return <div key={h.id} className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span className="font-semibold">{h.label}</span><span className="ml-2">Intervalo</span></div>;
+                  const aula = mapaAulas.get(`${diaMobile}__${h.id}`);
+                  const ac = mapaAC.get(`${diaMobile}__${h.id}`);
+                  return <article key={h.id} className="rounded-xl border bg-card p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{h.label}</p><p className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}</p></div>{ac ? <Badge className="bg-violet-100 text-violet-800 hover:bg-violet-100">AC</Badge> : aula ? <Badge variant="secondary">Aula</Badge> : <Badge variant="outline">Livre</Badge>}</div>{ac ? <div className="mt-3 rounded-lg bg-violet-50 p-3 text-sm"><p className="font-medium text-violet-900">{ac.categorias_ac?.nome ?? "Atividade complementar"}</p>{ac.observacao && <p className="mt-1 text-violet-800">{ac.observacao}</p>}{isAdmin && <div className="mt-3 flex gap-2"><Button size="sm" variant="outline" onClick={() => { setAcEditing(ac); setAcFormOpen(true); }}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir esta AC?")) delAC.mutate(ac.id); }}><Trash2 className="mr-1 h-3.5 w-3.5" />Excluir</Button></div>}</div> : aula ? <div className="mt-3"><p className="font-medium">{aula.componentes_curriculares?.nome ?? "Componente não informado"}</p><p className="mt-1 text-sm text-muted-foreground">{aula.turmas ? `${aula.turmas.serie} ${aula.turmas.nome}` : "Turma não informada"}</p><p className="mt-2 text-sm">{aula.conteudo || "Conteúdo não informado"}</p></div> : <p className="mt-3 text-sm text-muted-foreground">Nenhuma aula ou AC neste horário.</p>}</article>;
+                })}
+              </div>
             </div>
           )}
         </Card>
@@ -718,7 +809,7 @@ function LancarACDialog({
           <DialogTitle>{editing ? "Editar AC" : "Lançar Atividade Complementar"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-2"><Label>Data</Label><Input type="date" value={data} onChange={(e) => setData(e.target.value)} /></div>
             <div className="space-y-2">
               <Label>Horário</Label>
@@ -733,7 +824,7 @@ function LancarACDialog({
             <Select value={categoriaId} onValueChange={setCategoriaId}>
               <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
               <SelectContent>
-                {categorias.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Nenhuma categoria cadastrada — crie em "Categorias de AC".</div>}
+                {categorias.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">Nenhuma categoria cadastrada. Crie uma em "Categorias de AC".</div>}
                 {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -755,12 +846,24 @@ function LancarACDialog({
 // Dias da semana em que a escola funciona (1=Segunda ... 6=Sábado). Domingo (0) é sempre ignorado.
 const DIAS_LETIVOS = [1, 2, 3, 4, 5, 6];
 
-type Ocupacao = { turma: Turma | null; docente: Docente | null; componente: Componente | null };
+type Ocupacao = { turma: Turma | null; docente: Docente | null; componente: Componente | null; tipo_atividade: string | null; alunos_participantes: string | null; recursos_utilizados: string | null; habilidades: string | null; objeto_conhecimento: string | null };
 
 function RelatorioLaboratorio() {
   const { user } = useAuth();
   const [periodo, setPeriodo] = useState({ inicio: startOfWeekISO(), fim: endOfWeekISO() });
   const [formato, setFormato] = useState<FormatoRelatorio>("tabela");
+  const [laboratorioId, setLaboratorioId] = useState("");
+  const [diaMobile, setDiaMobile] = useState("");
+  // Os tipos locais ainda não contêm laboratorios; serão regenerados após a migration.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { data: laboratorios = [] } = useQuery({ queryKey: ["laboratorios", "relatorio"], queryFn: async () => {
+    const { data, error } = await sb.from("laboratorios").select("id, nome, slug").eq("ativo", true).order("nome");
+    if (error) throw error;
+    return (data ?? []) as { id: string; nome: string; slug: string }[];
+  }});
+  useEffect(() => { if (!laboratorioId && laboratorios[0]) setLaboratorioId(laboratorios[0].id); }, [laboratorioId, laboratorios]);
+  const laboratorio = laboratorios.find((item) => item.id === laboratorioId);
 
   const { data: horarios = [] } = useQuery({
     queryKey: ["horarios", "ativos", "ordenados"],
@@ -772,16 +875,18 @@ function RelatorioLaboratorio() {
   });
 
   const { data: ocupacoes = [], isLoading } = useQuery({
-    queryKey: ["laboratorio_agendamentos", "disponibilidade", periodo],
+    queryKey: ["laboratorio_agendamentos", "disponibilidade", laboratorioId, periodo],
+    enabled: !!laboratorioId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from("laboratorio_agendamentos")
-        .select(`data, horario_id, turmas:turma_id(*), docentes:docente_id(*), componentes_curriculares:componente_id(*)`)
+        .select(`data, horario_id, tipo_atividade, alunos_participantes, recursos_utilizados, habilidades, objeto_conhecimento, turmas:turma_id(*), docentes:docente_id(*), componentes_curriculares:componente_id(*)`)
         .gte("data", periodo.inicio)
         .lte("data", periodo.fim)
+        .eq("laboratorio_id", laboratorioId)
         .neq("status", "cancelado");
       if (error) throw error;
-      return (data ?? []) as unknown as { data: string; horario_id: string; turmas: Turma | null; docentes: Docente | null; componentes_curriculares: Componente | null }[];
+      return (data ?? []) as unknown as ({ data: string; horario_id: string; turmas: Turma | null; docentes: Docente | null; componentes_curriculares: Componente | null } & Omit<Ocupacao, "turma" | "docente" | "componente">)[];
     },
   });
 
@@ -798,17 +903,22 @@ function RelatorioLaboratorio() {
     }
     return out;
   }, [periodo]);
+  useEffect(() => { if (!datas.includes(diaMobile)) setDiaMobile(datas[0] ?? ""); }, [datas, diaMobile]);
 
   const mapaOcupacao = useMemo(() => {
     const m = new Map<string, Ocupacao[]>();
     for (const o of ocupacoes) {
       const key = `${o.data}__${o.horario_id}`;
       const arr = m.get(key) ?? [];
-      arr.push({ turma: o.turmas, docente: o.docentes, componente: o.componentes_curriculares });
+      arr.push({ turma: o.turmas, docente: o.docentes, componente: o.componentes_curriculares, tipo_atividade: o.tipo_atividade, alunos_participantes: o.alunos_participantes, recursos_utilizados: o.recursos_utilizados, habilidades: o.habilidades, objeto_conhecimento: o.objeto_conhecimento });
       m.set(key, arr);
     }
     return m;
   }, [ocupacoes]);
+  const horariosDisponiveis = horarios.filter((horario) => !horario.eh_intervalo);
+  const totalSlots = datas.length * horariosDisponiveis.length;
+  const slotsOcupados = useMemo(() => Array.from(mapaOcupacao.values()).filter((itens) => itens.length > 0).length, [mapaOcupacao]);
+  const slotsEmRevisao = useMemo(() => Array.from(mapaOcupacao.values()).filter((itens) => itens.length > 1).length, [mapaOcupacao]);
 
   const geradoEm = fmtDateTime(new Date());
 
@@ -846,7 +956,7 @@ function RelatorioLaboratorio() {
     doc.setTextColor(26, 26, 26);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text("Disponibilidade do Laboratório de Informática", pageWidth / 2, 86, { align: "center" });
+    doc.text(`Disponibilidade: ${laboratorio?.nome ?? "Laboratório"}`, pageWidth / 2, 86, { align: "center" });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -887,7 +997,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -911,7 +1021,14 @@ function RelatorioLaboratorio() {
             `${new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" })} ${fmtDate(dt)}`,
             `${h.label}${h.hora_inicio ? ` (${h.hora_inicio.slice(0, 5)}–${h.hora_fim?.slice(0, 5) ?? ""})` : ""}`,
             { content: statusTxt, styles: { textColor: ocs.length > 1 ? [180, 130, 0] : ocs.length === 1 ? [185, 28, 28] : [21, 128, 61], fontStyle: "bold" } },
-            ocs.length > 0 ? ocs.map((oc) => `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}`).join(" | ") : "—",
+            ocs.length > 0 ? ocs.map((oc) => [
+              `${oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "—"} · ${oc.docente?.nome ?? "—"} · ${oc.componente?.nome ?? "—"}`,
+              oc.tipo_atividade === "oficina_pedagogica" ? "Oficina pedagógica" : oc.tipo_atividade === "aula_pratica" ? "Aula prática" : "",
+              oc.alunos_participantes ? `Participantes: ${oc.alunos_participantes}` : "",
+              oc.recursos_utilizados ? `Recursos: ${oc.recursos_utilizados}` : "",
+              oc.habilidades ? `Habilidades: ${oc.habilidades}` : "",
+              oc.objeto_conhecimento ? `Objeto: ${oc.objeto_conhecimento}` : "",
+            ].filter(Boolean).join("\n")).join("\n\n") : "—",
           ]);
         }
       }
@@ -933,30 +1050,35 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("SGE | Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
       });
     }
 
-    doc.save(`disponibilidade-laboratorio-${periodo.inicio}-a-${periodo.fim}.pdf`);
+    doc.save(`disponibilidade-${laboratorio?.slug ?? "laboratorio"}-${periodo.inicio}-a-${periodo.fim}.pdf`);
   };
 
   return (
     <div className="space-y-6 pt-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground max-w-xl">
-          Mostra, para cada horário padrão, se o laboratório está livre ou ocupado em cada data do período —
-          use para agendar o uso do laboratório com os professores.
-        </p>
+      <ReportSectionIntro icon={FlaskConical} eyebrow="Ambientes" title="Uso dos laboratórios" description="Visualize a ocupação por horário, acompanhe conflitos e exporte uma grade pronta para organização da equipe." />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-4">
+          <ReportMetric label="Horários" value={totalSlots} />
+          <ReportMetric label="Livres" value={Math.max(totalSlots - slotsOcupados, 0)} tone="emerald" />
+          <ReportMetric label="Ocupados" value={slotsOcupados} tone="amber" />
+          <ReportMetric label="A revisar" value={slotsEmRevisao} tone="violet" />
+        </div>
         <Button onClick={handleExportPDF} disabled={datas.length === 0 || horarios.length === 0}>
           <FileDown className="h-4 w-4 mr-2" />Exportar PDF
         </Button>
       </div>
 
-      <Card className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <Card className="border-sky-100 p-4 sm:p-5">
+        <div className="mb-4"><h3 className="font-medium">Consultar agenda</h3><p className="mt-1 text-sm text-muted-foreground">Escolha o ambiente e o período para atualizar a visualização.</p></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-1"><Label>Laboratório</Label><Select value={laboratorioId} onValueChange={setLaboratorioId}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent>{laboratorios.map((lab) => <SelectItem key={lab.id} value={lab.id}>{lab.nome}</SelectItem>)}</SelectContent></Select></div>
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={periodo.inicio} onChange={(e) => setPeriodo({ ...periodo, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={periodo.fim} onChange={(e) => setPeriodo({ ...periodo, fim: e.target.value })} /></div>
           <div className="space-y-1">
@@ -972,12 +1094,12 @@ function RelatorioLaboratorio() {
         </div>
       </Card>
 
-      <Card className="p-4">
-        <div className="text-sm text-muted-foreground mb-3">
+      <Card className="overflow-hidden p-0">
+        <div className="border-b bg-muted/30 p-4 sm:p-5"><h3 className="font-medium">Agenda do ambiente</h3><div className="mt-1 text-sm text-muted-foreground">
           {isLoading ? "Carregando..." : datas.length === 0 ? "Selecione um período válido." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${datas.length} dia(s) letivo(s) · ${horarios.length} horário(s).`}
-        </div>
+        </div></div>
         {!isLoading && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
-            <div className="overflow-auto max-h-[560px] border rounded-md">
+            <div className="hidden max-h-[560px] overflow-auto rounded-md border md:block">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
@@ -1035,7 +1157,7 @@ function RelatorioLaboratorio() {
           )}
 
           {!isLoading && formato === "lista" && (
-            <div className="overflow-auto max-h-[480px] border rounded-md">
+            <div className="hidden max-h-[480px] overflow-auto rounded-md border md:block">
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
@@ -1081,6 +1203,18 @@ function RelatorioLaboratorio() {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+          {!isLoading && datas.length > 0 && horarios.length > 0 && (
+            <div className="border-t md:hidden">
+              <MobileDaySelector datas={datas} value={diaMobile} onChange={setDiaMobile} />
+              <div className="space-y-3 px-4 pb-4 sm:px-5">
+                {horarios.map((h) => {
+                  if (h.eh_intervalo) return <div key={h.id} className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span className="font-semibold">{h.label}</span><span className="ml-2">Intervalo</span></div>;
+                  const ocupacoesHorario = mapaOcupacao.get(`${diaMobile}__${h.id}`) ?? [];
+                  return <article key={h.id} className="rounded-xl border bg-card p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{h.label}</p><p className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}</p></div>{ocupacoesHorario.length === 0 ? <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Livre</Badge> : <Badge variant={ocupacoesHorario.length > 1 ? "outline" : "destructive"} className={ocupacoesHorario.length > 1 ? "border-amber-400 bg-amber-50 text-amber-800" : ""}>{ocupacoesHorario.length > 1 ? `Revisar (${ocupacoesHorario.length})` : "Ocupado"}</Badge>}</div>{ocupacoesHorario.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">Sem agendamento neste horário.</p> : <div className="mt-3 space-y-3">{ocupacoesHorario.map((oc, index) => <div key={index} className="rounded-lg bg-muted/50 p-3 text-sm"><p className="font-medium">{oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "Turma não informada"}</p><p className="mt-1 text-muted-foreground">{[oc.docente?.nome, oc.componente?.nome].filter(Boolean).join(" · ") || "Sem docente ou componente"}</p>{oc.tipo_atividade && <p className="mt-2 text-xs font-medium text-primary">{oc.tipo_atividade === "oficina_pedagogica" ? "Oficina pedagógica" : "Aula prática"}</p>}{oc.recursos_utilizados && <p className="mt-2 text-xs text-muted-foreground">Recursos: {oc.recursos_utilizados}</p>}</div>)}</div>}</article>;
+                })}
+              </div>
             </div>
           )}
         </Card>
