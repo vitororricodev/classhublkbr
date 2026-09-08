@@ -20,6 +20,8 @@ Documentação técnica e funcional do SGE (Sistema de Gerenciamento Escolar), p
 - [[10-Qualidade-e-dividas-tecnicas]] — inconsistências verificadas e recomendações.
 - [[11-Historico-de-migrations]] — evolução do esquema e ordem dos scripts.
 - [[12-Expansao-laboratorio-multidisciplinar]] — plano técnico para o segundo laboratório.
+- [[13-Especificacao-LabCS]] — regras pedagógicas, dados e fluxo do LabCS.
+- [[14-Reformulacao-dos-relatorios]] — padrão atual da Central de Relatórios e suas exportações.
 
 ## Fonte de verdade
 

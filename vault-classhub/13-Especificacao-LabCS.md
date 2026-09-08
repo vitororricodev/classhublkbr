@@ -1,6 +1,6 @@
 ---
 tags: [classhub, laboratorio, labcs, planejamento]
-status: implementado-localmente-pendente-migration
+status: implementado
 created: 2026-09-02
 ---
 
@@ -109,4 +109,4 @@ O relatório geral, a grade do docente e as atividades complementares não serã
 - Relatório de laboratório agora seleciona o ambiente antes da consulta e usa seu nome no PDF; a lista exportada inclui os dados do LabCS.
 - Hub de laboratórios passou a usar o nome cadastrado no banco, com fallback para o nome oficial do LabCS.
 - Formulários extensos do LabCS usam altura limitada à viewport, rolagem interna e rodapé fixo para manter as ações acessíveis em telas menores.
-- A aplicação da migration remota e a regeneração oficial dos tipos dependem da CLI/credenciais do Supabase, indisponíveis neste ambiente.
+- Migration aplicada manualmente no Supabase em 02/09/2026, com retorno de sucesso no SQL Editor.

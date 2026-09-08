@@ -14,7 +14,7 @@ tags: [classhub, rotas, ui]
 | `/laboratorio` | Laboratório | Admin | Agenda independente e CRUD de uso do laboratório. |
 | `/solicitar-laboratorio` | Solicitar laboratório | Autenticado | Docente registra solicitação e acompanha as próprias solicitações. |
 | `/aprovacoes-laboratorio` | Aprovações | Admin | Aprova/rejeita solicitações; aprovar cria agendamento. |
-| `/relatorios` | Relatórios | Autenticado | Relatório geral, por docente/AC e de laboratório, com impressão. |
+| `/relatorios` | Central de relatórios | Autenticado | Consulta de planejamentos, grade docente com ACs e uso dos laboratórios, com filtros, indicadores e exportação em PDF. |
 | `/docentes` | Docentes | Autenticado | CRUD e ativação. |
 | `/componentes` | Componentes | Autenticado | CRUD, ativação e marcação de uso do laboratório. |
 | `/turmas` | Turmas | Autenticado | CRUD e ativação. |

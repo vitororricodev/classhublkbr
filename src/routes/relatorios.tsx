@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { FileDown, Plus, Pencil, Trash2 } from "lucide-react";
+import { BarChart3, CalendarDays, FileDown, FlaskConical, GraduationCap, LayoutGrid, ListFilter, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -31,20 +31,43 @@ function fmtDateTime(d: Date) {
   return d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
 
+function ReportMetric({ label, value, tone = "sky" }: { label: string; value: number | string; tone?: "sky" | "emerald" | "amber" | "violet" }) {
+  const tones = {
+    sky: "border-sky-100 bg-sky-50 text-sky-800",
+    emerald: "border-emerald-100 bg-emerald-50 text-emerald-800",
+    amber: "border-amber-100 bg-amber-50 text-amber-800",
+    violet: "border-violet-100 bg-violet-50 text-violet-800",
+  };
+  return <div className={`rounded-xl border px-3 py-2.5 ${tones[tone]}`}><p className="text-xs font-medium opacity-75">{label}</p><p className="mt-0.5 text-xl font-semibold tabular-nums">{value}</p></div>;
+}
+
+function ReportSectionIntro({ icon: Icon, eyebrow, title, description }: { icon: typeof BarChart3; eyebrow: string; title: string; description: string }) {
+  return <div className="flex gap-3 rounded-xl border bg-card p-4 shadow-sm">
+    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><Icon className="size-5" /></div>
+    <div><p className="text-xs font-semibold uppercase tracking-wide text-sky-700">{eyebrow}</p><h2 className="mt-0.5 font-semibold">{title}</h2><p className="mt-1 text-sm text-muted-foreground">{description}</p></div>
+  </div>;
+}
+
 function RelatoriosPage() {
   const { isAdmin } = useAuth();
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Relatórios</h1>
-        <p className="text-sm text-muted-foreground">Filtre e exporte relatórios de aulas em PDF.</p>
+      <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 via-background to-cyan-50 p-5 sm:p-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">ClassHub · Gestão escolar</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Central de relatórios</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Consulte planejamentos, acompanhe as grades docentes e organize a utilização dos ambientes em um só lugar.</p>
+          </div>
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-sm"><BarChart3 className="size-6" /></div>
+        </div>
       </div>
 
       <Tabs defaultValue={isAdmin ? "geral" : "docente"}>
-        <TabsList>
-          <TabsTrigger value="geral">Relatório Geral</TabsTrigger>
-          <TabsTrigger value="docente">Grade do Docente</TabsTrigger>
-          <TabsTrigger value="laboratorio">Disponibilidade do Laboratório</TabsTrigger>
+        <TabsList className="grid h-auto w-full grid-cols-1 gap-1 rounded-xl bg-muted/70 p-1 sm:grid-cols-3">
+          <TabsTrigger value="geral" className="justify-start gap-2 rounded-lg px-3 py-2.5 sm:justify-center"><ListFilter className="size-4" />Planejamentos</TabsTrigger>
+          <TabsTrigger value="docente" className="justify-start gap-2 rounded-lg px-3 py-2.5 sm:justify-center"><GraduationCap className="size-4" />Grade docente</TabsTrigger>
+          <TabsTrigger value="laboratorio" className="justify-start gap-2 rounded-lg px-3 py-2.5 sm:justify-center"><FlaskConical className="size-4" />Ambientes</TabsTrigger>
         </TabsList>
         <TabsContent value="geral">
           <RelatorioGeral />
@@ -94,6 +117,11 @@ function RelatorioGeral() {
     if (a.data !== b.data) return a.data.localeCompare(b.data);
     return (a.horarios_padrao?.ordem ?? 0) - (b.horarios_padrao?.ordem ?? 0);
   }), [rows]);
+  const statusCounts = useMemo(() => ({
+    planejado: sorted.filter((item) => item.status === "planejado").length,
+    realizado: sorted.filter((item) => item.status === "realizado").length,
+    cancelado: sorted.filter((item) => item.status === "cancelado").length,
+  }), [sorted]);
 
   const docenteLabel = filtros.docente === "all" ? "Todos" : docentes.find((d) => d.id === filtros.docente)?.nome ?? "—";
   const componenteLabel = filtros.componente === "all" ? "Todos" : componentes.find((d) => d.id === filtros.componente)?.nome ?? "—";
@@ -114,15 +142,15 @@ function RelatorioGeral() {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("S", marginX + 14, 48, { align: "center" });
+    doc.text("C", marginX + 14, 48, { align: "center" });
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("SGE", marginX + 38, 44);
+    doc.text("ClassHub", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
+    doc.text("Gestão escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -182,7 +210,7 @@ function RelatorioGeral() {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(119, 119, 119);
-        doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+        doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
         doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
         doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
       },
@@ -193,14 +221,23 @@ function RelatorioGeral() {
 
   return (
     <div className="space-y-6 pt-4">
-      <div className="flex items-center justify-end">
+      <ReportSectionIntro icon={CalendarDays} eyebrow="Planejamento" title="Aulas planejadas" description="Acompanhe o que foi previsto, realizado ou cancelado por período, docente, turma e componente." />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <ReportMetric label="Registros" value={sorted.length} />
+          <ReportMetric label="Planejados" value={statusCounts.planejado} tone="amber" />
+          <ReportMetric label="Realizados" value={statusCounts.realizado} tone="emerald" />
+          <ReportMetric label="Cancelados" value={statusCounts.cancelado} tone="violet" />
+        </div>
         <Button onClick={handleExportPDF} disabled={sorted.length === 0}>
           <FileDown className="h-4 w-4 mr-2" />Exportar PDF
         </Button>
       </div>
 
-      <Card className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <Card className="border-sky-100 p-4 sm:p-5">
+        <div className="mb-4"><h3 className="font-medium">Refinar consulta</h3><p className="mt-1 text-sm text-muted-foreground">Os resultados e o PDF são atualizados conforme os filtros abaixo.</p></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={filtros.inicio} onChange={(e) => setFiltros({ ...filtros, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={filtros.fim} onChange={(e) => setFiltros({ ...filtros, fim: e.target.value })} /></div>
           {isAdmin && <FiltroSelect label="Docente" value={filtros.docente} onChange={(v) => setFiltros({ ...filtros, docente: v })} options={[{ value: "all", label: "Todos" }, ...docentes.map((d) => ({ value: d.id, label: d.nome }))]} />}
@@ -217,12 +254,12 @@ function RelatorioGeral() {
         )}
       </Card>
 
-      <Card className="p-4">
-        <div className="text-sm text-muted-foreground mb-3">
+      <Card className="overflow-hidden p-0">
+        <div className="border-b bg-muted/30 p-4 sm:p-5"><h3 className="font-medium">Pré-visualização</h3><div className="mt-1 text-sm text-muted-foreground">
           {isLoading ? "Carregando..." : `${sorted.length} registro(s) encontrado(s) no período de ${fmtDate(filtros.inicio)} a ${fmtDate(filtros.fim)}.`}
-        </div>
+        </div></div>
         {!isLoading && sorted.length > 0 && (
-          <div className="overflow-auto max-h-[480px] border rounded-md">
+          <div className="max-h-[480px] overflow-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted sticky top-0">
                 <tr>
@@ -256,6 +293,7 @@ function RelatorioGeral() {
             )}
           </div>
         )}
+        {!isLoading && sorted.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">Nenhum planejamento encontrado para os filtros selecionados.</div>}
       </Card>
     </div>
   );
@@ -378,15 +416,15 @@ function RelatorioDocente() {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("S", marginX + 14, 48, { align: "center" });
+    doc.text("C", marginX + 14, 48, { align: "center" });
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("SGE", marginX + 38, 44);
+    doc.text("ClassHub", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
+    doc.text("Gestão escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -440,7 +478,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -472,7 +510,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -484,10 +522,11 @@ function RelatorioDocente() {
 
   return (
     <div className="space-y-6 pt-4">
+      <ReportSectionIntro icon={LayoutGrid} eyebrow="Docentes" title="Grade e atividades complementares" description="Consulte a rotina de cada docente em formato de grade ou lista, com aulas e atividades complementares no mesmo relatório." />
       <div className="flex items-center justify-between flex-wrap gap-2">
         <p className="text-sm text-muted-foreground max-w-xl">
           {isAdmin
-            ? "Escolha um docente e um período para gerar a grade de aulas dele — útil para imprimir ou entregar a professores com menos familiaridade com o sistema."
+            ? "Selecione um docente e um período para preparar a consulta ou exportar a grade."
             : "Sua grade de aulas no período selecionado."}
         </p>
         <div className="flex gap-2">
@@ -502,8 +541,9 @@ function RelatorioDocente() {
         </div>
       </div>
 
-      <Card className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <Card className="border-sky-100 p-4 sm:p-5">
+        <div className="mb-4"><h3 className="font-medium">Configurar relatório</h3><p className="mt-1 text-sm text-muted-foreground">Defina o docente, o período e o formato de visualização.</p></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {isAdmin && (
             <div className="space-y-1 col-span-2 md:col-span-1">
               <Label>Docente</Label>
@@ -539,9 +579,11 @@ function RelatorioDocente() {
       </Card>
 
       {scopedDocenteId && (
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-3">
-            {(isLoading || isLoadingAC) ? "Carregando..." : `${nomeDocente ?? "Docente"} · período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${aulas.length} aula(s) · ${acs.length} AC(s).`}
+        <Card className="overflow-hidden p-0">
+          <div className="border-b bg-muted/30 p-4 sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium">{nomeDocente ?? "Docente"}</h3><div className="mt-1 text-sm text-muted-foreground">
+              {(isLoading || isLoadingAC) ? "Carregando..." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)}.`}
+            </div></div><div className="grid grid-cols-2 gap-2 sm:grid-cols-3"><ReportMetric label="Aulas" value={aulas.length} /><ReportMetric label="ACs" value={acs.length} tone="violet" /><ReportMetric label="Dias letivos" value={datas.length} tone="emerald" /></div></div>
           </div>
 
           {!isLoading && !isLoadingAC && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
@@ -822,6 +864,10 @@ function RelatorioLaboratorio() {
     }
     return m;
   }, [ocupacoes]);
+  const horariosDisponiveis = horarios.filter((horario) => !horario.eh_intervalo);
+  const totalSlots = datas.length * horariosDisponiveis.length;
+  const slotsOcupados = useMemo(() => Array.from(mapaOcupacao.values()).filter((itens) => itens.length > 0).length, [mapaOcupacao]);
+  const slotsEmRevisao = useMemo(() => Array.from(mapaOcupacao.values()).filter((itens) => itens.length > 1).length, [mapaOcupacao]);
 
   const geradoEm = fmtDateTime(new Date());
 
@@ -836,15 +882,15 @@ function RelatorioLaboratorio() {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("S", marginX + 14, 48, { align: "center" });
+    doc.text("C", marginX + 14, 48, { align: "center" });
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("SGE", marginX + 38, 44);
+    doc.text("ClassHub", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
+    doc.text("Gestão escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -900,7 +946,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -953,7 +999,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
+          doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -965,18 +1011,22 @@ function RelatorioLaboratorio() {
 
   return (
     <div className="space-y-6 pt-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground max-w-xl">
-          Mostra, para cada horário padrão, se o laboratório selecionado está livre ou ocupado em cada data do período —
-          use para agendar o uso do laboratório com os professores.
-        </p>
+      <ReportSectionIntro icon={FlaskConical} eyebrow="Ambientes" title="Uso dos laboratórios" description="Visualize a ocupação por horário, acompanhe conflitos e exporte uma grade pronta para organização da equipe." />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <ReportMetric label="Horários" value={totalSlots} />
+          <ReportMetric label="Livres" value={Math.max(totalSlots - slotsOcupados, 0)} tone="emerald" />
+          <ReportMetric label="Ocupados" value={slotsOcupados} tone="amber" />
+          <ReportMetric label="A revisar" value={slotsEmRevisao} tone="violet" />
+        </div>
         <Button onClick={handleExportPDF} disabled={datas.length === 0 || horarios.length === 0}>
           <FileDown className="h-4 w-4 mr-2" />Exportar PDF
         </Button>
       </div>
 
-      <Card className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <Card className="border-sky-100 p-4 sm:p-5">
+        <div className="mb-4"><h3 className="font-medium">Consultar agenda</h3><p className="mt-1 text-sm text-muted-foreground">Escolha o ambiente e o período para atualizar a visualização.</p></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1"><Label>Laboratório</Label><Select value={laboratorioId} onValueChange={setLaboratorioId}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent>{laboratorios.map((lab) => <SelectItem key={lab.id} value={lab.id}>{lab.nome}</SelectItem>)}</SelectContent></Select></div>
           <div className="space-y-1"><Label>Data inicial</Label><Input type="date" value={periodo.inicio} onChange={(e) => setPeriodo({ ...periodo, inicio: e.target.value })} /></div>
           <div className="space-y-1"><Label>Data final</Label><Input type="date" value={periodo.fim} onChange={(e) => setPeriodo({ ...periodo, fim: e.target.value })} /></div>
@@ -993,10 +1043,10 @@ function RelatorioLaboratorio() {
         </div>
       </Card>
 
-      <Card className="p-4">
-        <div className="text-sm text-muted-foreground mb-3">
+      <Card className="overflow-hidden p-0">
+        <div className="border-b bg-muted/30 p-4 sm:p-5"><h3 className="font-medium">Agenda do ambiente</h3><div className="mt-1 text-sm text-muted-foreground">
           {isLoading ? "Carregando..." : datas.length === 0 ? "Selecione um período válido." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${datas.length} dia(s) letivo(s) · ${horarios.length} horário(s).`}
-        </div>
+        </div></div>
         {!isLoading && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
             <div className="overflow-auto max-h-[560px] border rounded-md">
               <table className="w-full text-sm border-collapse">
