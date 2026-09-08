@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -136,7 +137,8 @@ function LaboratorioPage() {
         {horarios.length === 0 ? (
           <div className="text-sm text-muted-foreground">Cadastre horários padrão para começar.</div>
         ) : (
-          <div className="overflow-auto max-h-[620px] border rounded-md">
+          <>
+          <div className="hidden max-h-[620px] overflow-auto rounded-md border md:block">
             <table className="w-full text-sm border-collapse">
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
@@ -202,6 +204,38 @@ function LaboratorioPage() {
               </tbody>
             </table>
           </div>
+          <div className="space-y-5 md:hidden">
+            {datas.map((dt) => (
+              <section key={dt} className="overflow-hidden rounded-xl border bg-card">
+                <div className="border-b bg-muted/50 px-4 py-3">
+                  <p className="text-sm font-semibold capitalize">{new Date(dt + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long" })}</p>
+                  <p className="text-xs text-muted-foreground">{fmtDate(dt)}</p>
+                </div>
+                <div className="divide-y">
+                  {horarios.map((h) => {
+                    if (h.eh_intervalo) return <div key={h.id} className="bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{h.label}<span className="ml-2 text-xs font-normal">Intervalo</span></div>;
+                    const lista = mapa.get(`${dt}__${h.id}`) ?? [];
+                    return (
+                      <div key={h.id} className="space-y-3 p-4">
+                        <div className="flex items-start justify-between gap-3"><div><p className="font-medium">{h.label}</p><p className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}</p></div>{lista.length > 1 && <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800">Revisar: {lista.length}</Badge>}</div>
+                        {lista.map((a) => (
+                          <div key={a.id} className="rounded-lg border p-3" style={{ borderLeft: `4px solid ${a.docentes?.cor_identificadora || "#007BB8"}` }}>
+                            <p className="font-medium text-sm">{a.turmas ? `${a.turmas.serie} ${a.turmas.nome}` : "—"}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">{[a.docentes?.nome, a.componentes_curriculares?.nome].filter(Boolean).join(" · ") || "Sem docente ou componente"}</p>
+                            {a.tipo_atividade && <p className="mt-2 text-xs font-medium text-primary">{a.tipo_atividade === "oficina_pedagogica" ? "Oficina pedagógica" : "Aula prática"}</p>}
+                            {a.observacao && <p className="mt-2 text-xs italic text-muted-foreground">{a.observacao}</p>}
+                            <div className="mt-3 flex gap-2"><Button size="sm" variant="outline" onClick={() => abrirEdicao(a)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><ExcluirBotao id={a.id} /></div>
+                          </div>
+                        ))}
+                        <Button size="sm" variant={lista.length === 0 ? "outline" : "ghost"} className="w-full" onClick={() => abrirNova(dt, h.id)}><Plus className="mr-1 h-4 w-4" />{lista.length === 0 ? "Agendar neste horário" : "Adicionar outro"}</Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
+          </>
         )}
       </Card>
 

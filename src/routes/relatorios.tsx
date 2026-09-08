@@ -259,7 +259,8 @@ function RelatorioGeral() {
           {isLoading ? "Carregando..." : `${sorted.length} registro(s) encontrado(s) no período de ${fmtDate(filtros.inicio)} a ${fmtDate(filtros.fim)}.`}
         </div></div>
         {!isLoading && sorted.length > 0 && (
-          <div className="max-h-[480px] overflow-auto">
+          <>
+          <div className="hidden max-h-[480px] overflow-auto md:block">
             <table className="w-full text-sm">
               <thead className="bg-muted sticky top-0">
                 <tr>
@@ -292,6 +293,16 @@ function RelatorioGeral() {
               </div>
             )}
           </div>
+          <div className="space-y-3 p-4 md:hidden">
+            {sorted.slice(0, 50).map((r) => (
+              <article key={r.id} className="rounded-xl border bg-card p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{fmtDate(r.data)} · {r.horarios_padrao?.label ?? "Horário não informado"}</p><p className="mt-1 text-sm text-muted-foreground">{r.docentes?.nome ?? "Docente não informado"}</p></div><Badge variant={r.status === "realizado" ? "default" : r.status === "cancelado" ? "destructive" : "secondary"} className="capitalize">{r.status}</Badge></div>
+                <dl className="mt-4 space-y-2 text-sm"><div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Componente e turma</dt><dd className="mt-0.5">{r.componentes_curriculares?.nome ?? "—"}{r.turmas ? ` · ${r.turmas.serie} ${r.turmas.nome}` : ""}</dd></div><div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Conteúdo</dt><dd className="mt-0.5 whitespace-pre-wrap">{r.conteudo || "Não informado"}</dd></div></dl>
+              </article>
+            ))}
+            {sorted.length > 50 && <p className="pt-1 text-center text-xs text-muted-foreground">Pré-visualização de 50 de {sorted.length} registros. Exporte em PDF para ver todos.</p>}
+          </div>
+          </>
         )}
         {!isLoading && sorted.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">Nenhum planejamento encontrado para os filtros selecionados.</div>}
       </Card>

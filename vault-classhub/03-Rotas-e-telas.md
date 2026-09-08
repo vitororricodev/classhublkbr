@@ -30,4 +30,4 @@ tags: [classhub, rotas, ui]
 
 ## Responsividade mobile-first
 
-As telas começam em uma coluna, com espaçamento reduzido e ações que podem quebrar em mais de uma linha. Grades de formulário só passam a duas ou mais colunas a partir de `sm`/`lg`. Conteúdos que precisam manter largura mínima para leitura, como o calendário mensal, usam rolagem horizontal no próprio componente; a página e o menu não são alargados por eles.
+As telas começam em uma coluna, com espaçamento reduzido e ações que podem quebrar em mais de uma linha. Grades de formulário só passam a duas ou mais colunas a partir de `sm`/`lg`. Conteúdos que precisam manter largura mínima para leitura, como o calendário mensal, usam rolagem horizontal no próprio componente; a página e o menu não são alargados por eles. Nas áreas operacionais de maior densidade, a interface troca a grade por cartões no celular: a agenda administrativa do laboratório é agrupada por dia e horário, e a pré-visualização de planejamentos mostra um cartão por registro.
