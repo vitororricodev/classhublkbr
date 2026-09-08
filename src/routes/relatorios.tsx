@@ -55,7 +55,7 @@ function RelatoriosPage() {
       <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 via-background to-cyan-50 p-5 sm:p-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">ClassHub · Gestão escolar</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">SGE · Sistema de Gerenciamento Escolar</p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Central de relatórios</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Consulte planejamentos, acompanhe as grades docentes e organize a utilização dos ambientes em um só lugar.</p>
           </div>
@@ -146,11 +146,11 @@ function RelatorioGeral() {
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("ClassHub", marginX + 38, 44);
+    doc.text("SGE", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Gestão escolar", marginX + 38, 55);
+    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -210,7 +210,7 @@ function RelatorioGeral() {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(119, 119, 119);
-        doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
+        doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
         doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
         doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
       },
@@ -420,11 +420,11 @@ function RelatorioDocente() {
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("ClassHub", marginX + 38, 44);
+    doc.text("SGE", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Gestão escolar", marginX + 38, 55);
+    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -478,7 +478,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
+          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -510,7 +510,7 @@ function RelatorioDocente() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
+          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -886,11 +886,11 @@ function RelatorioLaboratorio() {
 
     doc.setTextColor(0, 108, 159);
     doc.setFontSize(13);
-    doc.text("ClassHub", marginX + 38, 44);
+    doc.text("SGE", marginX + 38, 44);
     doc.setTextColor(85, 85, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Gestão escolar", marginX + 38, 55);
+    doc.text("Sistema de Gerenciamento Escolar", marginX + 38, 55);
 
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8.5);
@@ -946,7 +946,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
+          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },
@@ -999,7 +999,7 @@ function RelatorioLaboratorio() {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(119, 119, 119);
-          doc.text("ClassHub — Gestão escolar", marginX, pageHeight - 16);
+          doc.text("SGE — Sistema de Gerenciamento Escolar", marginX, pageHeight - 16);
           doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 16, { align: "center" });
           doc.text(`Emitido em ${geradoEm}`, pageWidth - marginX, pageHeight - 16, { align: "right" });
         },

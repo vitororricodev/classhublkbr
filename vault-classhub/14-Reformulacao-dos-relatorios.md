@@ -8,7 +8,7 @@ created: 2026-09-08
 
 ## Objetivo
 
-Substituir a apresentação herdada do padrão antigo do SGE por uma **Central de Relatórios** alinhada à interface atual do ClassHub. A reformulação mantém as consultas existentes, os controles de acesso e as exportações, mas torna a finalidade de cada relatório mais clara antes da emissão do PDF.
+Modernizar a apresentação da área de relatórios, mantendo a identidade única do **SGE — Sistema de Gerenciamento Escolar**. A reformulação preserva as consultas existentes, os controles de acesso e as exportações, mas torna a finalidade de cada relatório mais clara antes da emissão do PDF.
 
 ## O que mudou
 
@@ -18,7 +18,7 @@ Substituir a apresentação herdada do padrão antigo do SGE por uma **Central d
 | Relatório de planejamentos | Apenas filtros e tabela | Resumo de registros por status, filtros responsivos e pré-visualização com estado vazio explícito. |
 | Grade docente | Fluxo voltado à impressão | Consulta orientada por docente, período e formato, com total de aulas, ACs e dias letivos. |
 | Ambientes | Foco apenas em disponibilidade | Leitura de ocupação dos laboratórios com totais de horários livres, ocupados e que exigem revisão. |
-| PDF | Cabeçalho e rodapé SGE legados | Identidade **ClassHub · Gestão escolar**, preservando conteúdo, período, responsável e paginação. |
+| PDF | Cabeçalho e rodapé antigos | Identidade padronizada **SGE · Sistema de Gerenciamento Escolar**, preservando conteúdo, período, responsável e paginação. |
 
 ## Relatórios disponíveis
 
