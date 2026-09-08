@@ -350,14 +350,15 @@ function LaboratorioAgendamentoForm({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] max-w-2xl flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 px-5 pb-3 pt-5 sm:px-6 sm:pt-6">
           <DialogTitle>{editing ? "Editar agendamento do laboratório" : "Agendar laboratório"}</DialogTitle>
         </DialogHeader>
-        <div className="text-xs text-muted-foreground -mt-2">
+        <div className="mx-5 shrink-0 text-xs text-muted-foreground sm:mx-6">
           {fmtDate(data)} · este agendamento não depende da agenda normal de aulas — a turma e o docente podem ter outra aula no mesmo horário sem problema.
         </div>
-        <div className="space-y-4 py-2">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>Turma</Label>
             <Select value={turmaId} onValueChange={setTurmaId}>
@@ -389,14 +390,14 @@ function LaboratorioAgendamentoForm({
             <Label>O que vai ser feito</Label>
             <Textarea rows={3} value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: Assistir vídeo sobre a Segunda Guerra Mundial" />
           </div>
-          {isLabCS && <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+          {isLabCS && <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-4">
             <div className="space-y-2"><Label>Tipo de atividade</Label><Select value={tipoAtividade} onValueChange={(v) => setTipoAtividade(v as TipoAtividadeLabCS)}><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger><SelectContent><SelectItem value="aula_pratica">Aula prática</SelectItem><SelectItem value="oficina_pedagogica">Oficina pedagógica</SelectItem></SelectContent></Select></div>
             {tipoAtividade === "oficina_pedagogica" && <div className="space-y-2"><Label>Alunos participantes</Label><Textarea rows={3} value={alunosParticipantes} onChange={(e) => setAlunosParticipantes(e.target.value)} placeholder="Informe os alunos que participarão da oficina" /></div>}
             <div className="space-y-2"><Label>Recursos utilizados e quantidade</Label><Textarea rows={3} value={recursosUtilizados} onChange={(e) => setRecursosUtilizados(e.target.value)} placeholder="Ex.: 15 tablets; 2 kits de robótica" /></div>
             <div className="space-y-2"><Label>Habilidades</Label><Textarea rows={3} value={habilidades} onChange={(e) => setHabilidades(e.target.value)} placeholder="Habilidades que serão desenvolvidas" /></div>
             <div className="space-y-2"><Label>Objeto do conhecimento</Label><Textarea rows={3} value={objetoConhecimento} onChange={(e) => setObjetoConhecimento(e.target.value)} placeholder="Objeto do conhecimento trabalhado" /></div>
           </div>}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-2 border rounded-md px-3 py-2">
               <Switch checked={usarProjetor} onCheckedChange={setUsarProjetor} />
               <Label className="cursor-pointer" onClick={() => setUsarProjetor(!usarProjetor)}>Projetor</Label>
@@ -418,7 +419,8 @@ function LaboratorioAgendamentoForm({
             </Select>
           </div>
         </div>
-        <DialogFooter>
+        </div>
+        <DialogFooter className="shrink-0 border-t bg-background px-5 py-4 sm:px-6">
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button>
         </DialogFooter>
