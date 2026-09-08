@@ -20,6 +20,7 @@ Modernizar a apresentação da área de relatórios, mantendo a identidade únic
 | Ambientes | Foco apenas em disponibilidade | Leitura de ocupação dos laboratórios com totais de horários livres, ocupados e que exigem revisão. |
 | PDF | Cabeçalho e rodapé antigos | Identidade padronizada **SGE · Sistema de Gerenciamento Escolar**, preservando conteúdo, período, responsável e paginação. |
 | Celular | Tabela larga com leitura parcial | Cartões por planejamento, com data, horário, docente, status, componente, turma e conteúdo. |
+| Grades no celular | Uma semana inteira comprimida na mesma tela | Seletor de dia; exibe somente os horários, aulas/ACs ou ocupações do dia escolhido. |
 
 ## Relatórios disponíveis
 

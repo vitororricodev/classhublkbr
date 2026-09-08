@@ -48,6 +48,14 @@ function ReportSectionIntro({ icon: Icon, eyebrow, title, description }: { icon:
   </div>;
 }
 
+function MobileDaySelector({ datas, value, onChange }: { datas: string[]; value: string; onChange: (value: string) => void }) {
+  if (datas.length === 0) return null;
+  return <div className="flex gap-2 overflow-x-auto px-4 pb-3 pt-4 sm:px-5">{datas.map((data) => {
+    const ativo = data === value;
+    return <Button key={data} type="button" variant={ativo ? "default" : "outline"} className="h-auto min-w-[4.75rem] shrink-0 flex-col gap-0.5 px-3 py-2" onClick={() => onChange(data)}><span className="capitalize text-xs">{new Date(data + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</span><span className="text-base leading-none">{new Date(data + "T00:00:00").getDate()}</span></Button>;
+  })}</div>;
+}
+
 function RelatoriosPage() {
   const { isAdmin } = useAuth();
   return (
@@ -317,6 +325,7 @@ function RelatorioDocente() {
   const [docenteId, setDocenteId] = useState<string>("");
   const [periodo, setPeriodo] = useState({ inicio: startOfWeekISO(), fim: endOfWeekISO() });
   const [formato, setFormato] = useState<FormatoRelatorio>("tabela");
+  const [diaMobile, setDiaMobile] = useState("");
 
   const { data: docentesLista = [] } = useQuery({
     queryKey: ["docentes", "ativos", "select-relatorio"],
@@ -400,6 +409,7 @@ function RelatorioDocente() {
     }
     return out;
   }, [periodo]);
+  useEffect(() => { if (!datas.includes(diaMobile)) setDiaMobile(datas[0] ?? ""); }, [datas, diaMobile]);
 
   const mapaAulas = useMemo(() => {
     const m = new Map<string, PlanejamentoFull>();
@@ -598,7 +608,7 @@ function RelatorioDocente() {
           </div>
 
           {!isLoading && !isLoadingAC && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
-            <div className="overflow-auto max-h-[560px] border rounded-md">
+            <div className="hidden max-h-[560px] overflow-auto rounded-md border md:block">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
@@ -658,7 +668,7 @@ function RelatorioDocente() {
           )}
 
           {!isLoading && !isLoadingAC && formato === "lista" && (
-            <div className="overflow-auto max-h-[480px] border rounded-md">
+            <div className="hidden max-h-[480px] overflow-auto rounded-md border md:block">
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
@@ -699,6 +709,19 @@ function RelatorioDocente() {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+          {!isLoading && !isLoadingAC && datas.length > 0 && horarios.length > 0 && (
+            <div className="border-t md:hidden">
+              <MobileDaySelector datas={datas} value={diaMobile} onChange={setDiaMobile} />
+              <div className="space-y-3 px-4 pb-4 sm:px-5">
+                {horarios.map((h) => {
+                  if (h.eh_intervalo) return <div key={h.id} className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span className="font-semibold">{h.label}</span><span className="ml-2">Intervalo</span></div>;
+                  const aula = mapaAulas.get(`${diaMobile}__${h.id}`);
+                  const ac = mapaAC.get(`${diaMobile}__${h.id}`);
+                  return <article key={h.id} className="rounded-xl border bg-card p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{h.label}</p><p className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}</p></div>{ac ? <Badge className="bg-violet-100 text-violet-800 hover:bg-violet-100">AC</Badge> : aula ? <Badge variant="secondary">Aula</Badge> : <Badge variant="outline">Livre</Badge>}</div>{ac ? <div className="mt-3 rounded-lg bg-violet-50 p-3 text-sm"><p className="font-medium text-violet-900">{ac.categorias_ac?.nome ?? "Atividade complementar"}</p>{ac.observacao && <p className="mt-1 text-violet-800">{ac.observacao}</p>}{isAdmin && <div className="mt-3 flex gap-2"><Button size="sm" variant="outline" onClick={() => { setAcEditing(ac); setAcFormOpen(true); }}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" onClick={() => { if (confirm("Excluir esta AC?")) delAC.mutate(ac.id); }}><Trash2 className="mr-1 h-3.5 w-3.5" />Excluir</Button></div>}</div> : aula ? <div className="mt-3"><p className="font-medium">{aula.componentes_curriculares?.nome ?? "Componente não informado"}</p><p className="mt-1 text-sm text-muted-foreground">{aula.turmas ? `${aula.turmas.serie} ${aula.turmas.nome}` : "Turma não informada"}</p><p className="mt-2 text-sm">{aula.conteudo || "Conteúdo não informado"}</p></div> : <p className="mt-3 text-sm text-muted-foreground">Nenhuma aula ou AC neste horário.</p>}</article>;
+                })}
+              </div>
             </div>
           )}
         </Card>
@@ -815,6 +838,7 @@ function RelatorioLaboratorio() {
   const [periodo, setPeriodo] = useState({ inicio: startOfWeekISO(), fim: endOfWeekISO() });
   const [formato, setFormato] = useState<FormatoRelatorio>("tabela");
   const [laboratorioId, setLaboratorioId] = useState("");
+  const [diaMobile, setDiaMobile] = useState("");
   // Os tipos locais ainda não contêm laboratorios; serão regenerados após a migration.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sb = supabase as any;
@@ -864,6 +888,7 @@ function RelatorioLaboratorio() {
     }
     return out;
   }, [periodo]);
+  useEffect(() => { if (!datas.includes(diaMobile)) setDiaMobile(datas[0] ?? ""); }, [datas, diaMobile]);
 
   const mapaOcupacao = useMemo(() => {
     const m = new Map<string, Ocupacao[]>();
@@ -1059,7 +1084,7 @@ function RelatorioLaboratorio() {
           {isLoading ? "Carregando..." : datas.length === 0 ? "Selecione um período válido." : `Período de ${fmtDate(periodo.inicio)} a ${fmtDate(periodo.fim)} · ${datas.length} dia(s) letivo(s) · ${horarios.length} horário(s).`}
         </div></div>
         {!isLoading && formato === "tabela" && datas.length > 0 && horarios.length > 0 && (
-            <div className="overflow-auto max-h-[560px] border rounded-md">
+            <div className="hidden max-h-[560px] overflow-auto rounded-md border md:block">
               <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
@@ -1117,7 +1142,7 @@ function RelatorioLaboratorio() {
           )}
 
           {!isLoading && formato === "lista" && (
-            <div className="overflow-auto max-h-[480px] border rounded-md">
+            <div className="hidden max-h-[480px] overflow-auto rounded-md border md:block">
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
@@ -1163,6 +1188,18 @@ function RelatorioLaboratorio() {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+          {!isLoading && datas.length > 0 && horarios.length > 0 && (
+            <div className="border-t md:hidden">
+              <MobileDaySelector datas={datas} value={diaMobile} onChange={setDiaMobile} />
+              <div className="space-y-3 px-4 pb-4 sm:px-5">
+                {horarios.map((h) => {
+                  if (h.eh_intervalo) return <div key={h.id} className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span className="font-semibold">{h.label}</span><span className="ml-2">Intervalo</span></div>;
+                  const ocupacoesHorario = mapaOcupacao.get(`${diaMobile}__${h.id}`) ?? [];
+                  return <article key={h.id} className="rounded-xl border bg-card p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{h.label}</p><p className="text-xs text-muted-foreground">{h.hora_inicio?.slice(0, 5)}–{h.hora_fim?.slice(0, 5)}</p></div>{ocupacoesHorario.length === 0 ? <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Livre</Badge> : <Badge variant={ocupacoesHorario.length > 1 ? "outline" : "destructive"} className={ocupacoesHorario.length > 1 ? "border-amber-400 bg-amber-50 text-amber-800" : ""}>{ocupacoesHorario.length > 1 ? `Revisar (${ocupacoesHorario.length})` : "Ocupado"}</Badge>}</div>{ocupacoesHorario.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">Sem agendamento neste horário.</p> : <div className="mt-3 space-y-3">{ocupacoesHorario.map((oc, index) => <div key={index} className="rounded-lg bg-muted/50 p-3 text-sm"><p className="font-medium">{oc.turma ? `${oc.turma.serie} ${oc.turma.nome}` : "Turma não informada"}</p><p className="mt-1 text-muted-foreground">{[oc.docente?.nome, oc.componente?.nome].filter(Boolean).join(" · ") || "Sem docente ou componente"}</p>{oc.tipo_atividade && <p className="mt-2 text-xs font-medium text-primary">{oc.tipo_atividade === "oficina_pedagogica" ? "Oficina pedagógica" : "Aula prática"}</p>}{oc.recursos_utilizados && <p className="mt-2 text-xs text-muted-foreground">Recursos: {oc.recursos_utilizados}</p>}</div>)}</div>}</article>;
+                })}
+              </div>
             </div>
           )}
         </Card>
