@@ -22,6 +22,7 @@ Documentação técnica e funcional do SGE (Sistema de Gerenciamento Escolar), p
 - [[12-Expansao-laboratorio-multidisciplinar]] — plano técnico para o segundo laboratório.
 - [[13-Especificacao-LabCS]] — regras pedagógicas, dados e fluxo do LabCS.
 - [[14-Reformulacao-dos-relatorios]] — padrão atual da Central de Relatórios e suas exportações.
+- [[15-Revisao-Levi-e-Vitor]] — pauta de riscos e melhorias para decisão conjunta.
 
 ## Fonte de verdade
 
