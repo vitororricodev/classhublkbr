@@ -41,4 +41,6 @@ O README também menciona aliases antigos (`VITE_SUPABASE_ANON_KEY`, `SUPABASE_U
 
 ## Backup e recuperação
 
-Use a tela **Backup e Restauração** apenas com cópia confiável do ambiente e com todos os usuários avisados. A operação substitui dados, não tem rollback automático e possui cobertura limitada — veja [[06-Regras-e-fluxos]]. Mantenha uma cópia externa do JSON e uma exportação dos objetos do bucket `anexos`.
+Use a tela **Backup e Restauração** apenas com cópia confiável do ambiente e com todos os usuários avisados. O formato atual é o **backup SGE v3**: ele inclui os dados operacionais, contas e permissões de laboratório, mas não inclui os objetos do bucket `anexos` nem configurações externas. O JSON contém dados sensíveis de acesso e deve ser armazenado fora do navegador, em local seguro.
+
+A restauração substitui os dados que constam no arquivo, não tem rollback automático e exige confirmação explícita. Arquivos v2 são aceitos somente em modo de compatibilidade e preservam as estruturas do SGE que eles não conheciam. Mantenha uma cópia externa do JSON e uma exportação separada dos objetos do bucket `anexos`; veja [[06-Regras-e-fluxos]].

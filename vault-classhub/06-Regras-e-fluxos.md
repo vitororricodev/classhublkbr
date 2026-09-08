@@ -44,4 +44,6 @@ flowchart LR
 
 ## Backup
 
-O backup v2 exporta docentes, componentes, turmas, horários, feriados, categorias de AC, planejamentos, agendamentos e solicitações de laboratório e atividades complementares. A restauração apaga essas tabelas em ordem inversa e reinsere os registros em lotes de 500. Não inclui usuários, anexos do Storage nem configurações externas.
+O backup **v3** exporta cadastros, planejamentos, horários, feriados, categorias de AC, laboratórios, agendamentos, solicitações, dados pedagógicos do LabCS, mural, contas de usuário e vínculos dos responsáveis pelos laboratórios. A exportação é paginada, evitando perda de registros em bases maiores; a restauração respeita a ordem das chaves estrangeiras e reinsere os dados em lotes de 500.
+
+Arquivos v2 continuam aceitos. Como não incluem estruturas criadas no SGE, a restauração de um arquivo legado preserva laboratórios, mural, usuários e vínculos atuais; os antigos agendamentos e solicitações são associados ao Laboratório de Informática. Anexos do Storage e configurações externas continuam fora do JSON.

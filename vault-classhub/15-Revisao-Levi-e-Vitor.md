@@ -18,7 +18,7 @@ Cada item foi identificado a partir do código, das migrations e da validação 
 |---|---|---|---|---|
 | Autenticação e senhas | O login consulta a tabela `usuarios` pelo frontend e compara a senha no navegador. A sessão também é mantida no `localStorage`. | Se as políticas do banco permitirem leitura indevida, dados de acesso podem ficar expostos. A segurança depende fortemente do RLS atual. | Auditar RLS imediatamente e migrar a validação para Supabase Auth ou RPC segura com senha protegida. | [ ] |
 | Aprovação de laboratório | Aprovar uma solicitação cria o agendamento e atualiza a solicitação em duas operações separadas. | Uma falha entre as operações pode deixar pedido aprovado sem reserva, ou reserva criada sem aprovação. | Criar uma RPC transacional no banco para executar toda a aprovação de uma só vez. | [ ] |
-| Backup e restauração | A restauração altera várias entidades e o backup não cobre necessariamente todos os dados e arquivos. | Uma restauração interrompida pode gerar dados parciais; itens fora do escopo podem não voltar. | Delimitar o escopo exibido na tela, criar restauração transacional e testar a recuperação em base isolada. | [ ] |
+| Backup e restauração | O backup SGE v3 cobre os dados atuais, mas a restauração altera várias entidades em chamadas separadas e os anexos do Storage ficam fora do JSON. | Uma restauração interrompida pode gerar dados parciais; anexos exigem recuperação separada. | Criar restauração transacional, testar em base isolada e decidir se os anexos entram no processo. | [ ] |
 
 ## Prioridade média
 
